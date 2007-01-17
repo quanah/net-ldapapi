@@ -360,7 +360,8 @@ sub sasl_parms
    $self->{"saslauthzid"} = $authzid;
    $self->{"saslsecprops"} = $secprops;
    $self->{"saslflags"} = $flags;
-   print "mech $mech, realm $realm, authzid $authzid, props $secprops, flags $flags\n";
+   # Debugging information, investigate debugging flags.
+   # print "mech $mech, realm $realm, authzid $authzid, props $secprops, flags $flags\n";
 }
 
 sub compare
