@@ -36,30 +36,12 @@ if ($lib_ldap eq "")
 
 if ($version eq "REDHAT")
 {
-   print "Using Netscape's NEW LDAPv3 Development Kit (default: n)? ";
-   $useldapv3 = <>;
-   if ($useldapv3 =~ /y.*/i)
-   {
       if ($Config::Config{'osname'} eq 'MSWin32')
       {
          $ldap_lib = 'nsldapssl32v30';
-      } elsif ($Config::Config{'osname'} eq 'aix')
-      {
-         $ldap_lib = 'ldapssl30';
       } else {
          $ldap_lib = 'ldapssl30';
       }
-   } else {
-      if ($Config::Config{'osname'} eq 'MSWin32')
-      {
-         $ldap_lib = 'nsldap32v11';
-      } elsif ($Config::Config{'osname'} eq 'aix')
-      {
-         $ldap_lib = 'ldap10_shr';
-      } else {
-         $ldap_lib = 'ldap10';
-      }
-   }
 }
 
 if ($version eq "OPENLDAP")
