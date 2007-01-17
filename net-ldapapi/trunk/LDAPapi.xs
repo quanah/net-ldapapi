@@ -336,7 +336,7 @@ internal_rebind_proc(LDAP *ld, char **dnp, char **pwp, int *authmethodp,
 
 #ifdef OPENLDAP
 
-#include "sasl.h"
+#include "sasl/sasl.h"
 
 typedef struct bictx {
 	char *authcid;
