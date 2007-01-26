@@ -1,6 +1,6 @@
 /****************************************************************************/
 /* ldap_compat.h - Header file to add ldap_*_option support and other       */
-/*     Functions to NON-Netscape Development Kits.                          */
+/*     Functions to NON-Mozilla Development Kits.                           */
 /* Author: Clayton Donley - donley@wwa.com                                  */
 /* Date:   Tue Aug 26 13:13:32 CDT 1997                                     */
 /****************************************************************************/
