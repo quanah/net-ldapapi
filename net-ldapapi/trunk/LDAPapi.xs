@@ -17,7 +17,7 @@ extern "C" {
 /* Netscape prototypes declare things as "const char *" while   */
 /*      UM-LDAP uses "char *"                                   */
 
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
  #define LDAP_CHAR const char
  #include <ldap_ssl.h>
 #else
@@ -38,7 +38,7 @@ static LDAPMod *parse1mod(SV *ldap_value_ref,char *ldap_current_attribute,
 	int ldap_add_func,int cont);
 static LDAPMod **hash2mod(SV *ldap_change,int ldap_add_func, const char *func);
 
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
    static int internal_rebind_proc(LDAP *ld, char **dnp, char **pwp,
 	   int *authmethodp, int freeit, void *arg);
    static int LDAP_CALL ns_internal_rebind_proc(LDAP *ld, char **dnp,
@@ -292,7 +292,7 @@ LDAPMod ** hash2mod(SV *ldap_change_ref,int ldap_add_func,const char *func)
 /*   ldap_set_rebind_proc is slightly different between Netscape and UMICH  */
 
 int
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
 internal_rebind_proc(LDAP *ld, char **dnp, char **pwp, int *authmethodp,
   int freeit, void *arg)
 #else
@@ -432,7 +432,7 @@ ldap_initialize(ld,url)
 #endif
 
 
-#if defined(NETSCAPE_LDAP) || defined(OPENLDAP)
+#if defined(REDHAT_LDAP) || defined(OPENLDAP)
 
 int
 ldap_set_option(ld,option,optdata)
@@ -517,7 +517,7 @@ int
 ldap_unbind_s(ld)
 	LDAP *          ld
 
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
 
 int
 ldap_version(ver)
@@ -796,7 +796,7 @@ ber_free(ber,freebuf)
 	BerElement *ber
 	int freebuf
 
-#if defined(NETSCAPE_LDAP) || defined(OPENLDAP)
+#if defined(REDHAT_LDAP) || defined(OPENLDAP)
 
 int
 ldap_msgid(lm)
@@ -830,7 +830,7 @@ ldap_msgtype(lm)
 
 #endif
 
-#if defined(NETSCAPE_LDAP)
+#if defined(REDHAT_LDAP)
 
 int
 ldap_get_lderrno(ld,m,s)
@@ -956,7 +956,7 @@ char *
 ldap_dn2ufn(dn)
 	LDAP_CHAR *     dn
 
-#if defined(NETSCAPE_LDAP) || defined(OPENLDAP)
+#if defined(REDHAT_LDAP) || defined(OPENLDAP)
 
 void
 ldap_explode_dn(dn,notypes)
@@ -998,7 +998,7 @@ ldap_explode_rdn(dn,notypes)
 	   }
 	}
 
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
 
 void
 ldap_explode_dns(dn)
@@ -1108,7 +1108,7 @@ ldap_get_values_len(ld,entry,attr)
 	   }
 	}
 
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
 
 int
 ldapssl_client_init(certdbpath,certdbhandle)
@@ -1136,7 +1136,7 @@ ldap_set_rebind_proc(ld,rebind_function,args)
 	{
 	   if (SvTYPE(SvRV(rebind_function)) != SVt_PVCV)
 	   {
-#if defined(NETSCAPE_LDAP) || defined(OPENLDAP)
+#if defined(REDHAT_LDAP) || defined(OPENLDAP)
 	      ldap_set_rebind_proc(ld,NULL,NULL);
 #else
 	      ldap_set_rebind_proc(ld,NULL);
@@ -1146,7 +1146,7 @@ ldap_set_rebind_proc(ld,rebind_function,args)
 	         ldap_perl_rebindproc = newSVsv(rebind_function);
 	      else
 	         SvSetSV(ldap_perl_rebindproc,rebind_function);
-#if defined(NETSCAPE_LDAP)
+#if defined(REDHAT_LDAP)
 	      ldap_set_rebind_proc(ld,ns_internal_rebind_proc,args);
 #else
 	      ldap_set_rebind_proc(ld,internal_rebind_proc, args);
@@ -1200,7 +1200,7 @@ ldap_get_all_entries(ld,result)
 	      hv_store(FullHash, dn, strlen(dn), HashRef, 0);
 	      if (dn != NULL)
 	         ldap_memfree(dn);
-#if defined(NETSCAPE_LDAP) || defined(OPENLDAP)
+#if defined(REDHAT_LDAP) || defined(OPENLDAP)
 	      if (ber != NULL)
 	         ber_free(ber,0);
 #endif
@@ -1234,7 +1234,7 @@ ldap_url_parse(url)
 	      static char *attr_key = "attr";
 	      static char *scope_key = "scope";
 	      static char *filter_key = "filter";
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
 	      static char *options_key = "options";
 	      SV* options = newSViv(realcomp->lud_options);
 #endif
@@ -1284,7 +1284,7 @@ ldap_url_parse(url)
 	      hv_store(FullHash,attr_key,strlen(attr_key),attribref,0);
 	      hv_store(FullHash,scope_key,strlen(scope_key),scope,0);
 	      hv_store(FullHash,filter_key,strlen(filter_key),filter,0);
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
 	      hv_store(FullHash,options_key,strlen(options_key),options,0);
 #endif
 	      ldap_free_urldesc(realcomp);
@@ -1354,7 +1354,7 @@ ldap_sort_entries(ld,chain,attr)
 	RETVAL
 	chain
 
-#ifdef NETSCAPE_LDAP
+#ifdef REDHAT_LDAP
 
 int
 ldap_multisort_entries(ld,chain,attrs)
