@@ -11,12 +11,12 @@ unless ($sdk)
 {
    print "\nSelect your Development Kit:\n";
    print "  1.  OpenLDAP (default)\n";
-   print "  2.  RedHat\n";
+   print "  2.  Mozilla\n";
    print "Choose: ";
    $sdk = <>;
 }
 
-$version = ($sdk == 2 ? 'REDHAT' :
+$version = ($sdk == 2 ? 'MOZILLA' :
 	    'OPENLDAP');
 
 if ($include_ldap eq "")
@@ -34,7 +34,7 @@ if ($lib_ldap eq "")
    $lib_ldap = $df_lib unless $lib_ldap =~ /\S/;
 }
 
-if ($version eq "REDHAT")
+if ($version eq "MOZILLA")
 {
       if ($Config::Config{'osname'} eq 'MSWin32')
       {
@@ -72,9 +72,9 @@ WriteMakefile(
 	) : (
 	'INC'		=>	"",
 	)),
-	($version eq "REDHAT" ? (
+	($version eq "MOZILLA" ? (
 	'LIBS'          =>      ["-L$lib_ldap -l$ldap_lib"],
-	'DEFINE'        =>      '-DREDHAT_LDAP',
+	'DEFINE'        =>      '-DMOZILLA_LDAP',
 	) : $version eq "OPENLDAP" ? (
 	'LIBS'          =>      ["-L$lib_ldap -L$lib_ldap/../../local/lib $ldap_libs"],
 	'DEFINE'        =>      '-DOPENLDAP',
