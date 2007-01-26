@@ -25,9 +25,6 @@ extern "C" {
  #include "ldap_compat.h"
 #endif
  #define LDAP_CHAR char
- #if defined(ISODE_LDAP) && !defined(IC_LDAP_CONFIG_H)
- # define ISODE8_LDAP
- #endif
 #endif
 
 
@@ -54,13 +51,6 @@ static LDAPMod **hash2mod(SV *ldap_change,int ldap_add_func, const char *func);
 /* The Name of the PERL function to return DN, PASSWD, AUTHTYPE on Rebind */
 /* Set using 'set_rebind_proc()' */
 SV *ldap_perl_rebindproc = NULL;
-
-
-/* ISODE8 doesn't include the ldap_mods_free function */
-
-#ifdef ISODE8_LDAP
-   #define ldap_mods_free(x,y) Safefree(x);
-#endif
 
 
 /* Use constant.h generated from constant.gen */
@@ -403,13 +393,7 @@ ldap_init(defhost,defport)
 	int             defport
 	CODE:
 	{
-#ifdef ISODE8_LDAP
-	   warn("ldap_init() not provided with isode-8 ldap.");
-	   errno = EINVAL;
-	   RETVAL = NULL;
-#else
 	   RETVAL = ldap_init(defhost, defport);
-#endif
 	}
 	OUTPUT:
 	RETVAL
