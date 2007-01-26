@@ -14,8 +14,8 @@ extern "C" {
 #include <lber.h>
 #include <ldap.h>
 
-/* Netscape prototypes declare things as "const char *" while   */
-/*      UM-LDAP uses "char *"                                   */
+/* Mozilla prototypes declare things as "const char *" while   */
+/*      OpenLDAP uses "char *"                                 */
 
 #ifdef MOZILLA_LDAP
  #define LDAP_CHAR const char
@@ -278,8 +278,8 @@ LDAPMod ** hash2mod(SV *ldap_change_ref,int ldap_add_func,const char *func)
    return ldapmod;
 }
 
-/* internal_rebind_proc - Wrapper to call a PERL rebind process             */
-/*   ldap_set_rebind_proc is slightly different between Netscape and UMICH  */
+/* internal_rebind_proc - Wrapper to call a PERL rebind process               */
+/*   ldap_set_rebind_proc is slightly different between Mozilla and OpenLDAP  */
 
 int
 #ifdef MOZILLA_LDAP
