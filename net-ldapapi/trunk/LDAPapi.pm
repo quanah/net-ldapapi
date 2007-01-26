@@ -1357,7 +1357,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
 =head1 SSL SUPPORT
 
-  When compiled with the Netscape SDK, this module now supports SSL.
+  When compiled with the Mozilla SDK, this module now supports SSL.
   I do not have an SSL capable server, but I'm told this works.  The
   functions available are:
 
@@ -1528,7 +1528,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Can also be accessed directly as 'ldap_explode_dn' if no session is
   initialized and you don't want the object oriented form.
 
-  Only available when compiled with Netscape SDK.
+  Only available when compiled with Mozilla SDK.
 
   Example:
 
@@ -1544,7 +1544,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Can also be accessed directly as 'ldap_explode_rdn' if no session is
   initialized and you don't want the object oriented form.
 
-  Only available with Netscape SDK.
+  Only available with Mozilla SDK.
 
   Example:
 
@@ -1810,7 +1810,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   attr		- LDAP Attributes to Return (ARRAY Reference)
   filter	- LDAP Search Filter
   scope		- LDAP Search Scope
-  options	- Netscape key specifying LDAP over SSL
+  options	- Mozilla key specifying LDAP over SSL
 
   Example:
 

@@ -19,7 +19,7 @@ INTRODUCTION
 ============
 
 This module acts as a Perl5 interface to the LDAP C Development Kits from
-OpenLDAP and RedHat.  The module itself is written completely
+OpenLDAP and Mozilla.  The module itself is written completely
 in C.  Full documentation is included, as are commented example scripts. 
 The current version supports the LDAPv3 API as implemented in OpenLDAP.
 
@@ -31,11 +31,11 @@ files from one of the following:
 
 OpenLDAP C SDK (support added by Symas):
     http://www.openldap.org
-RedHat LDAP C SDK (used by author): 
-    http://developer.netscape.com/one/directory/downloads.html 
+Mozilla LDAP C SDK (used by author): 
+    http://wiki.mozilla.org/LDAP_C_SDK
 
 A C Compiler is not required for the NT version if you download Perl5
-and module binaries and the RedHat SDK (you must copy the DLL into your
+and module binaries and the Mozilla SDK (you must copy the DLL into your
 system directory).
 
 
@@ -94,7 +94,7 @@ need to follow with other compilers.
    C:\> perl Makefile.PL
 
    Answer the questions appropriately.  Supply the path to PERL.EXE and the
-Netscape library and include files from their SDK.
+Mozilla library and include files from their SDK.
 
    C:\> nmake
 
@@ -123,7 +123,7 @@ NT BINARY INSTALLATION
 following URL:  http://www.perl.com/CPAN-local/authors/id/GSAR/.  Simply get
 one of the files starting with 'perl5.004'.
 
-   You will also need the Netscape LDAP SDK mentioned previously.  Copy the
+   You will also need the Mozilla LDAP SDK mentioned previously.  Copy the
 nsldap32v11.dll file from that archive into your system32 folder.
 
    Finally, unzip the archive into the C:\ directory if you installed
