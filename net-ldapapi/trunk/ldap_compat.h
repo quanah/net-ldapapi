@@ -7,10 +7,6 @@
 
 #define ldap_memfree(x) Safefree(x)
 
-#ifdef ISODE_LDAP
-# define ber_free(x,y) Safefree(x)
-#endif
-
 /*
  * OpenLDAP already defines these macros
  */
