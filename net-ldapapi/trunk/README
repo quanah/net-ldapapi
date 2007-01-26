@@ -1,12 +1,14 @@
 =======================================================================
-                Net::LDAPapi Module v1.50 for Perl5
-		by Howard Chu @ Symas Corporation
+                Net::LDAPapi Module v2.00 for Perl5
+		by Quanah Gibson-Mount @ Stanford University
+	based on version 1.50 by Howard Chu @ Symas Corporation
 	based on version 1.43 by Clayton Donley, <donley@wwa.com>
 =======================================================================
 
 COPYRIGHT
 =========
 
+   Copyright (c) 2007 Quanah Gibson-Mount. All rights reserved
    Copyright (c) 2003 Howard Chu. All rights reserved.
    Copyright (c) 1998 Clayton Donley. All rights reserved.
    This program is free software; you can redistribute it and/or
@@ -17,9 +19,9 @@ INTRODUCTION
 ============
 
 This module acts as a Perl5 interface to the LDAP C Development Kits from
-University of Michigan and Netscape.  The module itself is written completely
+OpenLDAP and RedHat.  The module itself is written completely
 in C.  Full documentation is included, as are commented example scripts. 
-The current version also supports the LDAPv3 API as implemented in OpenLDAP.
+The current version supports the LDAPv3 API as implemented in OpenLDAP.
 
 REQUIREMENTS
 ============
@@ -29,15 +31,11 @@ files from one of the following:
 
 OpenLDAP C SDK (support added by Symas):
     http://www.openldap.org
-Netscape LDAP C SDK (used by author): 
+RedHat LDAP C SDK (used by author): 
     http://developer.netscape.com/one/directory/downloads.html 
-University of Michigan LDAP-3.3: 
-    ftp://terminator.rs.itd.umich.edu/ldap/ldap-3.3.tar.Z 
-
-It should also works with the ISODE libraries and includes.
 
 A C Compiler is not required for the NT version if you download Perl5
-and module binaries and the Netscape SDK (you must copy the DLL into your
+and module binaries and the RedHat SDK (you must copy the DLL into your
 system directory).
 
 
