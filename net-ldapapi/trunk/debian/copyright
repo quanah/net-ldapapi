@@ -1,0 +1,23 @@
+Debian package originally made by Quanah Gibson-Mount <quanah@stanford.edu>,
+
+Upstream source is available via CPAN from:
+
+    http://www.cpan.org/modules/by-authors/id/MISHIKAL/
+
+Upstream authors:
+
+    Clayton Donley <donley@wwa.com>
+    Howard Chu <hyc@symas.com>
+    Quanah Gibson-Mount <quanah@stanford.edu>
+
+Copyright:
+
+    Copyright 2007 Board of Trustee, Leland Stanford Jr. University
+
+    This module is free software; you may redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+Perl is distributed under either the Artistic License or the GPL.  The
+full text of the GPL is available in Debian systems in
+/usr/share/common-licenses/GPL.  The full text of the Artistic License is
+available on Debian systems in /usr/share/common-licenses/Artistic.
