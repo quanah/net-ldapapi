@@ -68,7 +68,7 @@ WriteMakefile(
 	'NAME'          =>      'Net::LDAPapi',
 	'VERSION_FROM'  =>      'LDAPapi.pm',
 	($include_ldap ne "/usr/include" ? (
-	'INC'           =>      "-I$include_ldap -I$lib_ldap/../../local/include",
+	'INC'           =>      "-I$include_ldap",
 	) : (
 	'INC'		=>	"",
 	)),
@@ -76,7 +76,7 @@ WriteMakefile(
 	'LIBS'          =>      ["-L$lib_ldap -l$ldap_lib"],
 	'DEFINE'        =>      '-DMOZILLA_LDAP',
 	) : (
-	'LIBS'          =>      ["-L$lib_ldap -L$lib_ldap/../../local/lib $ldap_libs"],
+	'LIBS'          =>      ["-L$lib_ldap"],
 	'DEFINE'        =>      '-DOPENLDAP',
 	)),
 	'depend'        =>      { 'LDAPapi.c' => 'constant.h' },
