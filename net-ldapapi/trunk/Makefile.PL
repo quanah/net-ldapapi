@@ -75,7 +75,7 @@ WriteMakefile(
 	($version eq "MOZILLA" ? (
 	'LIBS'          =>      ["-L$lib_ldap -l$ldap_lib"],
 	'DEFINE'        =>      '-DMOZILLA_LDAP',
-	) : $version eq "OPENLDAP" ? (
+	) : (
 	'LIBS'          =>      ["-L$lib_ldap -L$lib_ldap/../../local/lib $ldap_libs"],
 	'DEFINE'        =>      '-DOPENLDAP',
 	)),
