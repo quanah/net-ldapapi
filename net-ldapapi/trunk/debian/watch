@@ -1,0 +1,7 @@
+# watch -- Rules for uscan to find new upstream versions.
+# $Id: watch 117 2005-08-10 07:10:13Z eagle $
+#
+# Included for the benefit of automated package analysis systems.
+
+version=2
+http://www.cpan.org/authors/id/MISHIKAL/Net-LDAPapi-(.*)\.tar\.gz
