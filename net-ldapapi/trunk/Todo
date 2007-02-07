@@ -2,19 +2,12 @@
 #   Net::LDAPapi - TODO List                #
 #                                           #
 #   Last Modified                           #
-#   Date:  Mon May  4 10:42:18 CDT 1998     #
+#   Date:  Tue Feb  6 18:54:44 PST 2007     #
 #############################################
 
-LDAPv2 API Support:
-- Add ldap_filter Functions
-
 LDAPv3 API Support:
-- Have Server and API (Netscape), hope to implement for v1.50.
+- Add support for LDAPv3 Controls
+- Test against Mozilla C SDK
 
-Module Stuff:
-- In v1.50, have Perl-OO methods return Perl response codes/undef rather
-    than the LDAP response codes.  Exact errors are always available via
-    a separate call upon any failures.
-- Clean-up some of the documentation and examples
-- Rewrite web examples to work with 'use strict' and 'perl -w'
-- Rewrite web500.pl to use Perl-OO style Methods
+Package:
+- Update examples to be compliant with version 2.0 builds
