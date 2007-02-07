@@ -22,7 +22,7 @@ TMP     =$(CURDIR)/debian/$(PACKAGE)
 build: build-stamp
 build-stamp:
 	dh_testdir
-	$(PERL) Makefile.PL INSTALLDIRS=vendor
+	$(PERL) Makefile.PL INSTALLDIRS=vendor -sdk openldap -include_path /usr/include -lib_path /usr/lib
 	$(MAKE)
 	touch build-stamp
 
