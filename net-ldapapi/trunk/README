@@ -43,8 +43,7 @@ PLATFORMS SUPPORTED
 ===================
 
 This version should be easily compiled on various platforms. It has been tested
-extensively under Solaris and verified to work under HPUX 10, AIX,
-BSD/OS, and Redhat Linux.
+extensively under Solaris and Linux.
 
 Additionally, as of 1.39, the module has been verified to work with NT 4.0
 and Perl 5.004+.
@@ -192,21 +191,7 @@ Perl-OO style interface if you have never used the C API.
 
 FEEDBACK
 ========
-
-I'm looking for any feedback regarding this package or how you use this
-package.  If you've got other good examples or such, please send them my
-way and I'll include them.  I also read comp.lang.perl.*, so any problems
-or bugs, you might want to report there as well, in case others have them.
-
-
-vvvvv
- NOTE: Clayton Donley, the original author, has abandoned this package. We
- at Symas feel it still provides good functionality, so we have taken it
- upon ourselves to further develop the LDAPv3 API support. Any feedback
- should be directed to hyc@symas.com or hyc@openldap.org; Clayton Donley
- no longer supports this module.
-^^^^^
-
+ Any feedback should be directed to mishikal@yahoo.com
 
 BUGS
 ====
@@ -223,4 +208,11 @@ CPAN:  /authors/id/CDONLEY
 
 Howard Chu
 Chief Architect, Symas Corporation	http://www.symas.com
+Core Team, OpenLDAP Project		http://www.openldap.org
+
+Quanah Gibson-Mount
+email: mishikal@yahoo.com
+CPAN: /authors/id/MISHIKAL
+Principal Software Developer
+Stanford University				http://www.stanford.edu
 Core Team, OpenLDAP Project		http://www.openldap.org
