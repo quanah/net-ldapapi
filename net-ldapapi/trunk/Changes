@@ -1,5 +1,8 @@
 Revision history for Perl5 Net::LDAPapi Module.
 
+2.00  Tue Feb 06 18:46:38 PST 2007
+    - Stripped out ISODE, UMich bits
+    - Updated to refer to Mozilla C SDK
 1.43  Sat Jun 13 02:39:15 CDT 1998
 	- Added replacement for strcasecmp that was more portable
 	- Fixed a few memory leaks caused by changes in 1.42 and
