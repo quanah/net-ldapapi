@@ -104,11 +104,7 @@ constant.h:     constant.gen
 WriteMakefile(
 	'NAME'          =>      'Net::LDAPapi',
 	'VERSION_FROM'  =>      'LDAPapi.pm',
-	($include_ldap ne "/usr/include" ? (
 	'INC'           =>      "-I$include_ldap",
-	) : (
-	'INC'		=>	"",
-	)),
 	($version eq "MOZILLA" ? (
 	'LIBS'          =>      ["-L$lib_ldap -l$ldap_lib"],
 	'DEFINE'        =>      '-DMOZILLA_LDAP',
