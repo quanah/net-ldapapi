@@ -31,7 +31,7 @@ files from one of the following:
 
 OpenLDAP C SDK (support added by Symas):
     http://www.openldap.org
-Mozilla LDAP C SDK (used by author): 
+Mozilla LDAP C SDK
     http://wiki.mozilla.org/LDAP_C_SDK
 
 A C Compiler is not required for the NT version if you download Perl5
