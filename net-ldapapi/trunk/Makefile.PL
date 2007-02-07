@@ -1,4 +1,4 @@
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker qw(prompt WriteMakefile);
 use Config;
 
 print "\n\nNet::LDAPapi Perl5 Module - by Clayton Donley <donley\@cig.mcel.mot.com>\n\n";
@@ -7,6 +7,43 @@ print "Updated by Quanah Gibson-Mount to match modern products and vendors.\n";
 
 $pl_path = $Config{'perlpath'};
 
+unless (@ARGV) {
+warn <<END;
+NOTICE: This module requires the OpenLDAP C API or Mozilla C SDK.
+        It will NOT work with ISODE or the UMich LDAP api.
+
+        Type perl Makefile.PL -h for command-line option summary.
+END
+}
+
+#############################################################################################
+# Build options passed in to script to support reproducible builds via Makefiles
+#############################################################################################
+use Getopt::Long;
+my $result = GetOptions("sdk=s"       => \$sdk,
+                        "lib_path=s"  => \$lib_ldap,
+                        "include_path=s" => \$include_ldap,
+               );
+unless ($result) {
+  print STDERR <<END;
+Usage: perl Makefile.PL [options]
+
+Configure Net::LDAPapi module.
+
+ Options:
+     -sdk          SDK   which SDK to use(openldap or mozilla)
+     -lib_path     path  path to the LDAP libraries
+     -include_path path  path to the LDAP includes
+
+If no options are passed on the command line will prompt for this
+value interactively.
+END
+}
+
+if ($sdk eq "mozilla" || $sdk eq "MOZILLA") {
+    $sdk = 2;
+}
+ 
 unless ($sdk)
 {
    print "\nSelect your Development Kit:\n";
