@@ -6,13 +6,13 @@ Upstream source is available via CPAN from:
 
 Upstream authors:
 
-    Clayton Donley <donley@wwa.com>
-    Howard Chu <hyc@symas.com>
     Quanah Gibson-Mount <quanah@stanford.edu>
 
 Copyright:
 
-    Copyright 2007 Board of Trustee, Leland Stanford Jr. University
+    Copyright (c) 2007 Quanah Gibson-Mount. All rights reserved
+    Copyright (c) 2003 Howard Chu. All rights reserved.
+    Copyright (c) 1998 Clayton Donley. All rights reserved.
 
     This module is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
