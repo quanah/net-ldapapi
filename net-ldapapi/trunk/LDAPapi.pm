@@ -157,7 +157,7 @@ require AutoLoader;
 	LDAP_VERSION2
 	LDAP_VERSION3
 );
-$VERSION = '2.00';
+$VERSION = '2.01';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
