@@ -1,5 +1,7 @@
 Revision history for Perl5 Net::LDAPapi Module.
 
+2.01  Fri Feb 09 08:41:46 PST 2007
+    - Fix library linking
 2.00  Tue Feb 06 18:46:38 PST 2007
 	- Stripped out ISODE, UMich bits
 	- Updated to refer to Mozilla C SDK
