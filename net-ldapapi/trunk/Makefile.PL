@@ -85,11 +85,11 @@ if ($version eq "OPENLDAP")
 {
     if ($^O eq "MSWin32")
     {
-	$ldap_libs = 'ldap.lib lber.lib';
+	$ldap_lib = 'ldap.lib lber.lib';
     }
     else
     {
-	$ldap_libs = '-lldap -llber';
+	$ldap_lib = '-lldap -llber';
     }
 }
 
@@ -109,7 +109,7 @@ WriteMakefile(
 	'LIBS'          =>      ["-L$lib_ldap -l$ldap_lib"],
 	'DEFINE'        =>      '-DMOZILLA_LDAP',
 	) : (
-	'LIBS'          =>      ["-L$lib_ldap"],
+	'LIBS'          =>      ["-L$lib_ldap $ldap_lib"],
 	'DEFINE'        =>      '-DOPENLDAP',
 	)),
 	'depend'        =>      { 'LDAPapi.c' => 'constant.h' },
