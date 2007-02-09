@@ -18,3 +18,4 @@ examples/testwrite.pl
 examples/updatepw.pl
 examples/web500.pl
 examples/www-ldap.pl
+META.yml                                 Module meta-data (added by MakeMaker)
