@@ -1,7 +1,7 @@
-libnet-ldapapi-perl (2.0.0-1) unstable; urgency=low
+libnet-ldapapi-perl (2.0.1-1) unstable; urgency=low
 
   * Initial Release.
   * First pass at packaging the Net::LDAPapi perl module.
 
- -- Quanah Gibson-Mount <quanah@stanford.edu>  Tue, 06 Feb 2007 19:20:27 -0800
+ -- Quanah Gibson-Mount <quanah@stanford.edu>  Fri, 09 Feb 2007 08:41:46 -0800
 
