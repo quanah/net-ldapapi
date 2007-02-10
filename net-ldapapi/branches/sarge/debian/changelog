@@ -1,4 +1,4 @@
-libnet-ldapapi-perl (2.0.1-0~sb1) stable; urgency=low
+libnet-ldapapi-perl (2.0.1-1~sb1) stable; urgency=low
 
   * Initial Release.
   * First pass at packaging the Net::LDAPapi perl module.
