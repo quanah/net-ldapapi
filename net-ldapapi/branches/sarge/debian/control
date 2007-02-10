@@ -1,8 +1,7 @@
 Source: libnet-ldapapi-perl
 Section: perl
 Priority: extra
-Build-Depends: debhelper (>= 4.0.2), libldap2-dev, libsasl2-dev
-Build-Depends-Indep: perl (>= 5.8.0-7)
+Build-Depends: perl (>= 5.8.0-7), debhelper (>= 4.0.2), libldap2-dev, libsasl2-dev
 Maintainer: Quanah Gibson-Mount <quanah@stanford.edu>
 Uploaders: Russ Allbery <rra@stanford.edu>
 Standards-Version: 3.6.2
