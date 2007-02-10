@@ -1,0 +1,10 @@
+char *			T_PV
+const char *		T_PV
+LDAP_CHAR *		T_PV
+LDAP *			T_PTR
+LDAPMessage *		T_PTR
+LDAPMessage **		T_PTR
+BerElement *		T_PTR
+LDAPVersion *		T_PTR
+LDAPMod *		T_PTR
+struct berval **	T_PTR
