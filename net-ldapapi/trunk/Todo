@@ -8,6 +8,7 @@
 LDAPv3 API Support:
 - Add support for LDAPv3 Controls
 - Test against Mozilla C SDK
+- Add support for StartTLS operation
 
 Package:
 - Update examples to be compliant with version 2.0 builds
