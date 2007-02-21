@@ -417,7 +417,7 @@ sub start_tls_s
 
    my ($errdn, $extramsg,$status);
 
-   if(($status = ldap_start_tls_s($self->{"ld"})) != LDAP_SUCCESS) {
+   if(($status = ldap_start_tls_s($self->{"ld"})) != $self->LDAP_SUCCESS) {
       $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
       $self->{"extramsg"} = $extramsg;
    }
