@@ -411,6 +411,17 @@ sub compare_s
    return $status;
 }
 
+sub start_tls_s
+{
+   my ($self) = @_;
+
+   if(($status = ldap_start_tls_s($self->{"ld"})) != LDAP_SUCCESS) {
+      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+      $self->{"extramsg"} = $extramsg;
+   }
+   return $status;
+}
+
 sub count_entries
 {
    my ($self) = @_;
