@@ -8,6 +8,7 @@
 LDAPv3 API Support:
 - Add support for LDAPv3 Controls
 - Test against Mozilla C SDK
+- Remove or replace deprecated functions as appropriate
 
 Package:
 - Update examples to be compliant with version 2.0 builds
