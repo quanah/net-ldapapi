@@ -26,7 +26,7 @@ require AutoLoader;
 	ldap_explode_dns ldap_first_attribute ldap_next_attribute
 	ldap_get_values ldap_get_values_len ldap_bind ldap_bind_s
 	ldapssl_client_init ldapssl_init ldapssl_install_routines
-	ldap_get_all_entries ldap_sort_entries ldap_multisort_entries
+	ldap_get_all_entries ldap_multisort_entries
 	ldap_is_ldap_url ldap_url_parse ldap_url_search ldap_url_search_s
 	ldap_url_search_st ber_free ldap_initialize ldap_start_tls_s
 	ldap_sasl_interactive_bind_s
@@ -870,27 +870,6 @@ sub url_search_st
       $self->{"extramsg"} = $extramsg;
    }
    $self->{"result"} = $result;
-   return $status;
-}
-
-sub sort_entries
-{
-   my ($self,@args) = @_;
-   my ($status,$errdn,$extramsg);
-
-   my ($attr) = $self->rearrange(['ATTR'],@args);
-
-   if (!$self->{"result"})
-   {
-      croak("No Current Result");
-   }
-
-   $status = ldap_sort_entries($self->{"ld"},$self->{"result"},$attr);
-   if ($status != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
    return $status;
 }
 
