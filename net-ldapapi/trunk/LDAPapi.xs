@@ -382,11 +382,6 @@ constant(name,arg)
 	int             arg
 
 
-LDAP *
-ldap_open(host,port)
-	LDAP_CHAR *     host
-	int             port
-
 #ifndef OPENLDAP
 LDAP *
 ldap_init(defhost,defport)
@@ -403,16 +398,27 @@ ldap_init(defhost,defport)
 #ifdef OPENLDAP
 
 int
-ldap_initialize(ld,url)
-	LDAP *		ld = NO_INIT
+ldap_initialize(ldp,url)
+	LDAP *		ldp = NO_INIT
 	LDAP_CHAR *	url
 	CODE:
 	{
-	   RETVAL = ldap_initialize(&ld, url);
+	   RETVAL = ldap_initialize(&ldp, url);
 	}
 	OUTPUT:
 	RETVAL
-	ld
+	ldp
+
+int
+ldap_create(ldp)
+	LDAP ** ldp = NO_INIT
+	CODE:
+	{
+		RETVAL = ldap_create(&ldp);
+	}
+	OUTPUT:
+	RETVAL
+	ldp
 
 #endif
 
