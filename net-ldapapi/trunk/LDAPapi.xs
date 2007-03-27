@@ -510,52 +510,50 @@ ldap_version(ver)
 #endif
 
 int
-ldap_abandon(ld,msgid)
+ldap_abandon_ext(ld,msgid,sctrls,cctrls)
 	LDAP *          ld
 	int             msgid
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
 
 int
-ldap_add(ld,dn,ldap_change_ref)
+ldap_add_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
 	LDAP *          ld
 	LDAP_CHAR *     dn
-	LDAPMod **	ldap_change_ref = hash2mod($arg, 1, "$func_name");
-##	CLEANUP:
-##	   ldap_mods_free(ldap_change_ref,0);
+	LDAPMod **	    ldap_change_ref = hash2mod($arg, 1, "$func_name");
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
+	int *           msgidp
 
 int
-ldap_add_s(ld,dn,ldap_change_ref)
+ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
 	LDAP *          ld
 	LDAP_CHAR *     dn
-	LDAPMod **	ldap_change_ref = hash2mod($arg, 1, "$func_name");
+	LDAPMod **	    ldap_change_ref = hash2mod($arg, 1, "$func_name");
+	LDAPControl **  sctrls
+    LDAPControl **  cctrls
 	CLEANUP:
 	   Safefree(ldap_change_ref);
-##	   ldap_mods_free(ldap_change_ref,0);
 
 int
-ldap_bind(ld,who,passwd,type)
+ldap_sasl_bind(ld,dn,mechanism,cred,sctrls,cctrls,msgidp)
 	LDAP *          ld
-	LDAP_CHAR *     who
-	LDAP_CHAR *     passwd
-	int             type
+	LDAP_CHAR *     dn
+	LDAP_CHAR *     mechanism
+	struct berval * cred
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
+	int *           msgidp
 
 int
-ldap_bind_s(ld,who,passwd,type)
+ldap_sasl_bind_s(ld,dn,mechanism,cred,sctrls,cctrls,servercredp)
 	LDAP *          ld
-	LDAP_CHAR *     who
-	LDAP_CHAR *     passwd
-	int             type
-
-int
-ldap_simple_bind(ld,who,passwd)
-	LDAP *          ld
-	LDAP_CHAR *     who
-	LDAP_CHAR *     passwd
-
-int
-ldap_simple_bind_s(ld,who,passwd)
-	LDAP *          ld
-	LDAP_CHAR *     who
-	LDAP_CHAR *     passwd
+	LDAP_CHAR *     dn
+	LDAP_CHAR *     mechanism
+	struct berval * cred
+	LDAPControl     sctrls
+	LDAPControl     cctrls
+	struct berval ** servercredp
 
 int
 ldap_modify(ld,dn,ldap_change_ref)
@@ -598,18 +596,23 @@ ldap_modrdn2_s(ld,dn,newrdn,deleteoldrdn)
 	int             deleteoldrdn
 
 int
-ldap_compare(ld,dn,attr,value)
-	LDAP *          ld
-	LDAP_CHAR *     dn
-	LDAP_CHAR *     attr
-	LDAP_CHAR *     value
+ldap_compare_ext(ld,dn,attr,bvalue,sctrls,cctrls,msgidp)
+	LDAP *              ld
+	LDAP_CHAR *         dn
+	LDAP_CHAR *         attr
+	struct berval *     bvalue
+	LDAPControl **      sctrls
+	LDAPControl **      cctrls
+	int *               msgidp
 
 int
-ldap_compare_s(ld,dn,attr,value)
-	LDAP *          ld
-	LDAP_CHAR *     dn
-	LDAP_CHAR *     attr
-	LDAP_CHAR *     value
+ldap_compare_ext_s(ld,dn,attr,bvalue,sctrl,cctrl)
+	LDAP *              ld
+	LDAP_CHAR *         dn
+	LDAP_CHAR *         attr
+	struct berval *     value
+	LDAPControl **      sctrl
+	LDAPControl **      cctrl
 
 int
 ldap_delete(ld,dn)
