@@ -551,23 +551,26 @@ ldap_sasl_bind_s(ld,dn,mechanism,cred,sctrls,cctrls,servercredp)
 	LDAP_CHAR *     dn
 	LDAP_CHAR *     mechanism
 	struct berval * cred
-	LDAPControl     sctrls
-	LDAPControl     cctrls
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
 	struct berval ** servercredp
 
 int
-ldap_modify(ld,dn,ldap_change_ref)
+ldap_modify_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
 	LDAP *          ld
 	LDAP_CHAR *     dn
-	LDAPMod **	ldap_change_ref = hash2mod($arg, 0, "$func_name");
-##	CLEANUP:
-##	   ldap_mods_free(ldap_change_ref,0);
+	LDAPMod **	    ldap_change_ref = hash2mod($arg, 0, "$func_name");
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
+	int *           msgidp
 
 int
-ldap_modify_s(ld,dn,ldap_change_ref)
+ldap_modify_ext_s(ld,dn,ldap_change_ref,sctrl,cctrl)
 	LDAP *          ld
 	LDAP_CHAR *     dn
 	LDAPMod **	ldap_change_ref = hash2mod($arg, 0, "$func_name");
+	LDAPControl **  sctrl
+	LDAPControl **  cctrl
 
 int
 ldap_modrdn(ld,dn,newrdn)
@@ -615,14 +618,19 @@ ldap_compare_ext_s(ld,dn,attr,bvalue,sctrl,cctrl)
 	LDAPControl **      cctrl
 
 int
-ldap_delete(ld,dn)
+ldap_delete_ext(ld,dn,sctrls,cctrls,msgidp)
 	LDAP *          ld
 	LDAP_CHAR *     dn
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
+	int *           msgidp
 
 int
-ldap_delete_s(ld,dn)
+ldap_delete_ext_s(ld,dn,sctrls,cctrls)
 	LDAP *          ld
 	LDAP_CHAR *     dn
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
 
 int
 ldap_search(ld,base,scope,filter,attrs,attrsonly)
@@ -889,9 +897,14 @@ ldap_set_lderrno(ld,e,m,s)
 #endif
 
 int
-ldap_result2error(ld,r,freeit)
+ldap_parse_result(ld,r,errorcodep,matcheddnp,errmsgp,referralsp,serverctrls,freeit)
 	LDAP *          ld
 	LDAPMessage *   r
+	int *           errorcodep
+	char **         matcheddnp
+	char **         errmsgp
+	char ***        referralsp
+	LDAPControl *** serverctrls
 	int             freeit
 
 char *
@@ -932,12 +945,6 @@ ldap_get_dn(ld,entry)
 	}
 	OUTPUT:
 	RETVAL
-
-void
-ldap_perror(ld,s)
-	LDAP *          ld
-	LDAP_CHAR *     s
-
 
 char *
 ldap_dn2ufn(dn)
