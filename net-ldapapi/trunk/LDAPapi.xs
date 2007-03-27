@@ -387,6 +387,7 @@ ldap_open(host,port)
 	LDAP_CHAR *     host
 	int             port
 
+#ifndef OPENLDAP
 LDAP *
 ldap_init(defhost,defport)
 	LDAP_CHAR *     defhost
@@ -397,7 +398,7 @@ ldap_init(defhost,defport)
 	}
 	OUTPUT:
 	RETVAL
-
+#endif
 
 #ifdef OPENLDAP
 
@@ -415,8 +416,6 @@ ldap_initialize(ld,url)
 
 #endif
 
-
-#if defined(MOZILLA_LDAP) || defined(OPENLDAP)
 
 int
 ldap_set_option(ld,option,optdata)
@@ -442,56 +441,6 @@ ldap_get_option(ld,option,optdata)
 	OUTPUT:
 	RETVAL
 	optdata
-
-#else
-
-int
-ldap_set_option(ld,option,optdata)
-	LDAP *          ld
-	int             option
-	int             optdata
-	CODE:
-	{
-	   RETVAL = 0;
-	   switch (option)
-	   {
-	      case LDAP_OPT_DEREF: ld->ld_deref = optdata; break;
-	      case LDAP_OPT_SIZELIMIT: ld->ld_sizelimit = optdata; break;
-	      case LDAP_OPT_TIMELIMIT: ld->ld_timelimit = optdata; break;
-	      case LDAP_OPT_REFERRALS: if (optdata == LDAP_OPT_ON)
-		    ld->ld_options |= LDAP_OPT_REFERRALS; else 
-		      ld->ld_options &= ~LDAP_OPT_REFERRALS; break;
-	      default: RETVAL = -1; break;
-	   }
-	}
-	OUTPUT:
-	RETVAL
-
-int
-ldap_get_option(ld,option,optdata)
-	LDAP *          ld
-	int             option
-	int             optdata = NO_INIT
-	CODE:
-	{
-	   RETVAL = 0;
-	   switch (option)
-	   {
-	      case LDAP_OPT_DEREF: optdata = ld->ld_deref; break;
-	      case LDAP_OPT_SIZELIMIT: optdata = ld->ld_sizelimit; break;
-	      case LDAP_OPT_TIMELIMIT: optdata = ld->ld_timelimit; break;
-	      case LDAP_OPT_REFERRALS: if (ld->ld_options & LDAP_OPT_REFERRALS)
-		    optdata = LDAP_OPT_ON; else optdata = LDAP_OPT_OFF;
-		    break;
-	      default: RETVAL = optdata = -1; break;
-	   }
-	}
-	OUTPUT:
-	RETVAL
-	optdata
-	
-
-#endif
 
 int
 ldap_unbind(ld)
@@ -573,30 +522,25 @@ ldap_modify_ext_s(ld,dn,ldap_change_ref,sctrl,cctrl)
 	LDAPControl **  cctrl
 
 int
-ldap_modrdn(ld,dn,newrdn)
+ldap_rename(ld,dn,newrdn,newSuperior,deleteoldrdn,sctrls,cctrls,msgidp)
 	LDAP *          ld
 	LDAP_CHAR *     dn
 	LDAP_CHAR *     newrdn
-
-int
-ldap_modrdn_s(ld,dn,newrdn)
-	LDAP *          ld
-	LDAP_CHAR *     dn
-	LDAP_CHAR *     newrdn
-
-int
-ldap_modrdn2(ld,dn,newrdn,deleteoldrdn)
-	LDAP *          ld
-	LDAP_CHAR *     dn
-	LDAP_CHAR *     newrdn
+	LDAP_CHAR *     newSuperior
 	int             deleteoldrdn
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
+	int *           msgidp
 
 int
-ldap_modrdn2_s(ld,dn,newrdn,deleteoldrdn)
+ldap_rename_s(ld,dn,newrdn,newSuperior,deleteoldrdn,sctrls,cctrls)
 	LDAP *          ld
 	LDAP_CHAR *     dn
 	LDAP_CHAR *     newrdn
+	LDAP_CHAR *     newSuperior
 	int             deleteoldrdn
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
 
 int
 ldap_compare_ext(ld,dn,attr,bvalue,sctrls,cctrls,msgidp)
