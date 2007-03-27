@@ -900,7 +900,22 @@ char *
 ldap_dn2ufn(dn)
 	LDAP_CHAR *     dn
 
-#if defined(MOZILLA_LDAP) || defined(OPENLDAP)
+#if defined(OPENLDAP)
+int
+ldap_str2dn(str,dn,flags)
+	LDAP_CHAR *    str
+	LDAPDN *       dn
+	unsigned       flags
+
+int ldap_str2rdn(str,rdn,n_in,flags)
+	LDAP_CHAR *    str
+	LDAPDN *       rdn
+	char **        n_in
+	unsigned       flags
+	
+#endif
+
+#if defined(MOZILLA_LDAP)
 
 void
 ldap_explode_dn(dn,notypes)
@@ -942,28 +957,6 @@ ldap_explode_rdn(dn,notypes)
 	   }
 	}
 
-#ifdef MOZILLA_LDAP
-
-void
-ldap_explode_dns(dn)
-	char *          dn
-	PPCODE:
-	{
-	   char ** LDAPGETVAL;
-	   int i;
-
-	   if ((LDAPGETVAL = ldap_explode_dns(dn)) != NULL)
-	   {
-	       for (i = 0; LDAPGETVAL[i] != NULL; i++)
-	       {
-		  EXTEND(sp,1);
-		  PUSHs(sv_2mortal(newSVpv(LDAPGETVAL[i],strlen(LDAPGETVAL[i]))));
-	       }
-	      ldap_value_free(LDAPGETVAL);
-	   }
-	}
-
-#endif
 #endif
 
 SV *
@@ -1012,37 +1005,16 @@ ldap_next_attribute(ld,entry,ber)
 
 
 void
-ldap_get_values(ld,entry,attr)
+ldap_get_values_len(ld,entry,target)
 	LDAP *          ld
 	LDAPMessage *   entry
-	char *          attr
-	PPCODE:
-	{
-	   char ** LDAPGETVAL;
-	   int i;
-
-	   if ((LDAPGETVAL = ldap_get_values(ld,entry,attr)) != NULL)
-	   {
-	      for (i = 0; LDAPGETVAL[i] != NULL; i++)
-	      {
-	         EXTEND(sp,1);
-	         PUSHs(sv_2mortal(newSVpv(LDAPGETVAL[i],strlen(LDAPGETVAL[i]))));
-	      }
-	      ldap_value_free(LDAPGETVAL);
-	   }
-	}
-
-void
-ldap_get_values_len(ld,entry,attr)
-	LDAP *          ld
-	LDAPMessage *   entry
-	char *          attr
+	char *          target
 	PPCODE:
 	{
 	   struct berval ** LDAPGETVAL;
 	   int i;
 
-	   if ((LDAPGETVAL = ldap_get_values_len(ld,entry,attr)) != NULL)
+	   if ((LDAPGETVAL = ldap_get_values_len(ld,entry,target)) != NULL)
 	   {
 	       for (i = 0; LDAPGETVAL[i] != NULL; i++)
 	       {
