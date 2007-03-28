@@ -639,8 +639,8 @@ ldap_search_ext_s(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,siz
 	LDAP_CHAR *     filter
 	SV *            attrs
 	int             attrsonly
-	LDAPControls ** sctrls
-	LDAPControls ** cctrls
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
 	struct timeval * timeout
 	int             sizelimit
 	LDAPMessage *   res = NO_INIT
