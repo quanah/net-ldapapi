@@ -1277,14 +1277,17 @@ ldap_multisort_entries(ld,chain,attrs)
 #ifdef OPENLDAP
 
 int
-ldap_start_tls_s(ld)
-	LDAP *	ld
-	CODE:
-	{
-	   RETVAL = ldap_start_tls_s(ld,NULL,NULL);
-	}
-	OUTPUT:
-	RETVAL
+ldap_start_tls(ld,serverctrls,clientctrls,msgidp)
+	LDAP *         ld
+	LDAPControl ** serverctrls
+	LDAPControl ** clientctrls
+	int *          msgidp
+
+int
+ldap_start_tls_s(ld,serverctrls,clientctrls)
+	LDAP *         ld
+	LDAPControl ** serverctrls
+	LDAPControl ** clientctrls
 
 int
 ldap_sasl_interactive_bind_s(ld,who,passwd,mech,realm,authzid,props,flags)
