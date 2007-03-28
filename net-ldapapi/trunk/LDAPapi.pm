@@ -13,18 +13,18 @@ require AutoLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw(
-	ldap_open ldap_init ldap_set_option ldap_get_option ldap_unbind
-	ldap_unbind_s ldap_version ldap_abandon ldap_add ldap_add_s
-	ldap_set_rebind_proc ldap_simple_bind ldap_simple_bind_s
-	ldap_modify ldap_modify_s ldap_modrdn ldap_modrdn_s ldap_modrdn2
-	ldap_modrdn2_s ldap_compare ldap_compare_s ldap_delete
-	ldap_delete_s ldap_search ldap_search_s ldap_search_st ldap_result
+	ldap_create ldap_set_option ldap_get_option ldap_unbind_ext
+	ldap_unbind_ext_s ldap_version ldap_abandon_ext ldap_add_ext ldap_add_ext_s
+	ldap_set_rebind_proc 
+	ldap_modify_ext ldap_modify_ext_s ldap_rename ldap_rename_s
+	ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
+	ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
 	ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
-	ldap_get_lderrno ldap_set_lderrno ldap_result2error ldap_err2string
+	ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
 	ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
-	ldap_perror ldap_dn2ufn ldap_explode_dn ldap_explode_rdn
+	ldap_err2string ldap_dn2ufn ldap_str2dn ldap_str2rdn
 	ldap_explode_dns ldap_first_attribute ldap_next_attribute
-	ldap_get_values ldap_get_values_len ldap_bind ldap_bind_s
+	ldap_get_values_len ldap_sasl_bind ldap_sasl_bind_s
 	ldapssl_client_init ldapssl_init ldapssl_install_routines
 	ldap_get_all_entries ldap_multisort_entries
 	ldap_is_ldap_url ldap_url_parse ldap_url_search ldap_url_search_s
