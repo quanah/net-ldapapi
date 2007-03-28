@@ -324,6 +324,8 @@ internal_rebind_proc(LDAP *ld, char **dnp, char **pwp, int *authmethodp,
    return(LDAP_SUCCESS);
 }
 
+#endif
+
 #ifdef OPENLDAP
 
 #include "sasl/sasl.h"
