@@ -371,8 +371,6 @@ ldap_b2_interact(LDAP *ld, unsigned flags, void *def, void *inter)
 	return LDAP_SUCCESS;
 }
 
-#endif
-
 
 MODULE = Net::LDAPapi           PACKAGE = Net::LDAPapi
 
@@ -395,6 +393,7 @@ ldap_init(defhost,defport)
 	}
 	OUTPUT:
 	RETVAL
+
 #endif
 
 #ifdef OPENLDAP
