@@ -449,12 +449,16 @@ ldap_get_option(ld,option,optdata)
 	optdata
 
 int
-ldap_unbind(ld)
+ldap_unbind_ext(ld,sctrls,cctrls)
 	LDAP *          ld
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
 	
 int
-ldap_unbind_s(ld)
+ldap_unbind_ext_s(ld,sctrls,cctrls)
 	LDAP *          ld
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
 
 #ifdef MOZILLA_LDAP
 
@@ -583,13 +587,19 @@ ldap_delete_ext_s(ld,dn,sctrls,cctrls)
 	LDAPControl **  cctrls
 
 int
-ldap_search(ld,base,scope,filter,attrs,attrsonly)
+ldap_search_ext(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,sizelimit,msgidp)
 	LDAP *          ld
 	LDAP_CHAR *     base
 	int             scope
 	LDAP_CHAR *     filter
 	SV *            attrs
 	int             attrsonly
+	LDAPControl **  sctrls
+	LDAPControl **  cctrls
+	struct timeval * timeout
+	int             sizelimit
+	int *           msgidp
+
 	CODE:
 	{
 	   char **attrs_char;
@@ -598,7 +608,7 @@ ldap_search(ld,base,scope,filter,attrs,attrsonly)
 
 	   if (SvTYPE(SvRV(attrs)) != SVt_PVAV)
 	   {
-	      croak("Net::LDAPapi::ldap_search needs ARRAY reference as argument 5.");
+	      croak("Net::LDAPapi::ldap_search_ext needs ARRAY reference as argument 5.");
 	      XSRETURN(1);
 	   }
 	   if ((arraylen = av_len((AV *)SvRV(attrs))) < 0)
@@ -614,20 +624,24 @@ ldap_search(ld,base,scope,filter,attrs,attrsonly)
 	      }
 	      attrs_char[arraylen+1] = NULL;
 	   }
-	   RETVAL = ldap_search(ld,base,scope,filter,attrs_char,attrsonly);
+	   RETVAL = ldap_search_ext(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,timeout,sizelimit,msgidp);
 	   Safefree(attrs_char);
 	}
 	OUTPUT:
 	RETVAL
 
 int
-ldap_search_s(ld,base,scope,filter,attrs,attrsonly,res)
+ldap_search_ext_s(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,sizelimit,res)
 	LDAP *          ld
 	LDAP_CHAR *     base
 	int             scope
 	LDAP_CHAR *     filter
 	SV *            attrs
 	int             attrsonly
+	LDAPControls ** sctrls
+	LDAPControls ** cctrls
+	struct timeval * timeout
+	int             sizelimit
 	LDAPMessage *   res = NO_INIT
 	CODE:
 	{
@@ -651,59 +665,10 @@ ldap_search_s(ld,base,scope,filter,attrs,attrsonly,res)
 		 attrs_char[arraylen+1] = NULL;
 	      }
 	   } else {
-	      croak("Net::LDAPapi::ldap_search_s needs ARRAY reference as argument 5.");
+	      croak("Net::LDAPapi::ldap_search_ext_s needs ARRAY reference as argument 5.");
 	      XSRETURN(1);
 	   }
-	   RETVAL = ldap_search_s(ld,base,scope,filter,attrs_char,attrsonly,&res);
-	   Safefree(attrs_char);
-	}
-	OUTPUT:
-	RETVAL
-	res
-
-int
-ldap_search_st(ld,base,scope,filter,attrs,attrsonly,timeout,res)
-	LDAP *          ld
-	LDAP_CHAR *    base
-	int             scope
-	LDAP_CHAR *    filter
-	SV *            attrs
-	int             attrsonly
-	LDAP_CHAR *     timeout
-	LDAPMessage *   res = NO_INIT
-	CODE:
-	{
-	   struct timeval *tv_timeout = NULL, timeoutbuf;
-	   char **attrs_char;
-	   SV **current;
-	   int arraylen,count;
-
-	   if (SvTYPE(SvRV(attrs)) != SVt_PVAV)
-	   {
-	      croak("Net::LDAPapi::ldap_search_st needs ARRAY reference as argument 5.");
-	      XSRETURN(1);
-	   }
-	   if ((arraylen = av_len((AV *)SvRV(attrs))) < 0)
-	   {
-	      New(1,attrs_char,2,char *);
-	      attrs_char[0] = NULL;
-	   } else {
-	      New(1,attrs_char,arraylen+2,char *);
-	      for (count=0;count <= arraylen; count++)
-	      {
-		 current = av_fetch((AV *)SvRV(attrs),count,0);
-		 attrs_char[count] = SvPV(*current,PL_na);
-	      }
-	      attrs_char[arraylen+1] = NULL;
-	   }
-	   if (timeout && *timeout)
-	   {
-	      tv_timeout = &timeoutbuf;
-	      tv_timeout->tv_sec = atof(timeout);
-	      tv_timeout->tv_usec = 0;
-	   }
-	   RETVAL = ldap_search_st(ld,base,scope,filter,attrs_char,attrsonly,
-		tv_timeout,&res);
+	   RETVAL = ldap_search_ext_s(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,timeout,sizelimit,&res);
 	   Safefree(attrs_char);
 	}
 	OUTPUT:
