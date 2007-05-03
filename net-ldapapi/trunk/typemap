@@ -4,6 +4,7 @@ char **             T_PTR
 char ***            T_PTR
 const char *        T_PV
 LDAP_CHAR *         T_PV
+LDAP_CHAR **        T_PTR
 LDAP *              T_PTR
 LDAP **             T_PTR
 LDAPControl **      T_PTR
