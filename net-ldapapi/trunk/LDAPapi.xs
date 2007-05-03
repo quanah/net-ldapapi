@@ -23,9 +23,11 @@ extern "C" {
  #define LDAP_CHAR const char
  #include <ldap_ssl.h>
 #else
+
 #ifndef OPENLDAP
  #include "ldap_compat.h"
 #endif
+
  #define LDAP_CHAR char
 #endif
 
@@ -338,24 +340,8 @@ constant(name,arg)
     int             arg
 
 
-#ifndef OPENLDAP
-LDAP *
-ldap_init(defhost,defport)
-    LDAP_CHAR *     defhost
-    int             defport
-    CODE:
-    {
-       RETVAL = ldap_init(defhost, defport);
-    }
-    OUTPUT:
-    RETVAL
-
-#endif
-
-#ifdef OPENLDAP
-
 int
-ldap_initialize(ldp,url)
+ldap_initialize(ldp, url)
     LDAP *      ldp = NO_INIT
     LDAP_CHAR * url
     CODE:
@@ -377,8 +363,12 @@ ldap_create(ldp)
     RETVAL
     ldp
 
-#endif
-
+int
+ldap_bind_s(ldp, dn, passwd, authmethod)
+    LDAP *      ldp
+    LDAP_CHAR * dn
+    LDAP_CHAR * passwd
+    int         authmethod
 
 int
 ldap_set_option(ld,option,optdata)
@@ -416,6 +406,23 @@ ldap_unbind_ext_s(ld,sctrls,cctrls)
     LDAP *          ld
     LDAPControl **  sctrls
     LDAPControl **  cctrls
+
+int
+ldap_search_s(ldp, base, scope, filter, attrs, attrsonly, res)
+    LDAP *        ldp
+    LDAP_CHAR *   base
+    int           scope
+    LDAP_CHAR *   filter
+    LDAP_CHAR **  attrs
+    int           attrsonly
+    LDAPMessage * res = NO_INIT
+    CODE:
+    {
+       RETVAL = ldap_search_s(ldp, base, scope, filter, attrs, attrsonly, &res);
+    }
+    OUTPUT:
+    RETVAL
+    res
 
 #ifdef MOZILLA_LDAP
 
@@ -633,22 +640,23 @@ ldap_search_ext_s(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,siz
     res
 
 int
-ldap_result(ld,msgid,all,timeout,result)
-    LDAP *          ld
-    int             msgid
-    int             all
-    LDAP_CHAR *     timeout
-    LDAPMessage *   result = NO_INIT
+ldap_result(ld, msgid, all, timeout, result)
+    LDAP *        ld
+    int           msgid
+    int           all
+    LDAP_CHAR *   timeout
+    LDAPMessage * result = NO_INIT
     CODE:
     {
-       struct timeval *tv_timeout = NULL,timeoutbuf;
+       struct timeval *tv_timeout = NULL, timeoutbuf;
        if (atof(timeout) > 0 && timeout && *timeout)
        {
           tv_timeout = &timeoutbuf;
           tv_timeout->tv_sec = atof(timeout);
           tv_timeout->tv_usec = 0;
        }
-       RETVAL = ldap_result(ld,msgid,all,tv_timeout,&result);
+       //RETVAL = ldap_result(ld, msgid, all, tv_timeout, result);
+        RETVAL = ldap_result(ld, msgid, all, NULL, &result);
     }
     OUTPUT:
     RETVAL
@@ -659,9 +667,9 @@ ldap_msgfree(lm)
     LDAPMessage *   lm
 
 void
-ber_tfree(ber,freebuf)
-    BerElement *ber
-    int freebuf
+ber_free(ber, freebuf)
+    BerElement * ber
+    int          freebuf
 
 #if defined(MOZILLA_LDAP) || defined(OPENLDAP)
 
@@ -890,7 +898,7 @@ ldap_first_attribute(ld,entry,ber)
        char * attr;
     CODE:
     {
-       attr = ldap_first_attribute(ld,entry,&ber);
+       attr = ldap_first_attribute(ld, entry, &ber);
        if (attr)
        {
           RETVAL = newSVpv(attr,0);
@@ -912,7 +920,7 @@ ldap_next_attribute(ld,entry,ber)
        char * attr;
     CODE:
     {
-       attr = ldap_next_attribute(ld,entry,ber);
+       attr = ldap_next_attribute(ld, entry, ber);
        if (attr)
        {
           RETVAL = newSVpv(attr,0);

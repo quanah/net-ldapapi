@@ -13,149 +13,149 @@ require AutoLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw(
-	ldap_create ldap_set_option ldap_get_option ldap_unbind_ext
-	ldap_unbind_ext_s ldap_version ldap_abandon_ext ldap_add_ext ldap_add_ext_s
-	ldap_set_rebind_proc 
-	ldap_modify_ext ldap_modify_ext_s ldap_rename ldap_rename_s
-	ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
-	ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
-	ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
-	ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
-	ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
-	ldap_err2string ldap_dn2ufn ldap_str2dn ldap_str2rdn
-	ldap_explode_dns ldap_first_attribute ldap_next_attribute
-	ldap_get_values_len ldap_sasl_bind ldap_sasl_bind_s
-	ldapssl_client_init ldapssl_init ldapssl_install_routines
-	ldap_get_all_entries ldap_multisort_entries
-	ldap_is_ldap_url ldap_url_parse ldap_url_search ldap_url_search_s
-	ldap_url_search_st ber_free ldap_initialize ldap_start_tls_s
-	ldap_sasl_interactive_bind_s
-	LDAPS_PORT
-	LDAP_ADMIN_LIMIT_EXCEEDED
-	LDAP_AFFECTS_MULTIPLE_DSAS
-	LDAP_ALIAS_DEREF_PROBLEM
-	LDAP_ALIAS_PROBLEM
-	LDAP_ALREADY_EXISTS
-	LDAP_AUTH_KRBV4
-	LDAP_AUTH_KRBV41
-	LDAP_AUTH_KRBV42
-	LDAP_AUTH_KRBV41_30
-	LDAP_AUTH_KRBV42_30
-	LDAP_AUTH_NONE
-	LDAP_AUTH_SASL
-	LDAP_AUTH_SIMPLE
-	LDAP_AUTH_UNKNOWN
-	LDAP_BUSY
-	LDAP_CACHE_CHECK
-	LDAP_CACHE_LOCALDB
-	LDAP_CACHE_POPULATE
-	LDAP_CALLBACK
-	LDAP_COMPARE_FALSE
-	LDAP_COMPARE_TRUE
-	LDAP_CONNECT_ERROR
-	LDAP_CONSTRAINT_VIOLATION
-	LDAP_DECODING_ERROR
-	LDAP_DEREF_ALWAYS
-	LDAP_DEREF_FINDING
-	LDAP_DEREF_NEVER
-	LDAP_DEREF_SEARCHING
-	LDAP_ENCODING_ERROR
-	LDAP_FILTER_ERROR
-	LDAP_FILT_MAXSIZ
-	LDAP_INAPPROPRIATE_AUTH
-	LDAP_INAPPROPRIATE_MATCHING
-	LDAP_INSUFFICIENT_ACCESS
-	LDAP_INVALID_CREDENTIALS
-	LDAP_INVALID_DN_SYNTAX
-	LDAP_INVALID_SYNTAX
-	LDAP_IS_LEAF
-	LDAP_LOCAL_ERROR
-	LDAP_LOOP_DETECT
-	LDAP_MOD_ADD
-	LDAP_MOD_BVALUES
-	LDAP_MOD_DELETE
-	LDAP_MOD_REPLACE
-	LDAP_NAMING_VIOLATION
-	LDAP_NOT_ALLOWED_ON_NONLEAF
-	LDAP_NOT_ALLOWED_ON_RDN
-	LDAP_NO_LIMIT
-	LDAP_NO_MEMORY
-	LDAP_NO_OBJECT_CLASS_MODS
-	LDAP_NO_SUCH_ATTRIBUTE
-	LDAP_NO_SUCH_OBJECT
-	LDAP_OBJECT_CLASS_VIOLATION
-	LDAP_OPERATIONS_ERROR
-	LDAP_OPT_CACHE_ENABLE
-	LDAP_OPT_CACHE_FN_PTRS
-	LDAP_OPT_CACHE_STRATEGY
-	LDAP_OPT_DEBUG_LEVEL
-	LDAP_OPT_DEREF
-	LDAP_OPT_DESC
-	LDAP_OPT_DNS
-	LDAP_OPT_IO_FN_PTRS
-	LDAP_OPT_OFF
-	LDAP_OPT_ON
-	LDAP_OPT_PROTOCOL_VERSION
-	LDAP_OPT_REBIND_ARG
-	LDAP_OPT_REBIND_FN
-	LDAP_OPT_REFERRALS
-	LDAP_OPT_REFERRAL_HOP_LIMIT
-	LDAP_OPT_RESTART
-	LDAP_OPT_SIZELIMIT
-	LDAP_OPT_SSL
-	LDAP_OPT_THREAD_FN_PTRS
-	LDAP_OPT_TIMELIMIT
-	LDAP_OTHER
-	LDAP_PARAM_ERROR
-	LDAP_PARTIAL_RESULTS
-	LDAP_PORT
-	LDAP_PORT_MAX
-	LDAP_PROTOCOL_ERROR
-	LDAP_REFERRAL
-	LDAP_RESULTS_TOO_LARGE
-	LDAP_RES_ADD
-	LDAP_RES_ANY
-	LDAP_RES_BIND
-	LDAP_RES_COMPARE
-	LDAP_RES_DELETE
-	LDAP_RES_EXTENDED
-	LDAP_RES_MODIFY
-	LDAP_RES_MODRDN
-	LDAP_RES_RESUME
-	LDAP_RES_SEARCH_ENTRY
-	LDAP_RES_SEARCH_REFERENCE
-	LDAP_RES_SEARCH_RESULT
-	LDAP_RES_SESSION
-	LDAP_SASL_AUTOMATIC
-	LDAP_SASL_INTERACTIVE
-	LDAP_SASL_QUIET
-	LDAP_SCOPE_BASE
-	LDAP_SCOPE_ONELEVEL
-	LDAP_SCOPE_SUBTREE
-	LDAP_SECURITY_NONE
-	LDAP_SERVER_DOWN
-	LDAP_SIZELIMIT_EXCEEDED
-	LDAP_STRONG_AUTH_NOT_SUPPORTED
-	LDAP_STRONG_AUTH_REQUIRED
-	LDAP_SUCCESS
-	LDAP_TIMELIMIT_EXCEEDED
-	LDAP_TIMEOUT
-	LDAP_TYPE_OR_VALUE_EXISTS
-	LDAP_UNAVAILABLE
-	LDAP_UNAVAILABLE_CRITICAL_EXTN
-	LDAP_UNDEFINED_TYPE
-	LDAP_UNWILLING_TO_PERFORM
-	LDAP_URL_ERR_BADSCOPE
-	LDAP_URL_ERR_MEM
-	LDAP_URL_ERR_NODN
-	LDAP_URL_ERR_NOTLDAP
-	LDAP_URL_ERR_PARAM
-	LDAP_URL_OPT_SECURE
-	LDAP_USER_CANCELLED
-	LDAP_VERSION
-	LDAP_VERSION1
-	LDAP_VERSION2
-	LDAP_VERSION3
+    ldap_create ldap_set_option ldap_get_option ldap_unbind_ext
+    ldap_unbind_ext_s ldap_version ldap_abandon_ext ldap_add_ext ldap_add_ext_s
+    ldap_set_rebind_proc
+    ldap_modify_ext ldap_modify_ext_s ldap_rename ldap_rename_s
+    ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
+    ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
+    ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
+    ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
+    ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
+    ldap_err2string ldap_dn2ufn ldap_str2dn ldap_str2rdn
+    ldap_explode_dns ldap_first_attribute ldap_next_attribute
+    ldap_get_values ldap_get_values_len ldap_sasl_bind ldap_sasl_bind_s
+    ldapssl_client_init ldapssl_init ldapssl_install_routines
+    ldap_get_all_entries ldap_multisort_entries
+    ldap_is_ldap_url ldap_url_parse ldap_url_search ldap_url_search_s
+    ldap_url_search_st ber_free ldap_init ldap_initialize ldap_start_tls_s
+    ldap_sasl_interactive_bind_s
+    LDAPS_PORT
+    LDAP_ADMIN_LIMIT_EXCEEDED
+    LDAP_AFFECTS_MULTIPLE_DSAS
+    LDAP_ALIAS_DEREF_PROBLEM
+    LDAP_ALIAS_PROBLEM
+    LDAP_ALREADY_EXISTS
+    LDAP_AUTH_KRBV4
+    LDAP_AUTH_KRBV41
+    LDAP_AUTH_KRBV42
+    LDAP_AUTH_KRBV41_30
+    LDAP_AUTH_KRBV42_30
+    LDAP_AUTH_NONE
+    LDAP_AUTH_SASL
+    LDAP_AUTH_SIMPLE
+    LDAP_AUTH_UNKNOWN
+    LDAP_BUSY
+    LDAP_CACHE_CHECK
+    LDAP_CACHE_LOCALDB
+    LDAP_CACHE_POPULATE
+    LDAP_CALLBACK
+    LDAP_COMPARE_FALSE
+    LDAP_COMPARE_TRUE
+    LDAP_CONNECT_ERROR
+    LDAP_CONSTRAINT_VIOLATION
+    LDAP_DECODING_ERROR
+    LDAP_DEREF_ALWAYS
+    LDAP_DEREF_FINDING
+    LDAP_DEREF_NEVER
+    LDAP_DEREF_SEARCHING
+    LDAP_ENCODING_ERROR
+    LDAP_FILTER_ERROR
+    LDAP_FILT_MAXSIZ
+    LDAP_INAPPROPRIATE_AUTH
+    LDAP_INAPPROPRIATE_MATCHING
+    LDAP_INSUFFICIENT_ACCESS
+    LDAP_INVALID_CREDENTIALS
+    LDAP_INVALID_DN_SYNTAX
+    LDAP_INVALID_SYNTAX
+    LDAP_IS_LEAF
+    LDAP_LOCAL_ERROR
+    LDAP_LOOP_DETECT
+    LDAP_MOD_ADD
+    LDAP_MOD_BVALUES
+    LDAP_MOD_DELETE
+    LDAP_MOD_REPLACE
+    LDAP_NAMING_VIOLATION
+    LDAP_NOT_ALLOWED_ON_NONLEAF
+    LDAP_NOT_ALLOWED_ON_RDN
+    LDAP_NO_LIMIT
+    LDAP_NO_MEMORY
+    LDAP_NO_OBJECT_CLASS_MODS
+    LDAP_NO_SUCH_ATTRIBUTE
+    LDAP_NO_SUCH_OBJECT
+    LDAP_OBJECT_CLASS_VIOLATION
+    LDAP_OPERATIONS_ERROR
+    LDAP_OPT_CACHE_ENABLE
+    LDAP_OPT_CACHE_FN_PTRS
+    LDAP_OPT_CACHE_STRATEGY
+    LDAP_OPT_DEBUG_LEVEL
+    LDAP_OPT_DEREF
+    LDAP_OPT_DESC
+    LDAP_OPT_DNS
+    LDAP_OPT_IO_FN_PTRS
+    LDAP_OPT_OFF
+    LDAP_OPT_ON
+    LDAP_OPT_PROTOCOL_VERSION
+    LDAP_OPT_REBIND_ARG
+    LDAP_OPT_REBIND_FN
+    LDAP_OPT_REFERRALS
+    LDAP_OPT_REFERRAL_HOP_LIMIT
+    LDAP_OPT_RESTART
+    LDAP_OPT_SIZELIMIT
+    LDAP_OPT_SSL
+    LDAP_OPT_THREAD_FN_PTRS
+    LDAP_OPT_TIMELIMIT
+    LDAP_OTHER
+    LDAP_PARAM_ERROR
+    LDAP_PARTIAL_RESULTS
+    LDAP_PORT
+    LDAP_PORT_MAX
+    LDAP_PROTOCOL_ERROR
+    LDAP_REFERRAL
+    LDAP_RESULTS_TOO_LARGE
+    LDAP_RES_ADD
+    LDAP_RES_ANY
+    LDAP_RES_BIND
+    LDAP_RES_COMPARE
+    LDAP_RES_DELETE
+    LDAP_RES_EXTENDED
+    LDAP_RES_MODIFY
+    LDAP_RES_MODRDN
+    LDAP_RES_RESUME
+    LDAP_RES_SEARCH_ENTRY
+    LDAP_RES_SEARCH_REFERENCE
+    LDAP_RES_SEARCH_RESULT
+    LDAP_RES_SESSION
+    LDAP_SASL_AUTOMATIC
+    LDAP_SASL_INTERACTIVE
+    LDAP_SASL_QUIET
+    LDAP_SCOPE_BASE
+    LDAP_SCOPE_ONELEVEL
+    LDAP_SCOPE_SUBTREE
+    LDAP_SECURITY_NONE
+    LDAP_SERVER_DOWN
+    LDAP_SIZELIMIT_EXCEEDED
+    LDAP_STRONG_AUTH_NOT_SUPPORTED
+    LDAP_STRONG_AUTH_REQUIRED
+    LDAP_SUCCESS
+    LDAP_TIMELIMIT_EXCEEDED
+    LDAP_TIMEOUT
+    LDAP_TYPE_OR_VALUE_EXISTS
+    LDAP_UNAVAILABLE
+    LDAP_UNAVAILABLE_CRITICAL_EXTN
+    LDAP_UNDEFINED_TYPE
+    LDAP_UNWILLING_TO_PERFORM
+    LDAP_URL_ERR_BADSCOPE
+    LDAP_URL_ERR_MEM
+    LDAP_URL_ERR_NODN
+    LDAP_URL_ERR_NOTLDAP
+    LDAP_URL_ERR_PARAM
+    LDAP_URL_OPT_SECURE
+    LDAP_USER_CANCELLED
+    LDAP_VERSION
+    LDAP_VERSION1
+    LDAP_VERSION2
+    LDAP_VERSION3
 );
 $VERSION = '3.0.0';
 
@@ -168,13 +168,13 @@ sub AUTOLOAD {
     ($constname = $AUTOLOAD) =~ s/.*:://;
     my $val = constant($constname, @_ ? $_[0] : 0);
     if ($! != 0) {
-	if ($! =~ /Invalid/) {
-	    $AutoLoader::AUTOLOAD = $AUTOLOAD;
-	    goto &AutoLoader::AUTOLOAD;
-	}
-	else {
-		croak "Your vendor has not defined LDAP macro $constname";
-	}
+        if ($! =~ /Invalid/) {
+            $AutoLoader::AUTOLOAD = $AUTOLOAD;
+            goto &AutoLoader::AUTOLOAD;
+        }
+        else {
+            croak "Your vendor has not defined LDAP macro $constname";
+        }
     }
     eval "sub $AUTOLOAD { $val }";
     goto &$AUTOLOAD;
@@ -182,38 +182,37 @@ sub AUTOLOAD {
 
 bootstrap Net::LDAPapi $VERSION;
 
+
+# creats blessed ldap object.
+# accepts following arguments '-host', '-port', '-url', '-debug'
+# if '-url' is given then then '-host' and '-port' are not used
 sub new
 {
-   my ($this,@args) = @_;
-   my $class = ref($this) || $this;
-   my $self = {};
-   my $ld;
-   bless $self, $class;
+    my ($this,@args) = @_;
+    my $class = ref($this) || $this;
+    my $self = {};
+    my $ld;
+    bless $self, $class;
 
-   my ($host,$port,$url) = $self->rearrange(['HOST','PORT','URL'],@args);
+    my ($host, $port, $url, $debug) =
+        $self->rearrange(['HOST','PORT','URL', 'DEBUG'],@args);
 
-   if ( defined($url) )
-   {
-	if (ldap_initialize($ld,$url))
-	{
-		return -1;
-	}
-   } else
-   {
-   	$host = "localhost" unless $host;
-   	$port = $self->LDAP_PORT unless $port;
+    if ( defined($url) ) {
+        return -1 unless (ldap_initialize($ld, $url) == $self->LDAP_SUCCESS );
 
-   	$ld = ldap_init($host,$port);
-   	if ($ld == 0)
-   	{
-       		return -1;
-   	}
-   }
-   $self->{"ld"} = $ld;
-   $self->{"errno"} = 0;
-   $self->{"errstring"} = undef;
-   ldap_set_option($ld,$self->LDAP_OPT_PROTOCOL_VERSION,$self->LDAP_VERSION3);
-   return $self;
+    } else {
+        $host = "localhost"      unless $host;
+        $port = $self->LDAP_PORT unless $port;
+
+        return -1 unless ( ldap_initialize($ld, "ldap://$host:$port") == $self-> LDAP_SUCCESS);
+    }
+
+    $self->{"ld"}        = $ld;
+    $self->{"errno"}     = 0;
+    $self->{"errstring"} = undef;
+    $self->{"debug"}     = $debug;
+    ldap_set_option($ld, $self->LDAP_OPT_PROTOCOL_VERSION, $self->LDAP_VERSION3);
+    return $self;
 }
 
 sub DESTROY {};
@@ -315,34 +314,29 @@ sub bind
 
 sub bind_s
 {
-   my ($self,@args) = @_;
+   my ($self, @args) = @_;
 
-   my ($errdn,$extramsg,$status);
+   my ($errdn, $extramsg, $status);
 
-   my ($dn,$pass,$authtype) = $self->rearrange(['DN','PASSWORD','TYPE'],@args);
+   my ($dn, $pass, $authtype) = $self->rearrange(['DN','PASSWORD','TYPE'], @args);
 
-   $dn = "" unless $dn;
-   $pass = "" unless $pass;
+   $dn       = ""                      unless $dn;
+   $pass     = ""                      unless $pass;
    $authtype = $self->LDAP_AUTH_SIMPLE unless $authtype;
 
-   if ($authtype == $self->LDAP_AUTH_SASL)
-   {
-	$status = ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
-		$self->{"saslmech"}, $self->{"saslrealm"},
-		$self->{"saslauthzid"}, $self->{"saslsecprops"},
-		$self->{"saslflags"});
+   if ($authtype == $self->LDAP_AUTH_SASL) {
+       $status = ldap_sasl_interactive_bind_s($self->{"ld"},          $dn, $pass,
+                                              $self->{"saslmech"},    $self->{"saslrealm"},
+                                              $self->{"saslauthzid"}, $self->{"saslsecprops"},
+                                              $self->{"saslflags"});
    } else {
-
-   	$status = ldap_bind_s($self->{"ld"},$dn,$pass,$authtype);
+       $status = ldap_bind_s($self->{"ld"}, $dn, $pass, $authtype);
    }
 
-   if ($status != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
+   $self->errorize() unless $status == $self->LDAP_SUCCESS;
+
    return $status;
-}
+} # end of bind_s
 
 sub sasl_parms
 {
@@ -427,16 +421,8 @@ sub start_tls_s
 sub count_entries
 {
    my ($self) = @_;
-
-   my ($number);
-
-   if ($self->{"result"} == 0)
-   {
-      croak("No Current Result");
-   }
-
-   $number = ldap_count_entries($self->{"ld"},$self->{"result"});
-   return $number;
+   croak("No Current Result") if ($self->{"result"} == 0);
+   return ldap_count_entries($self->{"ld"}, $self->{"result"});
 }
 
 sub delete
@@ -521,73 +507,105 @@ sub explode_rdn
 
 sub first_entry
 {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   if ($self->{"result"} == 0)
-   {
-      croak("No Current Result");
-   }
+    croak("No Current Result") if ($self->{"result"} == 0);
 
-   $self->{"entry"} = ldap_first_entry($self->{"ld"},$self->{"result"});
+    $self->{"entry"} = ldap_first_entry($self->{"ld"}, $self->{"result"});
 
-   return $self->{"entry"};
-}
+    return $self->{"entry"};
+} # end of first_entry
 
 sub next_entry
 {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   if ($self->{"entry"} == 0)
-   {
-      croak("No Current Entry");
-   }
+    croak("No Current Entry") if ($self->{"entry"} == 0);
 
-   $self->{"entry"} = ldap_next_entry($self->{"ld"},$self->{"entry"});
+    $self->{"entry"} = ldap_next_entry($self->{"ld"}, $self->{"entry"});
 
-   return $self->{"entry"};
-}
+    return $self->{"entry"};
+} # end of next_entry
+
+# using this function you don't have to call fist_entry and next_entry
+# here is an example:
+#
+# print "entry = $entry\n" while( $entry = $ld->result_entry );#     ;
+#
+sub result_entry
+{
+    my ($self) = @_;
+
+    croak("No Current Result") if ($self->{"result"} == 0);
+
+    if( $self->{"entry"} == 0 ) {
+        $self->{"entry"} = ldap_first_entry($self->{"ld"}, $self->{"result"});
+    } else {
+        $self->{"entry"} = ldap_next_entry($self->{"ld"},  $self->{"entry"});
+    }
+
+    return $self->{"entry"};
+} # end of result_entry
 
 sub first_attribute
 {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   my ($attr,$ber);
+    my ($attr, $ber);
 
-   if ($self->{"entry"} == 0)
-   {
-      croak("No Current Entry");
-   }
+    croak("No Current Entry") if ($self->{"entry"} == 0);
 
-   $attr = ldap_first_attribute($self->{"ld"},$self->{"entry"},$ber);
+    $attr = ldap_first_attribute($self->{"ld"}, $self->{"entry"}, $ber);
 
-   $self->{"ber"} = $ber;
+    $self->{"ber"} = $ber;
 
-   return $attr;
-}
+    return $attr;
+} # end of first_attribute
 
 sub next_attribute
 {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   my ($attr);
+    my ($attr);
 
-   if ($self->{"entry"} == 0)
-   {
-      croak("No Current Entry");
-   }
+    croak("No Current Entry") if ($self->{"entry"} == 0);
+    croak("Empty Ber Value")  if ($self->{"ber"}   == 0);
 
-   if ($self->{"ber"} == 0)
-   {
-      croak("Empty Ber Value");
-   }
+    $attr = ldap_next_attribute($self->{"ld"}, $self->{"entry"}, $self->{"ber"});
 
-   $attr = ldap_next_attribute($self->{"ld"},$self->{"entry"},$self->{"ber"});
+    ber_free($self->{"ber"}, 0) if (!$attr);
 
-   if (!$attr)
-   {
-      ber_free($self->{"ber"},0);
-   }
-   return $attr;
+    return $attr;
+}
+
+
+# using this function you don't have to call fist_attribute and next_attribute
+# as in the following example:
+#
+# print "<$attr>\n" while( $attr = $ld->entry_attribute );
+#
+sub entry_attribute {
+
+    my ($self) = @_;
+
+    my ($attr, $ber);
+
+    croak("No Current Entry") if ($self->{"entry"} == 0);
+
+    if ($self->{"ber"} == 0) {
+        $attr = ldap_first_attribute($self->{"ld"}, $self->{"entry"}, $ber);
+        $self->{"ber"} = $ber;
+
+    } else {
+        croak("Empty Ber Value") if ($self->{"ber"} == 0);
+        $attr = ldap_next_attribute($self->{"ld"}, $self->{"entry"}, $self->{"ber"});
+        if (!$attr) {
+            ber_free($self->{"ber"}, 0);
+            $self->{"ber"} = undef;
+        }
+    }
+
+    return $attr;
 }
 
 sub perror
@@ -599,67 +617,34 @@ sub perror
    ldap_perror($self->{"ld"},$msg);
 }
 
+# get dn for current entry
 sub get_dn
 {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   my ($dn);
+    croak("No Current Entry") if ($self->{"entry"} == 0);
 
-   if ($self->{"entry"} == 0)
-   {
-      croak("No Current Entry");
-   }
+    my $dn = ldap_get_dn($self->{"ld"}, $self->{"entry"});
 
-   $dn = ldap_get_dn($self->{"ld"},$self->{"entry"});
+    return $dn;
+} # end of get_dn
 
-   return $dn;
-}
 
+# get array of values for current entry and a given attribute
 sub get_values
 {
-   my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-   my (@vals);
+    my ($attr) = $self->rearrange(['ATTR'],@args);
 
-   my ($attr) = $self->rearrange(['ATTR'],@args);
+    croak("No Current Entry")       if ($self->{"entry"} == 0);
+    croak("No Attribute Specified") if ($attr eq "");
 
-   if ($self->{"entry"} == 0)
-   {
-      croak("No Current Entry");
-   }
+    my @vals = ldap_get_values_len($self->{"ld"}, $self->{"entry"}, $attr);
 
-   if ($attr eq "")
-   {
-      croak("No Attribute Specified");
-   }
+    return @vals;
+} # end of get_values
 
-   @vals = ldap_get_values($self->{"ld"},$self->{"entry"},$attr);
-
-   return @vals;
-}
-
-sub get_values_len
-{
-   my ($self,@args) = @_;
-
-   my (@vals);
-
-   my ($attr) = $self->rearrange(['ATTR'],@args);
-
-   if ($self->{"entry"} == 0)
-   {
-      croak("No Current Entry");
-   }
-
-   if ($attr eq "")
-   {
-      croak("No Attribute Specified");
-   }
-
-   @vals = ldap_get_values_len($self->{"ld"},$self->{"entry"},$attr);
-
-   return @vals;
-}
 
 sub msgfree
 {
@@ -770,7 +755,7 @@ sub result
    my ($result,$status,$err);
 
    my ($msgid,$allnone,$timeout) = $self->rearrange(['MSGID','ALL','TIMEOUT'],
-	@args);
+    @args);
 
    if ($msgid < 0)
    {
@@ -795,7 +780,7 @@ sub result2error
    my ($self,@args) = @_;
 
    my ($freeit) = $self->rearrange(['FREEIT'],@args);
-   
+
    if (!$self->{"result"})
    {
       croak("No Current Result");
@@ -839,14 +824,13 @@ sub url_search
 
 sub url_search_s
 {
-   my ($self,@args) = @_;
-   my ($result,$status,$errdn,$extramsg);
+   my ($self, @args) = @_;
+   my ($result, $status, $errdn, $extramsg);
 
-   my ($url,$attrsonly) = $self->rearrange(['URL','ATTRSONLY'],
-      @args);
+   my ($url,$attrsonly) = $self->rearrange(['URL', 'ATTRSONLY'], @args);
 
-   if (($status = ldap_url_search_s($self->{"ld"},$url,$attrsonly,$result)) !=
-      $self->LDAP_SUCCESS)
+   if( ($status = ldap_url_search_s($self->{"ld"}, $url, $attrsonly, $result)) !=
+       $self->LDAP_SUCCESS )
    {
       $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
       $self->{"extramsg"} = $extramsg;
@@ -900,8 +884,8 @@ sub search
    my ($msgid,$errdn,$extramsg);
 
    my ($basedn,$scope,$filter,$attrs,$attrsonly) =
-	$self->rearrange(['BASEDN','SCOPE','FILTER','ATTRS','ATTRSONLY'],
-	@args);
+    $self->rearrange(['BASEDN','SCOPE','FILTER','ATTRS','ATTRSONLY'],
+    @args);
 
    if ($filter eq "")
    {
@@ -920,28 +904,22 @@ sub search
 
 sub search_s
 {
-   my ($self,@args) = @_;
-   my ($result,$status,$errdn,$extramsg);
+   my ($self, @args) = @_;
+   my ($result, $status, $errdn, $extramsg);
 
-  my ($basedn,$scope,$filter,$attrs,$attrsonly) =
-	$self->rearrange(['BASEDN','SCOPE','FILTER','ATTRS','ATTRSONLY'],
-	@args);
+   my ($basedn, $scope, $filter, $attrs, $attrsonly) =
+       $self->rearrange(['BASEDN', 'SCOPE', 'FILTER', 'ATTRS', 'ATTRSONLY'], @args);
 
-   if ($filter eq "")
-   {
-      croak("No Filter Passed as Argument 3");
-   }
+   croak("No Filter Passed as Argument 3") if ($filter eq "");
 
-   $status = ldap_search_s($self->{"ld"},$basedn,$scope,$filter,$attrs,
-      $attrsonly,$result);
-   if ($status != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
+   $status =
+       ldap_search_s($self->{"ld"}, $basedn, $scope, $filter, $attrs, $attrsonly, $result);
+
+   $self->errorize() unless ($status == $self->LDAP_SUCCESS);
    $self->{"result"} = $result;
+
    return $status;
-}   
+} # end of search_s
 
 sub search_st
 {
@@ -949,8 +927,8 @@ sub search_st
    my ($result,$status,$errdn,$extramsg);
 
    my ($basedn,$scope,$filter,$attrs,$attrsonly,$timeout) =
-	$self->rearrange(['BASEDN','SCOPE','FILTER','ATTRS','ATTRSONLY',
-	'TIMEOUT'], @args);
+    $self->rearrange(['BASEDN','SCOPE','FILTER','ATTRS','ATTRSONLY',
+    'TIMEOUT'], @args);
 
    if ($filter eq "")
    {
@@ -1036,7 +1014,7 @@ sub ssl_client_init
    my ($status);
 
    my ($certdbpath,$certdbhandle) = $self->rearrange(['DBPATH','DBHANDLE'],
-	@args);
+    @args);
 
    $status = ldapssl_client_init($certdbpath,$certdbhandle);
    return($status);
@@ -1095,7 +1073,7 @@ sub msgid
 
    $msgid = ldap_msgid($self->{"ld"},$self->{"result"});
    return $msgid;
-} 
+}
 
 # This subroutine was borrowed from CGI.pm.  It does a wonderful job and
 # is much better than anything I created in my first attempt at named
@@ -1107,24 +1085,24 @@ sub make_attributes {
     my $escape = shift || 0;
     my(@att);
     foreach (keys %{$attr}) {
-	my($key) = $_;
-	$key=~s/^\-//;     # get rid of initial - if present
+    my($key) = $_;
+    $key=~s/^\-//;     # get rid of initial - if present
 
-	# old way: breaks EBCDIC!
-	# $key=~tr/A-Z_/a-z-/; # parameters are lower case, use dashes
+    # old way: breaks EBCDIC!
+    # $key=~tr/A-Z_/a-z-/; # parameters are lower case, use dashes
 
-	($key="\L$key") =~ tr/_/-/; # parameters are lower case, use dashes
+    ($key="\L$key") =~ tr/_/-/; # parameters are lower case, use dashes
 
-	my $value = $escape ? simple_escape($attr->{$_}) : $attr->{$_};
-	push(@att,defined($attr->{$_}) ? qq/$key="$value"/ : qq/$key/);
+    my $value = $escape ? simple_escape($attr->{$_}) : $attr->{$_};
+    push(@att,defined($attr->{$_}) ? qq/$key="$value"/ : qq/$key/);
     }
     return @att;
 }
 
 sub rearrange {
-    my($self,$order,@param) = @_;
+    my($self, $order, @param) = @_;
     return () unless @param;
-   
+
     return @param unless (defined($param[0]) && substr($param[0],0,1) eq '-');
 
     my $i;
@@ -1132,10 +1110,10 @@ sub rearrange {
         $param[$i]=~s/^\-//;     # get rid of initial - if present
         $param[$i]=~tr/a-z/A-Z/; # parameters are upper case
     }
-    
+
     my(%param) = @param;                # convert into associative array
     my(@return_array);
-   
+
     my($key)='';
     foreach $key (@$order) {
         my($value);
@@ -1155,6 +1133,19 @@ sub rearrange {
     }
     push (@return_array,$self->make_attributes(\%param)) if %param;
     return (@return_array);
+}
+
+# places internal ldap errors into $self under keys "errno" and "extramsg"
+sub errorize {
+    my ($self) = @_;
+
+    my ($errdn, $extramsg);
+
+    $self->{"errno"}    = ldap_get_lderrno($self->{"ld"}, $errdn, $extramsg);
+    $self->{"extramsg"} = $extramsg;
+
+    printf("LDAP ERROR CODE: %x\n", $self->{"errno"}) if $self->{"debug"};
+    print "LDAP ERROR MESSAGE: $extramsg\n" if $self->{"debug"};
 }
 
 
@@ -1261,7 +1252,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     - ARRAY REFERENCE (ex. ["Clayton Donley","Clay Donley"])
     - HASH REFERENCE  (ex. {"r",["Clayton Donley"]}
          note:  the value inside the HASH REFERENCE must currently
-	         be an ARRAY REFERENCE.
+             be an ARRAY REFERENCE.
 
   The key inside the HASH REFERENCE must be one of the following for a
   modify operation:
@@ -1306,7 +1297,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   o ld - Reference to the actual internal LDAP structure.  Only useful if
     you needed to obtain this pointer for use in non-OO routines.
           ex:  $ldptr = $ld->ld;
-  
+
   o entry - Reference to the current entry.  Not typically needed, but method
     supplied, just in case.
           ex:  $entry = $ld->entry;
@@ -1316,7 +1307,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
           ex:  $msgid = $ld->msgid($result) # msgid of $result
 
   o msgtype - Get msgtype from an LDAP Result.
-	  ex:  $msgtype = $ld->msgtype;  # msgtype of current result
+      ex:  $msgtype = $ld->msgtype;  # msgtype of current result
           ex:  $msgtype = $ld->msgtype($result) # msgtype of $result
 
   These methods are only useful for GETTING internal information, not setting
@@ -1328,10 +1319,10 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   session options.
 
   The following LDAP options can be set or gotten with these methods:
-	LDAP_OPT_DEREF - Dereference
-	LDAP_OPT_SIZELIMIT - Maximum Number of Entries to Return
-	LDAP_OPT_TIMELIMIT - Timeout for LDAP Operations
-	LDAP_OPT_REFERRALS - Follow Referrals
+    LDAP_OPT_DEREF - Dereference
+    LDAP_OPT_SIZELIMIT - Maximum Number of Entries to Return
+    LDAP_OPT_TIMELIMIT - Timeout for LDAP Operations
+    LDAP_OPT_REFERRALS - Follow Referrals
 
   For both get and set operations, the first argument is the relivant
   option.  In get, the second argument is a reference to a scalar variable
@@ -1404,7 +1395,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     %attributes = (
        "cn", ["Clayton Donley","Clay Donley"] #Add Multivalue cn
-       "sn", "Donley",			      #Add sn
+       "sn", "Donley",                #Add sn
        "telephoneNumber", "+86-10-65551234",  #Add telephoneNumber
        "objectClass", ["person","organizationalPerson"],
                         # Add Multivalue objectClass
@@ -1445,7 +1436,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 =item bind_s DN PASSWORD TYPE
 
   Synchronous method for binding to the LDAP server.  It returns
-  an LDAP STATUS. 
+  an LDAP STATUS.
 
   Examples:
 
@@ -1461,7 +1452,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $msgid = $ld->compare("cn=Clayton Donley, o=Motorola, c=US", \
-		$type,$value);
+        $type,$value);
 
 =item compare_s DN ATTR VALUE
 
@@ -1471,7 +1462,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $status = $ld->compare_s("cn=Clayton Donley, o=Motorola, c=US", \
-		$type, $value);
+        $type, $value);
 
 
 =item count_entries
@@ -1657,7 +1648,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $msgid = $ld->modrdn2("cn=Clayton Donley, o=Motorola, c=US", \
-		"cn=Clay Donley",0);
+        "cn=Clay Donley",0);
 
 =item modrdn2_s DN NEWRDN DELETE
 
@@ -1668,7 +1659,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $status = $ld->modrdn2_s("cn=Clayton Donley, o=Motorola, c=US", \
-		"cn=Clay Donley",0);
+        "cn=Clay Donley",0);
 
 =item next_attribute
 
@@ -1737,17 +1728,17 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   will only obtain the attribute types without values.
 
   SCOPE is one of the following:
-		LDAP_SCOPE_BASE
-		LDAP_SCOPE_ONELEVEL
-		LDAP_SCOPE_SUBTREE
-		
+        LDAP_SCOPE_BASE
+        LDAP_SCOPE_ONELEVEL
+        LDAP_SCOPE_SUBTREE
+
   Example:
 
     @attrs = ("cn","sn");    # Return specific attributes
     @attrs = ();             # Return all Attributes
 
     $msgid = $ld->search("o=Motorola, c=US",LDAP_SCOPE_SUBTREE, \
-		"(sn=Donley),\@attrs,0);
+        "(sn=Donley),\@attrs,0);
 
 =item search_s BASE SCOPE FILTER ATTRS ATTRSONLY
 
@@ -1759,9 +1750,9 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   types without values.
 
   SCOPE is one of the following:
-		LDAP_SCOPE_BASE
-		LDAP_SCOPE_ONELEVEL
-		LDAP_SCOPE_SUBTREE
+        LDAP_SCOPE_BASE
+        LDAP_SCOPE_ONELEVEL
+        LDAP_SCOPE_SUBTREE
 
   Example:
 
@@ -1769,7 +1760,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     @attrs = ();             # Return all attributes
 
     $status = $ld->search_s("o=Motorola, c=US",LDAP_SCOPE_SUBTREE, \
-		"(sn=Donley)",\@attrs,0);
+        "(sn=Donley)",\@attrs,0);
 
 =item search_st BASE SCOPE FILTER ATTRS ATTRSONLY TIMEOUT
 
@@ -1781,7 +1772,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $status = $ld->search_st("o=Motorola, c=US",LDAP_SCOPE_SUBTREE, \
-		"(sn=Donley),[],0,3);
+        "(sn=Donley),[],0,3);
 
 =item unbind
 
@@ -1796,13 +1787,13 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Parses an LDAP URL into separate components.  Returns a HASH reference
   with the following keys, if they exist in the URL:
 
-  host		- LDAP Host
-  port		- LDAP Port
-  dn    	- LDAP Base DN
-  attr		- LDAP Attributes to Return (ARRAY Reference)
-  filter	- LDAP Search Filter
-  scope		- LDAP Search Scope
-  options	- Mozilla key specifying LDAP over SSL
+  host      - LDAP Host
+  port      - LDAP Port
+  dn        - LDAP Base DN
+  attr      - LDAP Attributes to Return (ARRAY Reference)
+  filter    - LDAP Search Filter
+  scope     - LDAP Search Scope
+  options   - Mozilla key specifying LDAP over SSL
 
   Example:
 
