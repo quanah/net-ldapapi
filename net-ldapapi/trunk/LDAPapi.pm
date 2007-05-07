@@ -302,7 +302,7 @@ sub bind
    $pass = "" unless $pass;
    $authtype = $self->LDAP_AUTH_SIMPLE unless $authtype;
 
-   $msgid = ldap_bind($self->{"ld"},$dn,$pass,$authtype);
+   $msgid = ldap_bind($self->{"ld"}, $dn, $pass, $authtype);
 
    if ($msgid < 0)
    {
@@ -318,22 +318,26 @@ sub bind_s
 
    my ($errdn, $extramsg, $status);
 
-   my ($dn, $pass, $authtype) = $self->rearrange(['DN','PASSWORD','TYPE'], @args);
+   my ($dn, $pass, $authtype) = $self->rearrange(['DN', 'PASSWORD', 'TYPE'], @args);
 
    $dn       = ""                      unless $dn;
    $pass     = ""                      unless $pass;
    $authtype = $self->LDAP_AUTH_SIMPLE unless $authtype;
 
    if ($authtype == $self->LDAP_AUTH_SASL) {
-       $status = ldap_sasl_interactive_bind_s($self->{"ld"},          $dn, $pass,
-                                              $self->{"saslmech"},    $self->{"saslrealm"},
-                                              $self->{"saslauthzid"}, $self->{"saslsecprops"},
+       print "doing ldap_sasl_interactive_bind_s($dn, $pass, ".$self->{"saslmech"}.", ".
+           $self->{"saslrealm"}.", ".$self->{"saslauthzid"}.", ".$self->{"saslsecprops"}.", ".$self->{"saslflags"}.")\n";
+       $status = ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
+                                              $self->{"saslmech"},
+                                              $self->{"saslrealm"},
+                                              $self->{"saslauthzid"},
+                                              $self->{"saslsecprops"},
                                               $self->{"saslflags"});
    } else {
        $status = ldap_bind_s($self->{"ld"}, $dn, $pass, $authtype);
    }
 
-   $self->errorize() unless $status == $self->LDAP_SUCCESS;
+   $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
    return $status;
 } # end of bind_s
@@ -343,17 +347,17 @@ sub sasl_parms
    my ($self,@args) = @_;
    my ($mech,$realm,$authzid,$secprops,$flags) = $self->rearrange(['MECH','REALM','AUTHZID','SECPROPS','FLAGS'],@args);
 
-   $mech = "" unless $mech;
-   $realm = "" unless $realm;
-   $authzid = "" unless $authzid;
-   $secprops = "" unless $secprops;
-   $flags = $self->LDAP_SASL_QUIET unless defined($flags);
+   $mech     = ""                     unless $mech;
+   $realm    = ""                     unless $realm;
+   $authzid  = ""                     unless $authzid;
+   $secprops = ""                     unless $secprops;
+   $flags    = $self->LDAP_SASL_QUIET unless defined($flags);
 
-   $self->{"saslmech"} = $mech;
-   $self->{"saslrealm"} = $realm;
-   $self->{"saslauthzid"} = $authzid;
+   $self->{"saslmech"}     = $mech;
+   $self->{"saslrealm"}    = $realm;
+   $self->{"saslauthzid"}  = $authzid;
    $self->{"saslsecprops"} = $secprops;
-   $self->{"saslflags"} = $flags;
+   $self->{"saslflags"}    = $flags;
    # Debugging information, investigate debugging flags.
    # print "mech $mech, realm $realm, authzid $authzid, props $secprops, flags $flags\n";
 }
@@ -646,6 +650,14 @@ sub get_values
 } # end of get_values
 
 
+# synonym for get_values(...)
+sub get_values_len {
+    my ($self, @args) = @_;
+
+    return $self->get_values(@args);
+} # end of get_values_len(...)
+
+
 sub msgfree
 {
    my ($self) = @_;
@@ -902,18 +914,28 @@ sub search
    return($msgid);
 }
 
-sub search_s
-{
-   my ($self, @args) = @_;
-   my ($result, $status, $errdn, $extramsg);
+sub search_s {
+    my ($self, @args) = @_;
 
-   my ($basedn, $scope, $filter, $attrs, $attrsonly) =
-       $self->rearrange(['BASEDN', 'SCOPE', 'FILTER', 'ATTRS', 'ATTRSONLY'], @args);
+    my ($result, $status);
 
-   croak("No Filter Passed as Argument 3") if ($filter eq "");
+    my ($basedn,      $scope,       $filter,  $attrs,    $attrsonly,
+        $serverctrls, $clientctrls, $timeout, $sizelimit) =
+        $self->rearrange(['BASEDN',    'SCOPE',  'FILTER', 'ATTRS',
+                          'ATTRSONLY', 'SCTRLS', 'CCTRLS', 'TIMEOUT',
+                          'SIZELIMIT' ], @args);
 
-   $status =
-       ldap_search_s($self->{"ld"}, $basedn, $scope, $filter, $attrs, $attrsonly, $result);
+    croak("No Filter Passed as Argument 3") if ($filter eq "");
+    if( $attrs == undef ) {
+        my @null_array = ();
+        $attrs = \@null_array;
+    }
+
+    $status =
+       ldap_search_ext_s($self->{"ld"}, $basedn,      $scope,
+                         $filter,       $attrs,       $attrsonly,
+                         $serverctrls,  $clientctrls, $timeout,
+                         $sizelimit,    $result);
 
    $self->errorize() unless ($status == $self->LDAP_SUCCESS);
    $self->{"result"} = $result;
@@ -921,14 +943,21 @@ sub search_s
    return $status;
 } # end of search_s
 
+# synonym for search_s(...)
+sub search_ext_s {
+    my ($self, @args) = @_;
+
+    return $self->search_s(@args);
+} # end of search_ext_s(...)
+
 sub search_st
 {
    my ($self,@args) = @_;
    my ($result,$status,$errdn,$extramsg);
 
    my ($basedn,$scope,$filter,$attrs,$attrsonly,$timeout) =
-    $self->rearrange(['BASEDN','SCOPE','FILTER','ATTRS','ATTRSONLY',
-    'TIMEOUT'], @args);
+       $self->rearrange(['BASEDN', 'SCOPE',    'FILTER',
+                         'ATTRS', 'ATTRSONLY', 'TIMEOUT'], @args);
 
    if ($filter eq "")
    {
@@ -1137,15 +1166,17 @@ sub rearrange {
 
 # places internal ldap errors into $self under keys "errno" and "extramsg"
 sub errorize {
-    my ($self) = @_;
+    my ($self, $status) = @_;
 
     my ($errdn, $extramsg);
 
     $self->{"errno"}    = ldap_get_lderrno($self->{"ld"}, $errdn, $extramsg);
     $self->{"extramsg"} = $extramsg;
 
-    printf("LDAP ERROR CODE: %x\n", $self->{"errno"}) if $self->{"debug"};
-    print "LDAP ERROR MESSAGE: $extramsg\n" if $self->{"debug"};
+    print("LDAP ERROR STATUS: $status\n")                if $self->{"debug"};
+    printf("LDAP ERROR STATUS: %x\n", $status)           if $self->{"debug"};
+    printf("LDAP ERROR CODE:   %x\n", $self->{"errno"})  if $self->{"debug"};
+    print "LDAP ERROR MESSAGE: $extramsg\n"              if $self->{"debug"};
 }
 
 
