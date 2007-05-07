@@ -459,7 +459,7 @@ ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
        Safefree(ldap_change_ref);
 
 int
-ldap_sasl_bind(ld,dn,mechanism,cred,sctrls,cctrls,msgidp)
+ldap_sasl_bind(ld, dn, mechanism, cred, sctrls, cctrls, msgidp)
     LDAP *          ld
     LDAP_CHAR *     dn
     LDAP_CHAR *     mechanism
@@ -469,13 +469,13 @@ ldap_sasl_bind(ld,dn,mechanism,cred,sctrls,cctrls,msgidp)
     int *           msgidp
 
 int
-ldap_sasl_bind_s(ld,dn,mechanism,cred,sctrls,cctrls,servercredp)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAP_CHAR *     mechanism
-    struct berval * cred
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
+ldap_sasl_bind_s(ld, dn, mechanism, cred, sctrls, cctrls, servercredp)
+    LDAP *           ld
+    LDAP_CHAR *      dn
+    LDAP_CHAR *      mechanism
+    struct berval *  cred
+    LDAPControl **   sctrls
+    LDAPControl **   cctrls
     struct berval ** servercredp
 
 int
@@ -551,18 +551,18 @@ ldap_delete_ext_s(ld,dn,sctrls,cctrls)
     LDAPControl **  cctrls
 
 int
-ldap_search_ext(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,sizelimit,msgidp)
-    LDAP *          ld
-    LDAP_CHAR *     base
-    int             scope
-    LDAP_CHAR *     filter
-    SV *            attrs
-    int             attrsonly
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
+ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeout, sizelimit, msgidp)
+    LDAP *           ld
+    LDAP_CHAR *      base
+    int              scope
+    LDAP_CHAR *      filter
+    SV *             attrs
+    int              attrsonly
+    LDAPControl **   sctrls
+    LDAPControl **   cctrls
     struct timeval * timeout
-    int             sizelimit
-    int *           msgidp
+    int              sizelimit
+    int *            msgidp
 
     CODE:
     {
@@ -583,8 +583,8 @@ ldap_search_ext(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,sizel
           New(1,attrs_char,arraylen+2,char *);
           for (count=0;count <= arraylen; count++)
           {
-         current = av_fetch((AV *)SvRV(attrs),count,0);
-         attrs_char[count] = SvPV(*current,PL_na);
+            current = av_fetch((AV *)SvRV(attrs),count,0);
+            attrs_char[count] = SvPV(*current,PL_na);
           }
           attrs_char[arraylen+1] = NULL;
        }
@@ -595,18 +595,18 @@ ldap_search_ext(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,sizel
     RETVAL
 
 int
-ldap_search_ext_s(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,sizelimit,res)
-    LDAP *          ld
-    LDAP_CHAR *     base
-    int             scope
-    LDAP_CHAR *     filter
-    SV *            attrs
-    int             attrsonly
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
+ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeout, sizelimit, res)
+    LDAP *           ld
+    LDAP_CHAR *      base
+    int              scope
+    LDAP_CHAR *      filter
+    SV *             attrs
+    int              attrsonly
+    LDAPControl **   sctrls
+    LDAPControl **   cctrls
     struct timeval * timeout
-    int             sizelimit
-    LDAPMessage *   res = NO_INIT
+    int              sizelimit
+    LDAPMessage *    res = NO_INIT
     CODE:
     {
        char **attrs_char;
@@ -617,16 +617,16 @@ ldap_search_ext_s(ld,base,scope,filter,attrs,attrsonly,sctrls,cctrls,timeout,siz
        {
           if ((arraylen = av_len((AV *)SvRV(attrs))) < 0)
           {
-             New(1,attrs_char,2,char *);
-         attrs_char[0] = NULL;
+             New(1, attrs_char, 2, char *);
+             attrs_char[0] = NULL;
           } else {
-             New(1,attrs_char,arraylen+2,char *);
-         for (count=0;count <= arraylen; count++)
-         {
-            current = av_fetch((AV *)SvRV(attrs),count,0);
-            attrs_char[count] = SvPV(*current,PL_na);
-         }
-         attrs_char[arraylen+1] = NULL;
+             New(1, attrs_char, arraylen+2, char *);
+             for (count=0;count <= arraylen; count++)
+             {
+                current = av_fetch((AV *)SvRV(attrs),count,0);
+                attrs_char[count] = SvPV(*current,PL_na);
+             }
+             attrs_char[arraylen+1] = NULL;
           }
        } else {
           croak("Net::LDAPapi::ldap_search_ext_s needs ARRAY reference as argument 5.");
@@ -1268,9 +1268,9 @@ ldap_sasl_interactive_bind_s(ld, who, passwd, mech, realm, authzid, props, flags
     {
         bictx ctx = {who, passwd, realm, authzid};
         if (props)
-            ldap_set_option(ld,LDAP_OPT_X_SASL_SECPROPS,props);
+            ldap_set_option(ld, LDAP_OPT_X_SASL_SECPROPS, props);
         RETVAL = ldap_sasl_interactive_bind_s(ld, NULL, mech, NULL, NULL,
-            flags, NULL, &ctx ); // XXX need to pass meaningful LDAP_SASL_INTERACT_PROC here
+            flags, NULL, &ctx );
     }
     OUTPUT:
     RETVAL
