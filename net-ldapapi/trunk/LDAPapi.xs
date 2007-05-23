@@ -16,6 +16,8 @@ extern "C" {
 #include <lber.h>
 #include <ldap.h>
 
+#include <sasl/sasl.h>
+
 /* Mozilla prototypes declare things as "const char *" while   */
 /*      OpenLDAP uses "char *"                                 */
 
@@ -54,6 +56,7 @@ SV *ldap_perl_rebindproc = NULL;
 /* Courtesy of h.b.furuseth@usit.uio.no       */
 
 #include "constant.h"
+
 
 /* Strcasecmp - Some operating systems don't have this, including NT */
 
@@ -295,39 +298,38 @@ typedef struct bictx {
     char *authzid;
 } bictx;
 
-// static int
-// ldap_b2_interact(LDAP *ld, unsigned flags, void *def, void *inter)
-// {
-//     sasl_interact_t *in = inter;
-//     const char *p;
-//     bictx *ctx = def;
-
-//     for (;in->id != SASL_CB_LIST_END;in++)
-//     {
-//         p = NULL;
-//         switch(in->id)
-//         {
-//             case SASL_CB_GETREALM:
-//                 p = ctx->realm;
-//                 break;
-//             case SASL_CB_AUTHNAME:
-//                 p = ctx->authcid;
-//                 break;
-//             case SASL_CB_USER:
-//                 p = ctx->authzid;
-//                 break;
-//             case SASL_CB_PASS:
-//                 p = ctx->passwd;
-//                 break;
-//         }
-//         if (p)
-//         {
-//             in->len = strlen(p);
-//             in->result = p;
-//         }
-//     }
-//     return LDAP_SUCCESS;
-// }
+static int
+ldap_b2_interact(LDAP *ld, unsigned flags, void *def, void *inter)
+{
+    sasl_interact_t *in = inter;
+    const char *p;
+    bictx *ctx = def;
+     for (;in->id != SASL_CB_LIST_END;in++)
+    {
+        p = NULL;
+        switch(in->id)
+        {
+            case SASL_CB_GETREALM:
+                p = ctx->realm;
+                break;
+            case SASL_CB_AUTHNAME:
+                p = ctx->authcid;
+                break;
+            case SASL_CB_USER:
+                p = ctx->authzid;
+                break;
+            case SASL_CB_PASS:
+                p = ctx->passwd;
+                break;
+        }
+        if (p)
+        {
+            in->len = strlen(p);
+            in->result = p;
+        }
+    }
+    return LDAP_SUCCESS;
+}
 
 
 MODULE = Net::LDAPapi           PACKAGE = Net::LDAPapi
@@ -338,6 +340,11 @@ double
 constant(name,arg)
     char *          name
     int             arg
+
+
+char *
+constant_s(name)
+    char *          name
 
 
 int
@@ -447,6 +454,8 @@ ldap_add_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
     LDAPControl **  sctrls
     LDAPControl **  cctrls
     int *           msgidp
+    CLEANUP:
+       Safefree(ldap_change_ref);
 
 int
 ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
@@ -467,16 +476,6 @@ ldap_sasl_bind(ld, dn, mechanism, cred, sctrls, cctrls, msgidp)
     LDAPControl **  sctrls
     LDAPControl **  cctrls
     int *           msgidp
-
-int
-ldap_sasl_bind_s(ld, dn, mechanism, cred, sctrls, cctrls, servercredp)
-    LDAP *           ld
-    LDAP_CHAR *      dn
-    LDAP_CHAR *      mechanism
-    struct berval *  cred
-    LDAPControl **   sctrls
-    LDAPControl **   cctrls
-    struct berval ** servercredp
 
 int
 ldap_modify_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
@@ -562,7 +561,7 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
     LDAPControl **   cctrls
     struct timeval * timeout
     int              sizelimit
-    int *            msgidp
+    int            msgidp = NO_INIT
 
     CODE:
     {
@@ -575,6 +574,7 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
           croak("Net::LDAPapi::ldap_search_ext needs ARRAY reference as argument 5.");
           XSRETURN(1);
        }
+
        if ((arraylen = av_len((AV *)SvRV(attrs))) < 0)
        {
           New(1,attrs_char,2,char *);
@@ -588,11 +588,14 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
           }
           attrs_char[arraylen+1] = NULL;
        }
-       RETVAL = ldap_search_ext(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,timeout,sizelimit,msgidp);
+       RETVAL = ldap_search_ext(ld,        base,   scope,  filter,  attrs_char,
+                                attrsonly, sctrls, cctrls, timeout, sizelimit,
+                                &msgidp);
        Safefree(attrs_char);
     }
     OUTPUT:
     RETVAL
+    msgidp
 
 int
 ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeout, sizelimit, res)
@@ -639,6 +642,7 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
     RETVAL
     res
 
+
 int
 ldap_result(ld, msgid, all, timeout, result)
     LDAP *        ld
@@ -648,19 +652,19 @@ ldap_result(ld, msgid, all, timeout, result)
     LDAPMessage * result = NO_INIT
     CODE:
     {
-       struct timeval *tv_timeout = NULL, timeoutbuf;
-       if (atof(timeout) > 0 && timeout && *timeout)
-       {
-          tv_timeout = &timeoutbuf;
-          tv_timeout->tv_sec = atof(timeout);
-          tv_timeout->tv_usec = 0;
-       }
-       //RETVAL = ldap_result(ld, msgid, all, tv_timeout, result);
+        struct timeval *tv_timeout = NULL, timeoutbuf;
+        if (atof(timeout) > 0 && timeout && *timeout)
+        {
+           tv_timeout = &timeoutbuf;
+           tv_timeout->tv_sec = atof(timeout);
+           tv_timeout->tv_usec = 0;
+        }
         RETVAL = ldap_result(ld, msgid, all, NULL, &result);
     }
     OUTPUT:
     RETVAL
     result
+
 
 int
 ldap_msgfree(lm)
@@ -777,29 +781,130 @@ ldap_set_lderrno(ld,e,m,s)
 #endif
 
 int
-ldap_parse_result(ld,r,errorcodep,matcheddnp,errmsgp,referralsp,serverctrls,freeit)
-    LDAP *          ld
-    LDAPMessage *   r
-    int *           errorcodep
-    char **         matcheddnp
-    char **         errmsgp
-    char ***        referralsp
-    LDAPControl *** serverctrls
-    int             freeit
+ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serverctrls_ref, freeit)
+    LDAP *        ld
+    LDAPMessage * msg
+    int           errorcodep  = NO_INIT
+    char *        matcheddnp  = NO_INIT
+    char *        errmsgp     = NO_INIT
+    SV *          referrals_ref
+    SV *          serverctrls_ref
+    int           freeit
+    CODE:
+    {
+        int i;
+
+        if (SvTYPE(SvRV(referrals_ref)) != SVt_PVAV)
+        {
+            croak("Net::LDAPapi::ldap_parse_result needs ARRAY reference as argument 6.");
+            XSRETURN(-1);
+        }
+
+        if (SvTYPE(SvRV(serverctrls_ref)) != SVt_PVAV)
+        {
+            croak("Net::LDAPapi::ldap_parse_result needs ARRAY reference as argument 7.");
+            XSRETURN(-1);
+        }
+
+        AV *serverctrls_av = (AV *)SvRV(serverctrls_ref);
+        AV *referrals_av  = (AV *)SvRV(referrals_ref);
+
+        LDAPControl **serverctrls = malloc(sizeof(LDAPControl **));
+        if( serverctrls == NULL ) {
+            croak("In ldap_parse_result(...) failed to allocate memory for serverctrls.");
+            XSRETURN(-1);
+        }
+
+        char **referrals  = malloc(sizeof(char **));
+        if( serverctrls == NULL ) {
+            croak("In ldap_parse_result(...) failed to allocate memory for referrals.");
+            free(serverctrls);
+            XSRETURN(-1);
+        }
+
+        RETVAL =
+            ldap_parse_result(ld,       msg,        &errorcodep,  &matcheddnp,
+                              &errmsgp, &referrals, &serverctrls, freeit);
+
+        // transfer returned referrals to the perl code
+        if( referrals != NULL ) {
+            for( i = 0; referrals[i] != NULL; i++ )
+                av_push(referrals_av, newSViv((IV)referrals[i]));
+        }
+
+        // transfer returned controls to the perl code
+        if( serverctrls != NULL ) {
+            for( i = 0; serverctrls[i] != NULL; i++ )
+                av_push(serverctrls_av, newSViv((IV)serverctrls[i]));
+        }
+
+        free(serverctrls);
+        free(referrals);
+
+        SvRV( serverctrls_ref ) = (SV *)serverctrls_av;
+    }
+    OUTPUT:
+    RETVAL
+    errorcodep
+    matcheddnp
+    errmsgp
+
+
+char *
+ldap_control_oid(control)
+    LDAPControl * control
+    CODE:
+    {
+        RETVAL = control->ldctl_oid;
+    }
+    OUTPUT:
+    RETVAL
+
+
+char *
+ldap_control_berval(control)
+    LDAPControl * control
+    CODE:
+    {
+        RETVAL = control->ldctl_value.bv_val;
+    }
+    OUTPUT:
+    RETVAL
+
+
+int
+ldap_control_critical(control)
+    LDAPControl * control
+    CODE:
+    {
+        RETVAL = control->ldctl_iscritical;
+    }
+    OUTPUT:
+    RETVAL
+
 
 char *
 ldap_err2string(err)
     int err
+
+
+int
+ldap_count_references(ld, result)
+    LDAP *ld
+    LDAPMessage *result
+
 
 int
 ldap_count_entries(ld,result)
     LDAP *          ld
     LDAPMessage *   result
 
+
 LDAPMessage *
 ldap_first_entry(ld,result)
     LDAP *          ld
     LDAPMessage *   result
+
 
 LDAPMessage *
 ldap_next_entry(ld,preventry)
@@ -1254,9 +1359,10 @@ ldap_start_tls_s(ld,serverctrls,clientctrls)
     LDAPControl ** serverctrls
     LDAPControl ** clientctrls
 
+
 int
 ldap_sasl_interactive_bind_s(ld, who, passwd, mech, realm, authzid, props, flags)
-    LDAP      * ld
+    LDAP *  ld
     LDAP_CHAR * who
     LDAP_CHAR * passwd
     LDAP_CHAR * mech
@@ -1268,11 +1374,99 @@ ldap_sasl_interactive_bind_s(ld, who, passwd, mech, realm, authzid, props, flags
     {
         bictx ctx = {who, passwd, realm, authzid};
         if (props)
-            ldap_set_option(ld, LDAP_OPT_X_SASL_SECPROPS, props);
-        RETVAL = ldap_sasl_interactive_bind_s(ld, NULL, mech, NULL, NULL,
-            flags, NULL, &ctx );
+            ldap_set_option(ld,LDAP_OPT_X_SASL_SECPROPS,props);
+        RETVAL = ldap_sasl_interactive_bind_s( ld, NULL, mech, NULL, NULL,
+            flags, ldap_b2_interact, &ctx );
     }
     OUTPUT:
     RETVAL
 
+int
+ldap_sasl_bind_s(ld, dn, passwd, serverctrls, clientctrls, servercredp)
+    LDAP *           ld
+    LDAP_CHAR *      dn
+    LDAP_CHAR *      passwd
+    LDAPControl **   serverctrls
+    LDAPControl **   clientctrls
+    struct berval ** servercredp = NO_INIT
+    CODE:
+    {
+        struct berval cred;
+
+        if( passwd == NULL )
+            cred.bv_val = "";
+        else
+            cred.bv_val = passwd;
+
+        cred.bv_len = strlen(cred.bv_val);
+
+        RETVAL = ldap_sasl_bind_s(ld, dn, LDAP_SASL_SIMPLE, &cred, serverctrls, clientctrls, servercredp);
+    }
+    OUTPUT:
+    RETVAL
+    servercredp
+
 #endif
+
+LDAPControl **
+ldap_controls_array_init(total)
+    int total
+    CODE:
+    {
+        LDAPControl ** array;
+        array = malloc(total * sizeof(LDAPControl *));
+        RETVAL = array;
+    }
+    OUTPUT:
+    RETVAL
+
+void
+ldap_controls_array_free(ctrls)
+    LDAPControl ** ctrls
+    CODE:
+    {
+        //int i;
+        //for( i = 0; ctrls[i] != NULL; i++ )
+        //    free((LDAPControl *)ctrls[i]);
+
+        free(ctrls);
+    }
+
+
+void
+ldap_control_set(array, ctrl, location)
+    LDAPControl **array
+    LDAPControl *ctrl
+    int location
+    CODE:
+    {
+        array[location] = ctrl;
+    }
+
+int
+ldap_create_control(oid, bv_val, bv_len, iscritical, ctrlp)
+    LDAP_CHAR *   oid
+    LDAP_CHAR *   bv_val
+    int           bv_len
+    int           iscritical
+    LDAPControl * ctrlp = NO_INIT
+    CODE:
+    {
+        LDAPControl *ctrl = malloc(sizeof(LDAPControl));
+
+        ctrl->ldctl_oid          = oid;
+        ctrl->ldctl_value.bv_val = bv_val;
+        ctrl->ldctl_value.bv_len = bv_len;
+        ctrl->ldctl_iscritical   = iscritical;
+
+        ctrlp = ctrl;
+
+        RETVAL = 0;
+    }
+    OUTPUT:
+    RETVAL
+    ctrlp
+
+BerElement *
+ber_alloc_t(options);
+    int options

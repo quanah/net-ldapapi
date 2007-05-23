@@ -1,6 +1,6 @@
 package Net::LDAPapi;
 
-use strict;
+#use strict;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 
@@ -12,151 +12,193 @@ require AutoLoader;
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
-@EXPORT = qw(
-    ldap_create ldap_set_option ldap_get_option ldap_unbind_ext
-    ldap_unbind_ext_s ldap_version ldap_abandon_ext ldap_add_ext ldap_add_ext_s
-    ldap_set_rebind_proc
-    ldap_modify_ext ldap_modify_ext_s ldap_rename ldap_rename_s
-    ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
-    ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
-    ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
-    ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
-    ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
-    ldap_err2string ldap_dn2ufn ldap_str2dn ldap_str2rdn
-    ldap_explode_dns ldap_first_attribute ldap_next_attribute
-    ldap_get_values ldap_get_values_len ldap_sasl_bind ldap_sasl_bind_s
-    ldapssl_client_init ldapssl_init ldapssl_install_routines
-    ldap_get_all_entries ldap_multisort_entries
-    ldap_is_ldap_url ldap_url_parse ldap_url_search ldap_url_search_s
-    ldap_url_search_st ber_free ldap_init ldap_initialize ldap_start_tls_s
-    ldap_sasl_interactive_bind_s
-    LDAPS_PORT
-    LDAP_ADMIN_LIMIT_EXCEEDED
-    LDAP_AFFECTS_MULTIPLE_DSAS
-    LDAP_ALIAS_DEREF_PROBLEM
-    LDAP_ALIAS_PROBLEM
-    LDAP_ALREADY_EXISTS
-    LDAP_AUTH_KRBV4
-    LDAP_AUTH_KRBV41
-    LDAP_AUTH_KRBV42
-    LDAP_AUTH_KRBV41_30
-    LDAP_AUTH_KRBV42_30
-    LDAP_AUTH_NONE
-    LDAP_AUTH_SASL
-    LDAP_AUTH_SIMPLE
-    LDAP_AUTH_UNKNOWN
-    LDAP_BUSY
-    LDAP_CACHE_CHECK
-    LDAP_CACHE_LOCALDB
-    LDAP_CACHE_POPULATE
-    LDAP_CALLBACK
-    LDAP_COMPARE_FALSE
-    LDAP_COMPARE_TRUE
-    LDAP_CONNECT_ERROR
-    LDAP_CONSTRAINT_VIOLATION
-    LDAP_DECODING_ERROR
-    LDAP_DEREF_ALWAYS
-    LDAP_DEREF_FINDING
-    LDAP_DEREF_NEVER
-    LDAP_DEREF_SEARCHING
-    LDAP_ENCODING_ERROR
-    LDAP_FILTER_ERROR
-    LDAP_FILT_MAXSIZ
-    LDAP_INAPPROPRIATE_AUTH
-    LDAP_INAPPROPRIATE_MATCHING
-    LDAP_INSUFFICIENT_ACCESS
-    LDAP_INVALID_CREDENTIALS
-    LDAP_INVALID_DN_SYNTAX
-    LDAP_INVALID_SYNTAX
-    LDAP_IS_LEAF
-    LDAP_LOCAL_ERROR
-    LDAP_LOOP_DETECT
-    LDAP_MOD_ADD
-    LDAP_MOD_BVALUES
-    LDAP_MOD_DELETE
-    LDAP_MOD_REPLACE
-    LDAP_NAMING_VIOLATION
-    LDAP_NOT_ALLOWED_ON_NONLEAF
-    LDAP_NOT_ALLOWED_ON_RDN
-    LDAP_NO_LIMIT
-    LDAP_NO_MEMORY
-    LDAP_NO_OBJECT_CLASS_MODS
-    LDAP_NO_SUCH_ATTRIBUTE
-    LDAP_NO_SUCH_OBJECT
-    LDAP_OBJECT_CLASS_VIOLATION
-    LDAP_OPERATIONS_ERROR
-    LDAP_OPT_CACHE_ENABLE
-    LDAP_OPT_CACHE_FN_PTRS
-    LDAP_OPT_CACHE_STRATEGY
-    LDAP_OPT_DEBUG_LEVEL
-    LDAP_OPT_DEREF
-    LDAP_OPT_DESC
-    LDAP_OPT_DNS
-    LDAP_OPT_IO_FN_PTRS
-    LDAP_OPT_OFF
-    LDAP_OPT_ON
-    LDAP_OPT_PROTOCOL_VERSION
-    LDAP_OPT_REBIND_ARG
-    LDAP_OPT_REBIND_FN
-    LDAP_OPT_REFERRALS
-    LDAP_OPT_REFERRAL_HOP_LIMIT
-    LDAP_OPT_RESTART
-    LDAP_OPT_SIZELIMIT
-    LDAP_OPT_SSL
-    LDAP_OPT_THREAD_FN_PTRS
-    LDAP_OPT_TIMELIMIT
-    LDAP_OTHER
-    LDAP_PARAM_ERROR
-    LDAP_PARTIAL_RESULTS
-    LDAP_PORT
-    LDAP_PORT_MAX
-    LDAP_PROTOCOL_ERROR
-    LDAP_REFERRAL
-    LDAP_RESULTS_TOO_LARGE
-    LDAP_RES_ADD
-    LDAP_RES_ANY
-    LDAP_RES_BIND
-    LDAP_RES_COMPARE
-    LDAP_RES_DELETE
-    LDAP_RES_EXTENDED
-    LDAP_RES_MODIFY
-    LDAP_RES_MODRDN
-    LDAP_RES_RESUME
-    LDAP_RES_SEARCH_ENTRY
-    LDAP_RES_SEARCH_REFERENCE
-    LDAP_RES_SEARCH_RESULT
-    LDAP_RES_SESSION
-    LDAP_SASL_AUTOMATIC
-    LDAP_SASL_INTERACTIVE
-    LDAP_SASL_QUIET
-    LDAP_SCOPE_BASE
-    LDAP_SCOPE_ONELEVEL
-    LDAP_SCOPE_SUBTREE
-    LDAP_SECURITY_NONE
-    LDAP_SERVER_DOWN
-    LDAP_SIZELIMIT_EXCEEDED
-    LDAP_STRONG_AUTH_NOT_SUPPORTED
-    LDAP_STRONG_AUTH_REQUIRED
-    LDAP_SUCCESS
-    LDAP_TIMELIMIT_EXCEEDED
-    LDAP_TIMEOUT
-    LDAP_TYPE_OR_VALUE_EXISTS
-    LDAP_UNAVAILABLE
-    LDAP_UNAVAILABLE_CRITICAL_EXTN
-    LDAP_UNDEFINED_TYPE
-    LDAP_UNWILLING_TO_PERFORM
-    LDAP_URL_ERR_BADSCOPE
-    LDAP_URL_ERR_MEM
-    LDAP_URL_ERR_NODN
-    LDAP_URL_ERR_NOTLDAP
-    LDAP_URL_ERR_PARAM
-    LDAP_URL_OPT_SECURE
-    LDAP_USER_CANCELLED
-    LDAP_VERSION
-    LDAP_VERSION1
-    LDAP_VERSION2
-    LDAP_VERSION3
-);
+@EXPORT =
+    qw(
+       ldap_create ldap_set_option ldap_get_option ldap_unbind_ext
+       ldap_unbind_ext_s ldap_version ldap_abandon_ext ldap_add_ext ldap_add_ext_s
+       ldap_set_rebind_proc
+       ldap_modify_ext ldap_modify_ext_s ldap_rename ldap_rename_s
+       ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
+       ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
+       ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
+       ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
+       ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
+       ldap_err2string ldap_dn2ufn ldap_str2dn ldap_str2rdn
+       ldap_explode_dns ldap_first_attribute ldap_next_attribute
+       ldap_get_values ldap_get_values_len ldap_sasl_bind ldap_sasl_bind_s
+       ldapssl_client_init ldapssl_init ldapssl_install_routines
+       ldap_get_all_entries ldap_multisort_entries
+       ldap_is_ldap_url ldap_url_parse ldap_url_search ldap_url_search_s
+       ldap_url_search_st ber_free ldap_init ldap_initialize ldap_start_tls_s
+       ldap_sasl_interactive_bind_s
+       ldap_create_control ldap_control_berval
+       LDAPS_PORT
+       LDAP_ADMIN_LIMIT_EXCEEDED
+       LDAP_AFFECTS_MULTIPLE_DSAS
+       LDAP_ALIAS_DEREF_PROBLEM
+       LDAP_ALIAS_PROBLEM
+       LDAP_ALREADY_EXISTS
+       LDAP_AUTH_KRBV4
+       LDAP_AUTH_KRBV41
+       LDAP_AUTH_KRBV41_30
+       LDAP_AUTH_KRBV42
+       LDAP_AUTH_KRBV42_30
+       LDAP_AUTH_NONE
+       LDAP_AUTH_SASL
+       LDAP_AUTH_SIMPLE
+       LDAP_AUTH_UNKNOWN
+       LDAP_BUSY
+       LDAP_CACHE_CHECK
+       LDAP_CACHE_LOCALDB
+       LDAP_CACHE_POPULATE
+       LDAP_CALLBACK
+       LDAP_COMPARE_FALSE
+       LDAP_COMPARE_TRUE
+       LDAP_CONNECT_ERROR
+       LDAP_CONSTRAINT_VIOLATION
+       LDAP_CONTROL_ASSERT
+       LDAP_CONTROL_DUPENT
+       LDAP_CONTROL_DUPENT_ENTRY
+       LDAP_CONTROL_DUPENT_REQUEST
+       LDAP_CONTROL_DUPENT_RESPONSE
+       LDAP_CONTROL_GROUPING
+       LDAP_CONTROL_MANAGEDIT
+       LDAP_CONTROL_MANAGEDSAIT
+       LDAP_CONTROL_NOOP
+       LDAP_CONTROL_NO_SUBORDINATES
+       LDAP_CONTROL_PAGEDRESULTS
+       LDAP_CONTROL_PASSWORDPOLICYREQUEST
+       LDAP_CONTROL_PASSWORDPOLICYRESPONSE
+       LDAP_CONTROL_PERSIST_ENTRY_CHANGE_NOTICE
+       LDAP_CONTROL_PERSIST_REQUEST
+       LDAP_CONTROL_POST_READ
+       LDAP_CONTROL_PRE_READ
+       LDAP_CONTROL_PROXY_AUTHZ
+       LDAP_CONTROL_SLURP
+       LDAP_CONTROL_SORTREQUEST
+       LDAP_CONTROL_SORTRESPONSE
+       LDAP_CONTROL_SUBENTRIES
+       LDAP_CONTROL_SYNC
+       LDAP_CONTROL_SYNC_DONE
+       LDAP_CONTROL_SYNC_STATE
+       LDAP_CONTROL_VALSORT
+       LDAP_CONTROL_VALUESRETURNFILTER
+       LDAP_CONTROL_VLVREQUEST
+       LDAP_CONTROL_VLVRESPONSE
+       LDAP_CONTROL_X_CHAINING_BEHAVIOR
+       LDAP_CONTROL_X_DOMAIN_SCOPE
+       LDAP_CONTROL_X_EXTENDED_DN
+       LDAP_CONTROL_X_INCREMENTAL_VALUES
+       LDAP_CONTROL_X_PERMISSIVE_MODIFY
+       LDAP_CONTROL_X_SEARCH_OPTIONS
+       LDAP_CONTROL_X_TREE_DELETE
+       LDAP_CONTROL_X_VALUESRETURNFILTER
+       LDAP_CUP_INVALID_DATA
+       LDAP_DECODING_ERROR
+       LDAP_DEREF_ALWAYS
+       LDAP_DEREF_FINDING
+       LDAP_DEREF_NEVER
+       LDAP_DEREF_SEARCHING
+       LDAP_ENCODING_ERROR
+       LDAP_FILTER_ERROR
+       LDAP_FILT_MAXSIZ
+       LDAP_INAPPROPRIATE_AUTH
+       LDAP_INAPPROPRIATE_MATCHING
+       LDAP_INSUFFICIENT_ACCESS
+       LDAP_INVALID_CREDENTIALS
+       LDAP_INVALID_DN_SYNTAX
+       LDAP_INVALID_SYNTAX
+       LDAP_IS_LEAF
+       LDAP_LOCAL_ERROR
+       LDAP_LOOP_DETECT
+       LDAP_MOD_ADD
+       LDAP_MOD_BVALUES
+       LDAP_MOD_DELETE
+       LDAP_MOD_REPLACE
+       LDAP_NAMING_VIOLATION
+       LDAP_NOT_ALLOWED_ON_NONLEAF
+       LDAP_NOT_ALLOWED_ON_RDN
+       LDAP_NO_LIMIT
+       LDAP_NO_MEMORY
+       LDAP_NO_OBJECT_CLASS_MODS
+       LDAP_NO_SUCH_ATTRIBUTE
+       LDAP_NO_SUCH_OBJECT
+       LDAP_OBJECT_CLASS_VIOLATION
+       LDAP_OPERATIONS_ERROR
+       LDAP_OPT_CACHE_ENABLE
+       LDAP_OPT_CACHE_FN_PTRS
+       LDAP_OPT_CACHE_STRATEGY
+       LDAP_OPT_DEBUG_LEVEL
+       LDAP_OPT_DEREF
+       LDAP_OPT_DESC
+       LDAP_OPT_DNS
+       LDAP_OPT_IO_FN_PTRS
+       LDAP_OPT_OFF
+       LDAP_OPT_ON
+       LDAP_OPT_PROTOCOL_VERSION
+       LDAP_OPT_REBIND_ARG
+       LDAP_OPT_REBIND_FN
+       LDAP_OPT_REFERRALS
+       LDAP_OPT_REFERRAL_HOP_LIMIT
+       LDAP_OPT_RESTART
+       LDAP_OPT_SIZELIMIT
+       LDAP_OPT_SSL
+       LDAP_OPT_THREAD_FN_PTRS
+       LDAP_OPT_TIMELIMIT
+       LDAP_OTHER
+       LDAP_PARAM_ERROR
+       LDAP_PARTIAL_RESULTS
+       LDAP_PORT
+       LDAP_PORT_MAX
+       LDAP_PROTOCOL_ERROR
+       LDAP_REFERRAL
+       LDAP_RESULTS_TOO_LARGE
+       LDAP_RES_ADD
+       LDAP_RES_ANY
+       LDAP_RES_BIND
+       LDAP_RES_COMPARE
+       LDAP_RES_DELETE
+       LDAP_RES_EXTENDED
+       LDAP_RES_MODIFY
+       LDAP_RES_MODRDN
+       LDAP_RES_RESUME
+       LDAP_RES_SEARCH_ENTRY
+       LDAP_RES_SEARCH_REFERENCE
+       LDAP_RES_SEARCH_RESULT
+       LDAP_RES_SESSION
+       LDAP_SASL_AUTOMATIC
+       LDAP_SASL_INTERACTIVE
+       LDAP_SASL_NULL
+       LDAP_SASL_QUIET
+       LDAP_SASL_SIMPLE
+       LDAP_SCOPE_BASE
+       LDAP_SCOPE_ONELEVEL
+       LDAP_SCOPE_SUBTREE
+       LDAP_SECURITY_NONE
+       LDAP_SERVER_DOWN
+       LDAP_SIZELIMIT_EXCEEDED
+       LDAP_STRONG_AUTH_NOT_SUPPORTED
+       LDAP_STRONG_AUTH_REQUIRED
+       LDAP_SUCCESS
+       LDAP_TIMELIMIT_EXCEEDED
+       LDAP_TIMEOUT
+       LDAP_TYPE_OR_VALUE_EXISTS
+       LDAP_UNAVAILABLE
+       LDAP_UNAVAILABLE_CRITICAL_EXTN
+       LDAP_UNDEFINED_TYPE
+       LDAP_UNWILLING_TO_PERFORM
+       LDAP_URL_ERR_BADSCOPE
+       LDAP_URL_ERR_MEM
+       LDAP_URL_ERR_NODN
+       LDAP_URL_ERR_NOTLDAP
+       LDAP_URL_ERR_PARAM
+       LDAP_URL_OPT_SECURE
+       LDAP_USER_CANCELLED
+       LDAP_VERSION
+       LDAP_VERSION1
+       LDAP_VERSION2
+       LDAP_VERSION3
+       );
 $VERSION = '3.0.0';
 
 sub AUTOLOAD {
@@ -169,6 +211,11 @@ sub AUTOLOAD {
     my $val = constant($constname, @_ ? $_[0] : 0);
     if ($! != 0) {
         if ($! =~ /Invalid/) {
+
+            # try constants_h
+            $val = '"'.constant_s($constname).'"';
+            goto SUBDEF if ($! == 0);
+
             $AutoLoader::AUTOLOAD = $AUTOLOAD;
             goto &AutoLoader::AUTOLOAD;
         }
@@ -176,6 +223,7 @@ sub AUTOLOAD {
             croak "Your vendor has not defined LDAP macro $constname";
         }
     }
+SUBDEF:
     eval "sub $AUTOLOAD { $val }";
     goto &$AUTOLOAD;
 }
@@ -188,9 +236,9 @@ bootstrap Net::LDAPapi $VERSION;
 # if '-url' is given then then '-host' and '-port' are not used
 sub new
 {
-    my ($this,@args) = @_;
+    my ($this, @args) = @_;
     my $class = ref($this) || $this;
-    my $self = {};
+    my $self  = {};
     my $ld;
     bless $self, $class;
 
@@ -213,301 +261,321 @@ sub new
     $self->{"debug"}     = $debug;
     ldap_set_option($ld, $self->LDAP_OPT_PROTOCOL_VERSION, $self->LDAP_VERSION3);
     return $self;
-}
+} # end of new
+
 
 sub DESTROY {};
 
+
 sub abandon
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$status);
+    my ($status, $sctrls, $cctrls);
 
-   my ($msgid) = $self->rearrange(['MSGID'],@args);
+    my ($msgid, $serverctrls, $clientctrls) =
+        $self->rearrange(['MSGID', 'SCTRLS', 'CCTRLS'], @args);
 
-   if ($msgid < 0)
-   {
-      croak("Invalid MSGID");
-   }
+    croak("Invalid MSGID") if ($msgid < 0);
 
-   if (($status = ldap_abandon($self->{"ld"},$msgid)) != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
+    $status = ldap_abandon_ext($self->{"ld"}, $msgid, $sctrls,  $cctrls);
+
+    $self->errorize($status) unless( $status == $self->LDAP_SUCCESS );
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    return $status;
+} # end of abandon
+
+
+# synonim for abandon(...)
+sub abandon_ext {
+    my ($self, @args) = @_;
+
+    return $self->abandon(@args);
+} # end of abandon_ext
+
+
+# need to user ldap_add_ext XXX
 sub add
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$msgid);
+    my ($msgid);
 
-   my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
+    my ($dn, $mod, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    croak("No DN Specified") if ($dn eq "");
 
-   if (ref($mod) ne "HASH")
-   {
-      croak("LDAP Modify Structure Not a HASH Reference");
-   }
+    croak("LDAPMod structure is not a hash reference.") if( ref($mod) ne "HASH" );
 
-   if (($msgid = ldap_add($self->{"ld"},$dn,$mod)) < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $msgid;
-}
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
+    if (($msgid = ldap_add($self->{"ld"}, $dn, $mod)) < 0)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $msgid;
+} # end of add
+
+
+# need to user ldap_add_ext_s XXX
 sub add_s
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$status);
+    my ($errdn,$extramsg,$status);
 
-   my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
+    my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    if ($dn eq "")
+    {
+        croak("No DN Specified");
+    }
 
-   if (ref($mod) ne "HASH")
-   {
-      croak("LDAP Modify Structure Not a HASH Reference");
-   }
+    if (ref($mod) ne "HASH")
+    {
+        croak("LDAP Modify Structure Not a HASH Reference");
+    }
 
-   if (($status = ldap_add_s($self->{"ld"},$dn,$mod)) != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    if (($status = ldap_add_s($self->{"ld"},$dn,$mod)) != $self->LDAP_SUCCESS)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $status;
+} # end of add_s
+
 
 sub bind
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$msgid);
+    my ($errdn,$extramsg,$msgid);
 
-   my ($dn,$pass,$authtype) = $self->rearrange(['DN','PASSWORD','TYPE'],@args);
+    my ($dn,$pass,$authtype) = $self->rearrange(['DN','PASSWORD','TYPE'],@args);
 
-   $dn = "" unless $dn;
-   $pass = "" unless $pass;
-   $authtype = $self->LDAP_AUTH_SIMPLE unless $authtype;
+    $dn = "" unless $dn;
+    $pass = "" unless $pass;
+    $authtype = $self->LDAP_AUTH_SIMPLE unless $authtype;
 
-   $msgid = ldap_bind($self->{"ld"}, $dn, $pass, $authtype);
+    $msgid = ldap_bind($self->{"ld"}, $dn, $pass, $authtype);
 
-   if ($msgid < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return($msgid);
-}
+    if ($msgid < 0)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+
+    return($msgid);
+} # end of bind
+
 
 sub bind_s
 {
-   my ($self, @args) = @_;
+    my ($self, @args) = @_;
 
-   my ($errdn, $extramsg, $status);
+    my ($saslmech, $status, $servercredp);
 
-   my ($dn, $pass, $authtype) = $self->rearrange(['DN', 'PASSWORD', 'TYPE'], @args);
+    my ($dn, $pass, $authtype) = $self->rearrange(['DN', 'PASSWORD', 'TYPE'], @args);
 
-   $dn       = ""                      unless $dn;
-   $pass     = ""                      unless $pass;
-   $authtype = $self->LDAP_AUTH_SIMPLE unless $authtype;
+    $dn       = "" unless $dn;
+    $pass     = "" unless $pass;
+    $authtype = $authtype || $self->LDAP_AUTH_SIMPLE;
 
-   if ($authtype == $self->LDAP_AUTH_SASL) {
-       print "doing ldap_sasl_interactive_bind_s($dn, $pass, ".$self->{"saslmech"}.", ".
-           $self->{"saslrealm"}.", ".$self->{"saslauthzid"}.", ".$self->{"saslsecprops"}.", ".$self->{"saslflags"}.")\n";
-       $status = ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
-                                              $self->{"saslmech"},
-                                              $self->{"saslrealm"},
-                                              $self->{"saslauthzid"},
-                                              $self->{"saslsecprops"},
-                                              $self->{"saslflags"});
-   } else {
-       $status = ldap_bind_s($self->{"ld"}, $dn, $pass, $authtype);
-   }
+    if ($authtype == $self->LDAP_AUTH_SASL) {
+        $status = ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
+                                               $saslmech,
+                                               $self->{"saslrealm"},
+                                               $self->{"saslauthzid"},
+                                               $self->{"saslsecprops"},
+                                               $self->{"saslflags"});
+    } else {
+        $status = ldap_sasl_bind_s($self->{"ld"}, $dn, $pass,
+                                   undef, undef, \$servercredp);
+    }
 
-   $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
-   return $status;
+    return $status;
 } # end of bind_s
+
 
 sub sasl_parms
 {
-   my ($self,@args) = @_;
-   my ($mech,$realm,$authzid,$secprops,$flags) = $self->rearrange(['MECH','REALM','AUTHZID','SECPROPS','FLAGS'],@args);
+    my ($self,@args) = @_;
+    my ($mech,  $realm, $authzid, $secprops, $flags) =
+        $self->rearrange(['MECH', 'REALM', 'AUTHZID', 'SECPROPS', 'FLAGS'],
+                         @args);
 
-   $mech     = ""                     unless $mech;
-   $realm    = ""                     unless $realm;
-   $authzid  = ""                     unless $authzid;
-   $secprops = ""                     unless $secprops;
-   $flags    = $self->LDAP_SASL_QUIET unless defined($flags);
+    $mech     = ""                     unless $mech;
+    $realm    = ""                     unless $realm;
+    $authzid  = ""                     unless $authzid;
+    $secprops = ""                     unless $secprops;
+    $flags    = $self->LDAP_SASL_QUIET unless defined($flags);
 
-   $self->{"saslmech"}     = $mech;
-   $self->{"saslrealm"}    = $realm;
-   $self->{"saslauthzid"}  = $authzid;
-   $self->{"saslsecprops"} = $secprops;
-   $self->{"saslflags"}    = $flags;
-   # Debugging information, investigate debugging flags.
-   # print "mech $mech, realm $realm, authzid $authzid, props $secprops, flags $flags\n";
-}
+    $self->{"saslmech"}     = $mech;
+    $self->{"saslrealm"}    = $realm;
+    $self->{"saslauthzid"}  = $authzid;
+    $self->{"saslsecprops"} = $secprops;
+    $self->{"saslflags"}    = $flags;
+} # end of sasl_parms
+
 
 sub compare
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$msgid);
+    my ($errdn,$extramsg,$msgid);
 
-   my ($dn,$attr,$value) = $self->rearrange(['DN','ATTR',['VALUE','VALUES']],
-      @args);
+    my ($dn,$attr,$value) = $self->rearrange(['DN','ATTR',['VALUE','VALUES']],
+                                             @args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    croak("No DN Specified") if ($dn eq "");
 
-   $msgid = ldap_compare($self->{"ld"},$dn,$attr,$value);
+    $msgid = ldap_compare($self->{"ld"}, $dn, $attr, $value);
 
-   if ($msgid < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return($msgid);
-}
+    if ($msgid < 0) {
+        $self->errorize(-20);
+        return undef;
+    }
+
+    return($msgid);
+} # end of compare
+
 
 sub compare_s
 {
-   my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-   my ($errdn,$extramsg,$status);
+    my ($status);
 
-   my ($dn,$attr,$value) = $self->rearrange(['DN','ATTR',['VALUE','VALUES']],
-      @args);
+    my ($dn, $attr, $value) =
+        $self->rearrange(['DN', 'ATTR' , ['VALUE', 'VALUES']], @args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    croak("No DN Specified") if ($dn eq "");
 
-   if (($status = ldap_compare_s($self->{"ld"},$dn,$attr,$value))
-      != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    $status = ldap_compare_s($self->{"ld"}, $dn, $attr, $value);
+
+    if( $status != $self->LDAP_COMPARE_FALSE && $status != $self->LDAP_COMPARE_TRUE ) {
+        $self->errorize($status);
+    }
+
+    return $status;
+} # end of compare_s
+
 
 sub start_tls_s
 {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   my ($errdn, $extramsg,$status);
+    my ($errdn, $extramsg,$status);
 
-   if(($status = ldap_start_tls_s($self->{"ld"})) != $self->LDAP_SUCCESS) {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    if(($status = ldap_start_tls_s($self->{"ld"})) != $self->LDAP_SUCCESS) {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $status;
+} # end of start_tls_s
+
 
 sub count_entries
 {
-   my ($self) = @_;
-   croak("No Current Result") if ($self->{"result"} == 0);
-   return ldap_count_entries($self->{"ld"}, $self->{"result"});
-}
+    my ($self, @args) = @_;
+
+    my ($result) = $self->rearrange(['RESULT'], @args);
+
+    $result = $self->{"result"} unless $result;
+
+    croak("No result is given") unless $result;
+
+    return ldap_count_entries($self->{"ld"}, $result);
+} # end of count_entries
+
 
 sub delete
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$msgid);
+    my ($msgid);
 
-   my ($dn) = $self->rearrange(['DN'], @args);
+    my ($dn) = $self->rearrange(['DN'], @args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    croak("No DN Specified") if ($dn eq "");
 
-   $msgid = ldap_delete($self->{"ld"},$dn);
+    $msgid = ldap_delete($self->{"ld"}, $dn);
 
-   if ($msgid < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return($msgid);
-}
+    if ($msgid < 0)
+    {
+        $self->errorize(-20);
+        return undef;
+    }
+
+    return($msgid);
+} # end of delete
+
 
 sub delete_s
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$status);
+    my ($status);
 
-   my ($dn) = $self->rearrange(['DN'],@args);
+    my ($dn) = $self->rearrange(['DN'], @args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    croak("No DN Specified") if ($dn eq "");
 
-   if (($status = ldap_delete_s($self->{"ld"},$dn)) != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    $status = ldap_delete_s($self->{"ld"}, $dn);
+
+    $self->errorize($status) unless $status != $self->LDAP_SUCCESS;
+
+    return $status;
+} # end of delete_s
+
 
 sub dn2ufn
 {
-   my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-   my ($ufn);
+    my ($dn) = $self->rearrange(['DN'], @args);
 
-   my ($dn) = $self->rearrange(['DN'],@args);
+    return ldap_dn2ufn($dn);
+} # end of dn2ufn
 
-   $ufn = ldap_dn2ufn($dn);
-   return $ufn;
-}
 
+# needs testing XXX
 sub explode_dn
 {
-   my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-   my (@components);
+    my (@components);
 
-   my ($dn,$notypes) = $self->rearrange(['DN','NOTYPES'],@args);
+    my ($dn, $notypes) = $self->rearrange(['DN', 'NOTYPES'],@args);
 
-   @components = ldap_explode_dn($dn,$notypes);
-   return @components;
-}
+    @components = ldap_explode_dn($dn,$notypes); # depricated call XXX
+    return @components;
+} # end of explode_dn
 
+
+# needs testing XXX
 sub explode_rdn
 {
-   my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-   my (@components);
+    my (@components);
 
-   my ($rdn,$notypes) = $self->rearrange(['RDN','NOTYPES'],@args);
+    my ($rdn, $notypes) = $self->rearrange(['RDN', 'NOTYPES'], @args);
 
-   @components = ldap_explode_rdn($rdn,$notypes);
-   return @components;
-}
+    @components = ldap_explode_rdn($rdn, $notypes); # depricated call XXX
+    return @components;
+} # end of explode_rdn
 
 sub first_entry
 {
@@ -551,6 +619,7 @@ sub result_entry
     return $self->{"entry"};
 } # end of result_entry
 
+
 sub first_attribute
 {
     my ($self) = @_;
@@ -566,6 +635,34 @@ sub first_attribute
     return $attr;
 } # end of first_attribute
 
+
+sub get_control_oid {
+    my ($self, @args) = @_;
+
+    my ($ctrl) = $self->rearrange(['CTRL'], @args);
+
+    return ldap_control_oid($ctrl);
+} # end of get_control_oid
+
+
+sub get_control_berval {
+    my ($self, @args) = @_;
+
+    my ($ctrl) = $self->rearrange(['CTRL'], @args);
+
+    return ldap_control_berval($ctrl);
+} # end of get_control_berval
+
+
+sub get_control_critical {
+    my ($self, @args) = @_;
+
+    my ($ctrl) = $self->rearrange(['CTRL'], @args);
+
+    return ldap_control_critical($ctrl);
+} # end of get_control_critical
+
+
 sub next_attribute
 {
     my ($self) = @_;
@@ -580,7 +677,7 @@ sub next_attribute
     ber_free($self->{"ber"}, 0) if (!$attr);
 
     return $attr;
-}
+} # end of next_attribute
 
 
 # using this function you don't have to call fist_attribute and next_attribute
@@ -610,15 +707,56 @@ sub entry_attribute {
     }
 
     return $attr;
-}
+} # end of entry_attribute
+
+
+# call to ldap_parse_result(...)
+sub parse_result {
+    my ($self, @args) = @_;
+
+    my ($freeMsg, $msg) = $self->rearrange(['FREEMSG', 'MSG'], @args);
+
+    my ($status, %result);
+
+    $freeMsg = 0            unless $freeMsg;
+    $msg = $self->{"entry"} unless $msg;
+
+    my ($errcode, $matcheddn, $errmsg, @referrals, @serverctrls);
+
+    @serverctrls = ();
+    my $serverctrls_ref = \@serverctrls;
+
+    @referrals = ();
+    my $referrals_ref = \@referrals;
+
+    $status =
+        ldap_parse_result($self->{"ld"}, $msg,           $errcode,         $matcheddn,
+                          $errmsg,       $referrals_ref, $serverctrls_ref, $freeMsg);
+
+    print "ldap_parse_result status = $status\n";
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
+    }
+
+    $result{"errcode"}     = $errcode;
+    $result{"matcheddn"}   = $matcheddn;
+    $result{"errmsg"}      = $errmsg;
+    $result{"referrals"}   = $referrals_ref;
+    $result{"serverctrls"} = $serverctrls_ref;
+
+    return %result;
+} # end of parse_result(...)
+
 
 sub perror
 {
-   my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-   my ($msg) = $self->rearrange(['MSG'],@args);
+    my ($msg) = $self->rearrange(['MSG'], @args);
 
-   ldap_perror($self->{"ld"},$msg);
+    ldap_perror($self->{"ld"}, $msg);
 }
 
 # get dn for current entry
@@ -655,480 +793,574 @@ sub get_values_len {
     my ($self, @args) = @_;
 
     return $self->get_values(@args);
-} # end of get_values_len(...)
+} # end of get_values_len
 
 
 sub msgfree
 {
-   my ($self) = @_;
-   my ($type);
+    my ($self) = @_;
+    my ($type);
 
-   if ($self->{"result"} eq "")
-   {
-      croak("No current result");
-   }
+    if ($self->{"result"} eq "")
+    {
+        croak("No current result");
+    }
 
-   $type = ldap_msgfree($self->{"result"});
+    $type = ldap_msgfree($self->{"result"});
 
-   return $type;
-}
+    return $type;
+} # end of msgfree
 
+
+# needs to use ldap_modify_ext XXX
 sub modify
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$msgid);
+    my ($errdn,$extramsg,$msgid);
 
-   my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
+    my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    if ($dn eq "")
+    {
+        croak("No DN Specified");
+    }
 
-   if (ref($mod) ne "HASH")
-   {
-      croak("LDAP Modify Structure Not a Reference");
-   }
+    if (ref($mod) ne "HASH")
+    {
+        croak("LDAP Modify Structure Not a Reference");
+    }
 
-   $msgid = ldap_modify($self->{"ld"},$dn,$mod);
+    $msgid = ldap_modify($self->{"ld"},$dn,$mod);
 
-   if ($msgid < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $msgid;
-}
+    if ($msgid < 0)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $msgid;
+} # end of modify
 
+
+# needs to use ldap_modify_ext_s XXX
 sub modify_s
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($errdn,$extramsg,$status);
+    my ($errdn,$extramsg,$status);
 
-   my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
+    my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
 
-   if ($dn eq "")
-   {
-      croak("No DN Specified");
-   }
+    if ($dn eq "")
+    {
+        croak("No DN Specified");
+    }
 
-   if (ref($mod) ne "HASH")
-   {
-      croak("LDAP Modify Structure Not a Reference");
-   }
+    if (ref($mod) ne "HASH")
+    {
+        croak("LDAP Modify Structure Not a Reference");
+    }
 
-   if (($status = ldap_modify_s($self->{"ld"},$dn,$mod)) != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    if (($status = ldap_modify_s($self->{"ld"},$dn,$mod)) != $self->LDAP_SUCCESS)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $status;
+} # end of modify_s
 
+
+# needs to user ldap_rename XXX
 sub modrdn2
 {
-   my ($self,@args) = @_;
-   my ($msgid,$errdn,$extramsg);
+    my ($self,@args) = @_;
+    my ($msgid,$errdn,$extramsg);
 
-   my ($dn,$newrdn,$delete) = $self->rearrange(['DN','NEWRDN','DELETE'],@args);
+    my ($dn,$newrdn,$delete) = $self->rearrange(['DN','NEWRDN','DELETE'],@args);
 
-   $msgid = ldap_modrdn2($self->{"ld"},$dn,$newrdn,$delete);
-   if ($msgid < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $msgid;
-}
+    $msgid = ldap_modrdn2($self->{"ld"},$dn,$newrdn,$delete);
+    if ($msgid < 0)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $msgid;
+} # end of modrdn2
 
+
+# needs to user ldap_rename_s XXX
 sub modrdn2_s
 {
-   my ($self,@args) = @_;
-   my ($status,$errdn,$extramsg);
+    my ($self,@args) = @_;
+    my ($status,$errdn,$extramsg);
 
-   my ($dn,$newrdn,$delete) = $self->rearrange(['DN','NEWRDN','DELETE'],@args);
-
-
-   $status = ldap_modrdn2_s($self->{"ld"},$dn,$newrdn,$delete);
-   if ($status != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    my ($dn,$newrdn,$delete) = $self->rearrange(['DN','NEWRDN','DELETE'],@args);
 
 
+    $status = ldap_modrdn2_s($self->{"ld"},$dn,$newrdn,$delete);
+    if ($status != $self->LDAP_SUCCESS)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $status;
+} # end of modrdn2_s
+
+
+# this function is used to retrieve results of asynchronous search operation
+# it returns LDAPMesage which is to be processed by functions first_entry or
+# result_entry. To find message type one should use function msgtype(...)
 sub result
 {
-   my ($self,@args) = @_;
-   my ($result,$status,$err);
+    my ($self, @args) = @_;
+    my ($result, $status, $err) = (undef, undef, undef);
 
-   my ($msgid,$allnone,$timeout) = $self->rearrange(['MSGID','ALL','TIMEOUT'],
-    @args);
+    my ($msgid, $allnone, $timeout) =
+        $self->rearrange(['MSGID', 'ALL', 'TIMEOUT'], @args);
 
-   if ($msgid < 0)
-   {
-      croak("Invalid MSGID");
-   }
+    croak("Invalid MSGID") if ($msgid < 0);
 
-   $status = ldap_result($self->{"ld"},$msgid,$allnone,$timeout,$result);
-   $self->{"result"} = $result;
-   if ($status == $self->LDAP_RES_SEARCH_RESULT)
-   {
-      $err = ldap_result2error($self->{"ld"},$self->{"result"},0);
-      if ($err != $self->LDAP_SUCCESS)
-      {
-         $self->{"errno"} = $err;
-      }
-   }
-   return $status;
-}
+    $status = ldap_result($self->{"ld"}, $msgid, $allnone, $timeout, $result);
+    $self->{"result"} = $result;
+
+    if( $status == -1 || $status == 0 ) {
+        $self->errorize($status);
+        return undef;
+    }
+
+    return $result;
+} # end of result
+
 
 sub result2error
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($freeit) = $self->rearrange(['FREEIT'],@args);
+    my ($freeit) = $self->rearrange(['FREEIT'],@args);
 
-   if (!$self->{"result"})
-   {
-      croak("No Current Result");
-   }
+    croak("No Current Result") unless $self->{"result"};
 
-   $self->{"errno"} = ldap_result2error($self->{"ld"},$self->{"result"},$freeit);
-   return $self->{"errno"};
-}
+    $self->{"errno"} = ldap_result2error($self->{"ld"}, $self->{"result"}, $freeit);
+
+    return $self->{"errno"};
+} # end of result2error
+
 
 sub is_ldap_url
 {
-   my ($self,@args) = @_;
+    my ($self,@args) = @_;
 
-   my ($url) = $self->rearrange(['URL'],@args);
+    my ($url) = $self->rearrange(['URL'],@args);
 
-   return ldap_is_ldap_url($url);
-}
+    return ldap_is_ldap_url($url);
+} # end of is_ldap_url
+
 
 sub url_parse
 {
-   my ($self,@args) = @_;
-   my ($url) = $self->rearrange(['URL'],@args);
+    my ($self,@args) = @_;
+    my ($url) = $self->rearrange(['URL'],@args);
 
-   return ldap_url_parse($url);
-}
+    return ldap_url_parse($url);
+} # end of url_parse
+
 
 sub url_search
 {
-   my ($self,@args) = @_;
-   my ($msgid,$errdn,$extramsg);
+    my ($self,@args) = @_;
+    my ($msgid,$errdn,$extramsg);
 
-   my ($url,$attrsonly) = $self->rearrange(['URL','ATTRSONLY'],@args);
+    my ($url,$attrsonly) = $self->rearrange(['URL','ATTRSONLY'],@args);
 
-   if (($msgid = ldap_url_search($self->{"ld"},$url,$attrsonly)) < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $msgid;
-}
+    if (($msgid = ldap_url_search($self->{"ld"},$url,$attrsonly)) < 0)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    return $msgid;
+} # end of url_search
+
 
 sub url_search_s
 {
-   my ($self, @args) = @_;
-   my ($result, $status, $errdn, $extramsg);
+    my ($self, @args) = @_;
+    my ($result, $status, $errdn, $extramsg);
 
-   my ($url,$attrsonly) = $self->rearrange(['URL', 'ATTRSONLY'], @args);
+    my ($url,$attrsonly) = $self->rearrange(['URL', 'ATTRSONLY'], @args);
 
-   if( ($status = ldap_url_search_s($self->{"ld"}, $url, $attrsonly, $result)) !=
-       $self->LDAP_SUCCESS )
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   $self->{"result"} = $result;
-   return $status;
-}
+    if( ($status = ldap_url_search_s($self->{"ld"}, $url, $attrsonly, $result)) !=
+        $self->LDAP_SUCCESS )
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    $self->{"result"} = $result;
+    return $status;
+} # end of url_search_s
+
 
 sub url_search_st
 {
-   my ($self,@args) = @_;
-   my ($result,$status,$errdn,$extramsg);
+    my ($self,@args) = @_;
+    my ($result,$status,$errdn,$extramsg);
 
-   my ($url,$attrsonly,$timeout) = $self->rearrange(['URL','ATTRSONLY',
-      'TIMEOUT'],@args);
+    my ($url,$attrsonly,$timeout) = $self->rearrange(['URL','ATTRSONLY',
+                                                      'TIMEOUT'],@args);
 
-   if (($status = ldap_url_search_st($self->{"ld"},$url,$attrsonly,$timeout,
-      $result)) != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   $self->{"result"} = $result;
-   return $status;
-}
+    if (($status = ldap_url_search_st($self->{"ld"},$url,$attrsonly,$timeout,
+                                      $result)) != $self->LDAP_SUCCESS)
+    {
+        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
+        $self->{"extramsg"} = $extramsg;
+    }
+    $self->{"result"} = $result;
+    return $status;
+} # end of url_search_st
+
 
 sub multisort_entries
 {
-   my ($self,@args) = @_;
-   my ($status,$errdn,$extramsg);
+    my ($self,@args) = @_;
+    my ($status,$errdn,$extramsg);
 
-   my ($attr) = $self->rearrange(['ATTR'],@args);
+    my ($attr) = $self->rearrange(['ATTR'],@args);
 
-   if (!$self->{"result"})
-   {
-      croak("No Current Result");
-   }
+    if (!$self->{"result"})
+    {
+        croak("No Current Result");
+    }
 
-   $status = ldap_multisort_entries($self->{"ld"},$self->{"result"},$attr);
-   if ($status != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return $status;
-}
+    $status = ldap_multisort_entries($self->{"ld"},$self->{"result"},$attr);
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    return $status;
+} # end of multisort_entries
+
 
 sub search
 {
-   my ($self,@args) = @_;
-   my ($msgid,$errdn,$extramsg);
-
-   my ($basedn,$scope,$filter,$attrs,$attrsonly) =
-    $self->rearrange(['BASEDN','SCOPE','FILTER','ATTRS','ATTRSONLY'],
-    @args);
-
-   if ($filter eq "")
-   {
-      croak("No Filter Specified");
-   }
-
-   $msgid = ldap_search($self->{"ld"},$basedn,$scope,$filter,$attrs,$attrsonly);
-
-   if ($msgid < 0)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-   }
-   return($msgid);
-}
-
-sub search_s {
-    my ($self, @args) = @_;
-
-    my ($result, $status);
+    my ($self,@args) = @_;
+    my ($msgid, $status, $sctrls, $cctrls);
 
     my ($basedn,      $scope,       $filter,  $attrs,    $attrsonly,
         $serverctrls, $clientctrls, $timeout, $sizelimit) =
-        $self->rearrange(['BASEDN',    'SCOPE',  'FILTER', 'ATTRS',
-                          'ATTRSONLY', 'SCTRLS', 'CCTRLS', 'TIMEOUT',
-                          'SIZELIMIT' ], @args);
+            $self->rearrange(['BASEDN',    'SCOPE',  'FILTER', 'ATTRS',
+                              'ATTRSONLY', 'SCTRLS', 'CCTRLS', 'TIMEOUT',
+                              'SIZELIMIT'],
+                             @args);
 
-    croak("No Filter Passed as Argument 3") if ($filter eq "");
+    croak("No Filter Specified") if ($filter eq "");
+
     if( $attrs == undef ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
 
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
     $status =
-       ldap_search_ext_s($self->{"ld"}, $basedn,      $scope,
-                         $filter,       $attrs,       $attrsonly,
-                         $serverctrls,  $clientctrls, $timeout,
-                         $sizelimit,    $result);
+        ldap_search_ext($self->{"ld"}, $basedn,     $scope,   $filter,
+                        $attrs,        $attrsonly,  $sctrls,  $cctrls,
+                        $timeout,      $sizelimit, $msgid);
 
-   $self->errorize() unless ($status == $self->LDAP_SUCCESS);
-   $self->{"result"} = $result;
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
-   return $status;
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    return $msgid;
+} # end of search
+
+
+# synonym for search
+sub search_ext
+{
+    my ($self, @args) = @_;
+
+    return $self->search(@args);
+} # end of search_ext
+
+
+sub search_s
+{
+    my ($self, @args) = @_;
+
+    my ($result, $status, $sctrls, $cctrls);
+
+    my ($basedn,      $scope,       $filter,  $attrs,    $attrsonly,
+        $serverctrls, $clientctrls, $timeout, $sizelimit) =
+            $self->rearrange(['BASEDN',    'SCOPE',  'FILTER', 'ATTRS',
+                              'ATTRSONLY', 'SCTRLS', 'CCTRLS', 'TIMEOUT',
+                              'SIZELIMIT' ], @args);
+
+    croak("No Filter Passed as Argument 3") if ($filter eq "");
+
+    if( $attrs == undef ) {
+        my @null_array = ();
+        $attrs = \@null_array;
+    }
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status =
+        ldap_search_ext_s($self->{"ld"}, $basedn,    $scope,   $filter,
+                          $attrs,        $attrsonly, $sctrls,  $cctrls,
+                          $timeout,      $sizelimit, $result);
+
+    $self->errorize($status) unless ($status == $self->LDAP_SUCCESS);
+    $self->{"result"} = $result;
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    return $status;
 } # end of search_s
 
+
 # synonym for search_s(...)
-sub search_ext_s {
+sub search_ext_s
+{
     my ($self, @args) = @_;
 
     return $self->search_s(@args);
-} # end of search_ext_s(...)
+} # end of search_ext_s
 
-sub search_st
+
+sub count_references
 {
-   my ($self,@args) = @_;
-   my ($result,$status,$errdn,$extramsg);
+    my ($self, @args) = @_;
 
-   my ($basedn,$scope,$filter,$attrs,$attrsonly,$timeout) =
-       $self->rearrange(['BASEDN', 'SCOPE',    'FILTER',
-                         'ATTRS', 'ATTRSONLY', 'TIMEOUT'], @args);
+    my ($msg) = $self->rearrange(['MSG'], @args);
 
-   if ($filter eq "")
-   {
-      croak("No Filter Passed as Argument 3");
-   }
+    $msg = $self->{"entry"} unless $msg;
 
-   $status = ldap_search_st($self->{"ld"},$basedn,$scope,$filter,$attrs,
-      $attrsonly,$result,$timeout);
-   if ($status != $self->LDAP_SUCCESS)
-   {
-      $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-      $self->{"extramsg"} = $extramsg;
-      $self->{"errstring"} = ldap_err2string($self->{"errno"});
-   }
-   $self->{"result"} = $result;
-   return $status;
-}
+    return ldap_count_references($self->{"ld"}, $msg);
+} # end of count_references
+
 
 sub get_option
 {
-   my ($self,@args) = @_;
-   my ($status);
+    my ($self,@args) = @_;
+    my ($status);
 
-   my ($option,$optdata) = $self->rearrange(['OPTION','OPTDATA'], @args);
+    my ($option,$optdata) = $self->rearrange(['OPTION','OPTDATA'], @args);
 
-   $status = ldap_get_option($self->{"ld"},$option,$$optdata);
+    $status = ldap_get_option($self->{"ld"},$option,$$optdata);
 
-   return $status;
-}
+    return $status;
+} # end of get_option
+
 
 sub set_option
 {
-   my ($self,@args) = @_;
-   my ($status);
+    my ($self,@args) = @_;
+    my ($status);
 
-   my ($option,$optdata) = $self->rearrange(['OPTION','OPTDATA'],@args);
+    my ($option,$optdata) = $self->rearrange(['OPTION','OPTDATA'],@args);
 
-   $status = ldap_set_option($self->{"ld"},$option,$optdata);
+    $status = ldap_set_option($self->{"ld"},$option,$optdata);
 
-   return $status;
-}
+    return $status;
+} # end of set_option
+
 
 sub set_rebind_proc
 {
-   my ($self,@args) = @_;
-   my ($status);
+    my ($self,@args) = @_;
+    my ($status);
 
-   my ($rebindproc) = $self->rearrange(['REBINDPROC'],@args);
+    my ($rebindproc) = $self->rearrange(['REBINDPROC'],@args);
 
-   if (ref($rebindproc) eq "CODE")
-   {
-      $status = ldap_set_rebind_proc($self->{"ld"},$rebindproc);
-   } else {
-      croak("REBINDPROC is not a CODE Reference");
-   }
-   return $status;
-}
+    if (ref($rebindproc) eq "CODE")
+    {
+        $status = ldap_set_rebind_proc($self->{"ld"},$rebindproc);
+    } else {
+        croak("REBINDPROC is not a CODE Reference");
+    }
+    return $status;
+} # end of set_rebind_proc
+
 
 sub get_all_entries
 {
-   my ($self) = shift;
-   my $record;
+    my ($self) = shift;
+    my $record;
 
-   if (!$self->{"result"})
-   {
-      croak("NULL Result");
-   }
+    croak("NULL Result") unless $self->{"result"};
 
-   $record = ldap_get_all_entries($self->{"ld"},$self->{"result"});
-   return $record;
-}
+    $record = ldap_get_all_entries($self->{"ld"},$self->{"result"});
+    return $record;
+} # end of get_all_entries
+
 
 sub unbind
 {
-   my ($self) = @_;
+    my ($self) = @_;
 
-   ldap_unbind($self->{"ld"});
-}
+    ldap_unbind($self->{"ld"});
+} # end of unbind
+
 
 sub ssl_client_init
 {
-   my ($self,@args) = @_;
-   my ($status);
+    my ($self,@args) = @_;
+    my ($status);
 
-   my ($certdbpath,$certdbhandle) = $self->rearrange(['DBPATH','DBHANDLE'],
-    @args);
+    my ($certdbpath,$certdbhandle) = $self->rearrange(['DBPATH','DBHANDLE'],
+                                                      @args);
 
-   $status = ldapssl_client_init($certdbpath,$certdbhandle);
-   return($status);
-}
+    $status = ldapssl_client_init($certdbpath,$certdbhandle);
+    return($status);
+} # end of ssl_client_init
+
 
 sub ssl
 {
-   my ($self) = @_;
-   my ($status);
+    my ($self) = @_;
+    my ($status);
 
-   $status = ldapssl_install_routines($self->{"ld"});
-   return $status;
-}
+    $status = ldapssl_install_routines($self->{"ld"});
+    return $status;
+} # end of ssl
+
 
 sub entry
 {
-   my ($self) = @_;
-   return $self->{"entry"};
-}
+    my ($self) = @_;
+    return $self->{"entry"};
+} # end of entry
+
 
 sub err
 {
-   my ($self) = @_;
-   return $self->{"errno"};
-}
+    my ($self) = @_;
+    return $self->{"errno"};
+} # end of err
+
 
 sub errno
 {
-   my ($self) = @_;
-   return $self->{"errno"};
-}
+    my ($self) = @_;
+    return $self->{"errno"};
+} # end of errno
+
 
 sub errstring
 {
-   my ($self) = @_;
-   return ldap_err2string($self->{"errno"});
-}
+    my ($self) = @_;
+    return ldap_err2string($self->{"errno"});
+} # end of errstring
+
 
 sub extramsg
 {
-   my ($self) = @_;
-   return $self->{"extramsg"};
-}
+    my ($self) = @_;
+    return $self->{"extramsg"};
+} # end of extramsg
+
 
 sub ld
 {
-   my ($self) = @_;
-   return $self->{"ld"};
-}
+    my ($self) = @_;
+    return $self->{"ld"};
+} # end of ld
+
+
+sub msgtype
+{
+    my ($self, @args) = @_;
+
+    my ($result) = $self->rearrange(['RESULT'], @args);
+
+    $result = $self->{"result"} unless $result;
+
+    return ldap_msgtype($self->{"ld"}, $result);
+} # end of msgtype
+
 
 sub msgid
 {
-   my ($self) = @_;
+    my ($self, @args) = @_;
 
-   my ($msgid);
+    my ($result) = $self->rearrange(['RESULT'], @args);
 
-   $msgid = ldap_msgid($self->{"ld"},$self->{"result"});
-   return $msgid;
-}
+    $result = $self->{"result"} unless $result;
+
+    return ldap_msgid($self->{"ld"}, $result);
+} # end of msgid
+
+# Given array of elements of type Net::LDAP::Control
+# array of controls sutable for passing to C-calls is created.
+# It is to be freed by calling ldap_controls_array_free(...)
+# Note that this method is *NOT* to be used by the end user of
+# this library.
+sub create_controls_array
+{
+    my ($self, @args) = @_;
+
+    my ($location, $status, $ctrlp);
+
+    my $ctrls = ldap_controls_array_init($#args + 2);
+    for( $location = 0; $location < $#args + 1; $location++ ) {
+        ldap_control_set($ctrls, $args[$location], $location);
+    }
+    ldap_control_set($ctrls, undef, $#args + 1);
+
+    return $ctrls;
+} # create_controls_array
+
+
+# Creates control given its OID and berval. Default value if criticality is true.
+sub create_control
+{
+    my ($self, @args) = @_;
+
+    my ($oid, $berval, $critical) = $self->rearrange(['OID', 'BERVAL', 'CRITICAL'], @args);
+
+    croak("No OID of controls is passed") unless $oid;
+    croak("No BerVal is passed")          unless $berval;
+    $critical = 1                         if $critical == undef;
+
+    my ($ctrl) = undef;
+    my $status = ldap_create_control($oid, $berval, length($berval), $critical, $ctrl);
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
+    }
+
+    return $ctrl;
+} # end of create_control
+
 
 # This subroutine was borrowed from CGI.pm.  It does a wonderful job and
 # is much better than anything I created in my first attempt at named
 # arguments.  I may replace it later.
-
-sub make_attributes {
+sub make_attributes
+{
     my $attr = shift;
     return () unless $attr && ref($attr) && ref($attr) eq 'HASH';
     my $escape = shift || 0;
     my(@att);
     foreach (keys %{$attr}) {
-    my($key) = $_;
-    $key=~s/^\-//;     # get rid of initial - if present
+        my($key) = $_;
+        $key=~s/^\-//;     # get rid of initial - if present
 
-    # old way: breaks EBCDIC!
-    # $key=~tr/A-Z_/a-z-/; # parameters are lower case, use dashes
+        # old way: breaks EBCDIC!
+        # $key=~tr/A-Z_/a-z-/; # parameters are lower case, use dashes
 
-    ($key="\L$key") =~ tr/_/-/; # parameters are lower case, use dashes
+        ($key="\L$key") =~ tr/_/-/; # parameters are lower case, use dashes
 
-    my $value = $escape ? simple_escape($attr->{$_}) : $attr->{$_};
-    push(@att,defined($attr->{$_}) ? qq/$key="$value"/ : qq/$key/);
+        my $value = $escape ? simple_escape($attr->{$_}) : $attr->{$_};
+        push(@att,defined($attr->{$_}) ? qq/$key="$value"/ : qq/$key/);
     }
     return @att;
-}
+} # end of make_attributes
 
-sub rearrange {
+
+sub rearrange
+{
     my($self, $order, @param) = @_;
     return () unless @param;
 
@@ -1160,9 +1392,10 @@ sub rearrange {
         }
         push(@return_array,$value);
     }
-    push (@return_array,$self->make_attributes(\%param)) if %param;
+    push (@return_array, $self->make_attributes(\%param)) if %param;
     return (@return_array);
-}
+} # end of rearrange
+
 
 # places internal ldap errors into $self under keys "errno" and "extramsg"
 sub errorize {
@@ -1173,12 +1406,22 @@ sub errorize {
     $self->{"errno"}    = ldap_get_lderrno($self->{"ld"}, $errdn, $extramsg);
     $self->{"extramsg"} = $extramsg;
 
-    print("LDAP ERROR STATUS: $status\n")                if $self->{"debug"};
-    printf("LDAP ERROR STATUS: %x\n", $status)           if $self->{"debug"};
-    printf("LDAP ERROR CODE:   %x\n", $self->{"errno"})  if $self->{"debug"};
-    print "LDAP ERROR MESSAGE: $extramsg\n"              if $self->{"debug"};
+    if( $self->{"debug"} ) {
+        print  "LDAP ERROR STATUS: $status ".ldap_err2string($status)."\n";
+        printf("LDAP ERROR CODE:   %x\n", $self->{"errno"});
+        print  "LDAP ERROR MESSAGE: $extramsg\n";
+    }
+} # end of errorize
+
+
+sub CRITICAL {
+    1;
 }
 
+
+sub NONCRITICAL {
+    0;
+}
 
 # Preloaded methods go here.
 
@@ -1215,22 +1458,83 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   $ld = new Net::LDAPapi($hostname);
 
   Where $hostname is the name of your LDAP server.  If you are not using
-  the standard LDAP port (389), you will also need to supply the portnumber.
+  the standard LDAP port (389), you will also need to supply the
+  portnumber.
 
-  $ld = new Net::LDAPapi($hostname,15555);
+  $ld = new Net::LDAPapi($hostname, 15555);
 
   The new method can also be called with named arguments.
 
-  $ld = new Net::LDAPapi(-host=>$hostname,-port=>15389);
+  $ld = new Net::LDAPapi(-host=>$hostname, -port=>15389);
 
-  Note that with namd arguments, the order of the arguments is
+  Instead of the above mentioned argumens -url can be used in the
+  following form
+
+  $ld = new Net::LDAPapi(-url=>"ldap://host:port");
+
+  Setting -debug=>"TRUE" will enable more verbose error messages.
+
+  Note that with named arguments, the order of the arguments is
   insignificant.
+
+=head1 CONTROLS
+
+  In LDAP v3 controls are an additional piece of data, which can be
+  submitted with most of the requests to the server and returned back
+  attached to the result.  Controls, passed to the call, are separated
+  in two types.  The client side controls, which are not passed to the
+  server and are of not much use.  They are denoted by -cctrls named
+  parameter.  The server side controls, denoted by -sctrls named
+  parameter are actually passed to the server and may affect its
+  operation or returned results.  Each entry of the result may have
+  controls attached to it as well ( see parse_entry(...) call ).
+
+  -cctrls and -sctrls must be reference to array of controls.
+
+  To create control call create_control(...) method. Bellow is an
+  example of creating valsort control.
+
+  my $asn = Convert::ASN1->new;
+  $asn->prepare('SEQUENCE { b BOOLEAN }');
+  my $berval = $asn->encode(b=>1); # or 1
+
+  my $ctrl1 =
+    $ld->create_control(-oid=>Net::LDAPapi::LDAP_CONTROL_VALSORT,
+                        -berval=>$berval,
+                        -critical=>Net::LDAPapi::CRITICAL);
+
+  If contol is attached to results entry, it can be retrieved by
+  calling parse_result($entry). If no entry is passed to
+  parse_result(...) then current entry is used. It returns hash
+  with following keys
+
+  Key           Value
+  -------------------
+  matcheddn     string
+  errmsg        string
+  referrals     array reference
+  serverctrls   array reference
+
+  You can look into content of the control by using get_contol_XXX
+  functions like this:
+
+  local %parsed = $ld->parse_result($entry);
+  local $serverctrls = $parsed{"serverctrls"};
+  local @sctrls = @$serverctrls;
+  if( scalar(@sctrls) > 0 ) {
+    foreach $ctrl (@sctrls) {
+      print "\nreceived control\n";
+      print "oid = ".$ld->get_control_oid($ctrl)."\n";
+      print "berval = ".$ld->get_control_berval($ctrl)."\n";
+      print "critical = ".$ld->get_control_critical($ctrl)."\n";
+    }
+  }
 
 =head1 BINDING
 
-  After creating a connection to the LDAP server, you will always need to
-  bind to the server prior to performing any LDAP related functions.  This
-  can be done with the 'bind' methods.
+  After creating a connection to the LDAP server, you may need to
+  bind to the server prior to performing any LDAP related functions.
+  This can be done with the 'bind' methods.
 
   An anonymous bind can be performed without arguments:
 
@@ -1239,33 +1543,41 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   A simple bind can be performed by specifying the DN and PASSWORD of
   the user you are authenticating as:
 
-  $status = $ld->bind_s($dn,$password);
+  $status = $ld->bind_s($dn, $password);
 
-  Note that if $password above was "", you would be doing a reference bind,
-  which would return success even if the password in the directory was
-  non-null.  Thus if you were using the bind to check a password entered
-  with one in the directory, you should first check to see if $password was
-  NULL.
+  Note that if $password above was "", you would be doing a reference
+  bind, which would return success even if the password in the
+  directory was non-null.  Thus if you were using the bind to check a
+  password entered with one in the directory, you should first check
+  to see if $password was NULL.
 
-  If your LDAP C Library supports Kerberos, you can also do Kerberos binds
-  simply by adding the LDAP_AUTH_KRBV4 option.  For example:
+  To perform SASL bind fill in appropriate parameters calling
+  sasl_params(...) and call
 
-  $status = $ld->bind_s($dn,$password,LDAP_AUTH_KRBV4);
+  $status = $ld->bind_s(-type=>LDAP_AUTH_SASL)
 
-  For all of the above operations, you could compare $status to LDAP_SUCCESS
-  to see if the operation was successful.
+  Bellow is an example of GSSAPI K5 bind parameters.
 
-  Additionally, you could use 'bind' rather than 'bind_s' if you wanted to
-  use the Asynchronous LDAP routines.  The asynchronous routines would return
-  a MSGID rather than a status.  To find the status of an Asynchronous bind,
-  you would need to first obtain the result with a call to $ld->result.  See
-  the entry for result later in the man page, as well as the 'ldapwalk.pl'
-  example for further information on obtaining results from Asynchronous
-  operations.
+  $ld->sasl_parms(-mech=>"GSSAPI", -realm=>"domain.name.com",
+                  -authzid=>"",    -secprops=>"",
+                  -flags=>LDAP_SASL_QUIET);
+
+  For all of the above operations, you could compare $status to
+  LDAP_SUCCESS to see if the operation was successful.
+
+  Additionally, you could use 'bind' rather than 'bind_s' if you wanted
+  to use the Asynchronous LDAP routines.  The asynchronous routines
+  would return a MSGID rather than a status.  To find the status of an
+  Asynchronous bind, you would need to first obtain the result with a
+  call to $ld->result.  See the entry for result later in the man page,
+  as well as the 'ldapwalk.pl' example for further information on
+  obtaining results from Asynchronous operations.
 
   The bind operations can also accept named arguments.
 
-  $status = $ld->bind_s(-dn=>$dn,-password=>$password,-type=>LDAP_AUTH_SIMPLE);
+  $status = $ld->bind_s(-dn=>$dn,
+                        -password=>$password,
+                        -type=>LDAP_AUTH_SIMPLE);
 
   As with all other commands that support named arguments, the order of
   the arguments makes no difference.
@@ -1483,18 +1795,17 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $msgid = $ld->compare("cn=Clayton Donley, o=Motorola, c=US", \
-        $type,$value);
+        $type, $value);
 
 =item compare_s DN ATTR VALUE
 
   Synchronous method for comparing a value with the value contained
-  within DN.  Returns an LDAP STATUS.
+  within DN.  Returns an LDAP_COMPARE_TRUE, LDAP_COMPARE_FALSE or an error code.
 
   Example:
 
     $status = $ld->compare_s("cn=Clayton Donley, o=Motorola, c=US", \
         $type, $value);
-
 
 =item count_entries
 
@@ -1771,7 +2082,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     $msgid = $ld->search("o=Motorola, c=US",LDAP_SCOPE_SUBTREE, \
         "(sn=Donley),\@attrs,0);
 
-=item search_s BASE SCOPE FILTER ATTRS ATTRSONLY
+=item search_s BASE SCOPE FILTER ATTRS ATTRSONLY (rewrite XXX)
 
   Performs a synchronous LDAP search.  Returns an LDAP STATUS.  BASE
   is the base object for the search operation.  FILTER is a string
@@ -1793,7 +2104,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     $status = $ld->search_s("o=Motorola, c=US",LDAP_SCOPE_SUBTREE, \
         "(sn=Donley)",\@attrs,0);
 
-=item search_st BASE SCOPE FILTER ATTRS ATTRSONLY TIMEOUT
+=item search_st BASE SCOPE FILTER ATTRS ATTRSONLY TIMEOUT (rewrite/remove XXX)
 
   Performs a synchronous LDAP search with a TIMEOUT.  See search_s
   for a description of parameters.  Returns an LDAP STATUS.  Results are
@@ -1842,7 +2153,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
   Example:
 
-    $msgid = $ld->url_search($my_ldap_url,0);
+    $msgid = $ld->url_search($my_ldap_url, 0);
 
 =item url_search_s URL ATTRSONLY
 
@@ -1853,7 +2164,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
   Example:
 
-    $status = $ld->url_search_s($my_ldap_url,0);
+    $status = $ld->url_search_s($my_ldap_url, 0);
 
 =item url_search_st URL ATTRSONLY TIMEOUT
 
