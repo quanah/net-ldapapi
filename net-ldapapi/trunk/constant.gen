@@ -26,6 +26,73 @@ __END__
 
 /* This file is generated from constants.gen.  Changes here will be lost! */
 
+static char *
+constant_s(name)
+char *name;
+{
+    errno = 0;
+
+    if (name[0] == 'L' &&
+        name[1] == 'D' &&
+        name[2] == 'A' &&
+        name[3] == 'P' &&
+        name[4] == '_' )
+    switch (name[5])
+    {
+        case 'S':
+            SYM(LDAP_SASL_NULL)
+            SYM(LDAP_SASL_SIMPLE)
+            break;
+
+        case 'C':
+            SYM(LDAP_CONTROL_MANAGEDSAIT)
+            SYM(LDAP_CONTROL_PROXY_AUTHZ)
+            SYM(LDAP_CONTROL_SUBENTRIES)
+            SYM(LDAP_CONTROL_VALUESRETURNFILTER)
+            SYM(LDAP_CONTROL_X_VALUESRETURNFILTER)
+            SYM(LDAP_CONTROL_ASSERT)
+            SYM(LDAP_CONTROL_PRE_READ)
+            SYM(LDAP_CONTROL_POST_READ)
+            SYM(LDAP_CONTROL_SORTREQUEST)
+            SYM(LDAP_CONTROL_SORTRESPONSE)
+            SYM(LDAP_CONTROL_PAGEDRESULTS)
+            SYM(LDAP_CONTROL_PASSWORDPOLICYREQUEST)
+            SYM(LDAP_CONTROL_PASSWORDPOLICYRESPONSE)
+            SYM(LDAP_CONTROL_NOOP)
+            SYM(LDAP_CONTROL_NO_SUBORDINATES)
+            SYM(LDAP_CONTROL_MANAGEDIT)
+            SYM(LDAP_CONTROL_SLURP)
+            SYM(LDAP_CONTROL_VALSORT)
+            SYM(LDAP_CONTROL_SYNC)
+            SYM(LDAP_CONTROL_SYNC_STATE)
+            SYM(LDAP_CONTROL_SYNC_DONE)
+            SYM(LDAP_CONTROL_X_CHAINING_BEHAVIOR)
+            SYM(LDAP_CONTROL_X_INCREMENTAL_VALUES)
+            SYM(LDAP_CONTROL_X_DOMAIN_SCOPE)
+            SYM(LDAP_CONTROL_X_PERMISSIVE_MODIFY)
+            SYM(LDAP_CONTROL_X_SEARCH_OPTIONS)
+            SYM(LDAP_CONTROL_X_TREE_DELETE)
+            SYM(LDAP_CONTROL_X_EXTENDED_DN)
+            SYM(LDAP_CONTROL_DUPENT_REQUEST)
+            SYM(LDAP_CONTROL_DUPENT_RESPONSE)
+            SYM(LDAP_CONTROL_DUPENT_ENTRY)
+            SYM(LDAP_CONTROL_DUPENT)
+            SYM(LDAP_CONTROL_PERSIST_REQUEST)
+            SYM(LDAP_CONTROL_PERSIST_ENTRY_CHANGE_NOTICE)
+            SYM(LDAP_CONTROL_VLVREQUEST)
+            SYM(LDAP_CONTROL_VLVRESPONSE)
+            SYM(LDAP_CONTROL_GROUPING)
+            break;
+    }
+    errno = EINVAL;
+    return NULL;
+
+not_there:
+    errno = ENOENT;
+    return NULL;
+
+}
+
 static double
 constant(name, arg)
 char *name;

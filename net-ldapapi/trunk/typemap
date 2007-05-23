@@ -7,11 +7,13 @@ LDAP_CHAR *         T_PV
 LDAP_CHAR **        T_PTR
 LDAP *              T_PTR
 LDAP **             T_PTR
+LDAPControl *       T_PTR
 LDAPControl **      T_PTR
 LDAPControl ***     T_PTR
 LDAPMessage *       T_PTR
 LDAPMessage **      T_PTR
 BerElement *        T_PTR
+BerElement **       T_PTR
 LDAPVersion *       T_PTR
 LDAPMod *           T_PTR
 struct berval *     T_PTR
@@ -19,3 +21,5 @@ struct berval **    T_PTR
 struct timeval *    T_PTR
 LDAPDN *            T_PTR
 LDAPRDN *           T_PTR
+LDAPSortKey **      T_PTR
+LDAPSortKey ***     T_PTR
