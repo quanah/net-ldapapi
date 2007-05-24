@@ -17,7 +17,7 @@ require AutoLoader;
        ldap_create ldap_set_option ldap_get_option ldap_unbind_ext
        ldap_unbind_ext_s ldap_version ldap_abandon_ext ldap_add_ext ldap_add_ext_s
        ldap_set_rebind_proc
-       ldap_modify_ext ldap_modify_ext_s ldap_rename ldap_rename_s
+       ldap_rename ldap_rename_s
        ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
        ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
        ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
@@ -300,12 +300,11 @@ sub abandon_ext {
 } # end of abandon_ext
 
 
-# need to user ldap_add_ext XXX
 sub add
 {
     my ($self,@args) = @_;
 
-    my ($msgid);
+    my ($msgid, $sctrls, $cctrls, $status);
 
     my ($dn, $mod, $serverctrls, $clientctrls) =
         $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
@@ -317,50 +316,66 @@ sub add
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
     $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
-    if (($msgid = ldap_add($self->{"ld"}, $dn, $mod)) < 0)
-    {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
+    $status = ldap_add_ext($self->{"ld"}, $dn, $mod, $sctrls, $cctrls, $msgid);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
     }
+
     return $msgid;
 } # end of add
 
+# synonym for add
+sub add_ext
+{
+    my ($self, @args) = @_;
 
-# need to user ldap_add_ext_s XXX
+    return $self->add(@args);
+} # end of add_ext
+
+
 sub add_s
 {
     my ($self,@args) = @_;
 
-    my ($errdn,$extramsg,$status);
+    my ($sctrls, $cctrls, $status);
 
-    my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
+    my ($dn, $mod, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
 
-    if ($dn eq "")
-    {
-        croak("No DN Specified");
-    }
+    croak("No DN Specified") if ($dn eq "");
 
-    if (ref($mod) ne "HASH")
-    {
-        croak("LDAP Modify Structure Not a HASH Reference");
-    }
+    croak("LDAP Modify Structure Not a HASH Reference") if (ref($mod) ne "HASH");
 
-    if (($status = ldap_add_s($self->{"ld"},$dn,$mod)) != $self->LDAP_SUCCESS)
-    {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
-    }
+    $status = ldap_add_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $cctrls);
+
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+
     return $status;
 } # end of add_s
 
 
+# synonym for add_s
+sub add_ext_s
+{
+    my ($self, @args) = @_;
+
+    return $self->add_s(@args);
+} # end of add_ext_s
+
+
+# needs to use ldap_sasl_bind XXX
 sub bind
 {
     my ($self,@args) = @_;
 
     my ($errdn,$extramsg,$msgid);
 
-    my ($dn,$pass,$authtype) = $self->rearrange(['DN','PASSWORD','TYPE'],@args);
+    my ($dn, $pass, $authtype) = $self->rearrange(['DN', 'PASSWORD', 'TYPE'],@args);
 
     $dn = "" unless $dn;
     $pass = "" unless $pass;
@@ -429,6 +444,7 @@ sub sasl_parms
 } # end of sasl_parms
 
 
+# needs to use ldap_compare_ext
 sub compare
 {
     my ($self,@args) = @_;
@@ -451,6 +467,7 @@ sub compare
 } # end of compare
 
 
+# needs to use ldap_compare_ext_s
 sub compare_s
 {
     my ($self, @args) = @_;
@@ -559,7 +576,7 @@ sub explode_dn
 
     my ($dn, $notypes) = $self->rearrange(['DN', 'NOTYPES'],@args);
 
-    @components = ldap_explode_dn($dn,$notypes); # depricated call XXX
+    @components = ldap_explode_dn($dn, $notypes); # depricated call XXX
     return @components;
 } # end of explode_dn
 
@@ -812,65 +829,71 @@ sub msgfree
 } # end of msgfree
 
 
-# needs to use ldap_modify_ext XXX
 sub modify
 {
-    my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-    my ($errdn,$extramsg,$msgid);
+    my ($msgid, $sctrls, $cctrls, $status);
 
-    my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
+    my ($dn, $mod, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
 
-    if ($dn eq "")
-    {
-        croak("No DN Specified");
+    croak("No DN Specified") if ($dn eq "");
+    croak("LDAP Modify Structure Not a Reference") if (ref($mod) ne "HASH");
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_modify_ext($self->{"ld"}, $dn, $mod, $sctrls, $sctrls, $msgid);
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
     }
 
-    if (ref($mod) ne "HASH")
-    {
-        croak("LDAP Modify Structure Not a Reference");
-    }
-
-    $msgid = ldap_modify($self->{"ld"},$dn,$mod);
-
-    if ($msgid < 0)
-    {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
-    }
     return $msgid;
 } # end of modify
 
 
-# needs to use ldap_modify_ext_s XXX
+# synonym for modify
+sub modify_ext
+{
+    my ($self, @args) = @_;
+
+    return $self->modify(@args);
+} # end of modify_ext
+
+
 sub modify_s
 {
     my ($self,@args) = @_;
 
-    my ($errdn,$extramsg,$status);
+    my ($status, $sctrls, $cctrls);
 
-    my ($dn,$mod) = $self->rearrange(['DN','MOD'],@args);
+    my ($dn, $mod, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'MOD', 'CCTRLS', 'TIMEOUT'], @args);
 
-    if ($dn eq "")
-    {
-        croak("No DN Specified");
-    }
+    croak("No DN Specified") if ($dn eq "");
+    croak("LDAP Modify Structure Not a Reference") if (ref($mod) ne "HASH");
 
-    if (ref($mod) ne "HASH")
-    {
-        croak("LDAP Modify Structure Not a Reference");
-    }
+    $status = ldap_modify_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $sctrls);
 
-    if (($status = ldap_modify_s($self->{"ld"},$dn,$mod)) != $self->LDAP_SUCCESS)
-    {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
-    }
+    self->errorize($status) unless $status= $self->LDAP_SUCCESS;
+
     return $status;
 } # end of modify_s
 
 
-# needs to user ldap_rename XXX
+# synonym for modify
+sub modify_ext_s
+{
+    my ($self, @args) = @_;
+
+    return $self->modify_s(@args);
+} # end of modify_ext
+
+
+# needs to use ldap_rename XXX
 sub modrdn2
 {
     my ($self,@args) = @_;
@@ -1059,14 +1082,17 @@ sub search
     $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
     $status =
-        ldap_search_ext($self->{"ld"}, $basedn,     $scope,   $filter,
-                        $attrs,        $attrsonly,  $sctrls,  $cctrls,
+        ldap_search_ext($self->{"ld"}, $basedn,    $scope,  $filter,
+                        $attrs,        $attrsonly, $sctrls, $cctrls,
                         $timeout,      $sizelimit, $msgid);
-
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
+    }
 
     return $msgid;
 } # end of search
@@ -1311,7 +1337,7 @@ sub create_controls_array
 } # create_controls_array
 
 
-# Creates control given its OID and berval. Default value if criticality is true.
+# Creates control given its OID and berval. Default value of criticality is true.
 sub create_control
 {
     my ($self, @args) = @_;
@@ -1325,13 +1351,20 @@ sub create_control
     my ($ctrl) = undef;
     my $status = ldap_create_control($oid, $berval, length($berval), $critical, $ctrl);
 
-    if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
-        return undef;
-    }
+    $self->errorize($status) if( $status != $self->LDAP_SUCCESS );
 
     return $ctrl;
 } # end of create_control
+
+
+sub free_control
+{
+    my ($self, @args) = @_;
+
+    my ($control) = $self->rearrange(['CONTROL'], @args);
+
+    ldap_free_control($control);
+} # end of free_control
 
 
 # This subroutine was borrowed from CGI.pm.  It does a wonderful job and
@@ -1498,10 +1531,12 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   $asn->prepare('SEQUENCE { b BOOLEAN }');
   my $berval = $asn->encode(b=>1); # or 1
 
-  my $ctrl1 =
+  my $ctrl =
     $ld->create_control(-oid=>Net::LDAPapi::LDAP_CONTROL_VALSORT,
                         -berval=>$berval,
                         -critical=>Net::LDAPapi::CRITICAL);
+
+  The control is to be freed by calling free_control($ctrl).
 
   If contol is attached to results entry, it can be retrieved by
   calling parse_result($entry). If no entry is passed to

@@ -237,7 +237,7 @@ LDAPMod *parse1mod(SV *ldap_value_ref,char *ldap_current_attribute,
 /*    LDAPMod pointers.                                                */
 
 static
-LDAPMod ** hash2mod(SV *ldap_change_ref,int ldap_add_func,const char *func)
+LDAPMod ** hash2mod(SV *ldap_change_ref, int ldap_add_func, const char *func)
 {
    LDAPMod **ldapmod = NULL;
    LDAPMod *ldap_current_mod;
@@ -447,23 +447,30 @@ ldap_abandon_ext(ld,msgid,sctrls,cctrls)
     LDAPControl **  cctrls
 
 int
-ldap_add_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAPMod **      ldap_change_ref = hash2mod($arg, 1, "$func_name");
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
-    int *           msgidp
-    CLEANUP:
-       Safefree(ldap_change_ref);
+ldap_add_ext(ld, dn, ldap_change_ref, sctrls, cctrls, msgidp)
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    SV *           ldap_change_ref
+    LDAPControl ** sctrls
+    LDAPControl ** cctrls
+    int            msgidp = NO_INIT
+    CODE:
+    {
+        LDAPMod ** attrs = hash2mod(ldap_change_ref, 1, "$func_name");
+        RETVAL = ldap_add_ext(ld, dn, attrs, sctrls, cctrls, &msgidp);
+        Safefree(attrs);
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
 
 int
 ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAPMod **      ldap_change_ref = hash2mod($arg, 1, "$func_name");
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    LDAPMod **     ldap_change_ref = hash2mod($arg, 1, "$func_name");
+    LDAPControl ** sctrls
+    LDAPControl ** cctrls
     CLEANUP:
        Safefree(ldap_change_ref);
 
@@ -479,31 +486,40 @@ ldap_sasl_bind(ld, dn, mechanism, cred, sctrls, cctrls, msgidp)
 
 int
 ldap_modify_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAPMod **      ldap_change_ref = hash2mod($arg, 0, "$func_name");
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
-    int *           msgidp
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    SV *           ldap_change_ref
+    LDAPControl ** sctrls
+    LDAPControl ** cctrls
+    int            msgidp = NO_INIT
+    CODE:
+    {
+        LDAPMod ** mods  = hash2mod(ldap_change_ref, 0, "$func_name");
+        RETVAL = ldap_modify_ext(ld, dn, mods, sctrls, cctrls, &msgidp);
+        Safefree(mods);
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
 
 int
 ldap_modify_ext_s(ld,dn,ldap_change_ref,sctrl,cctrl)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAPMod **  ldap_change_ref = hash2mod($arg, 0, "$func_name");
-    LDAPControl **  sctrl
-    LDAPControl **  cctrl
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    LDAPMod **     ldap_change_ref = hash2mod($arg, 0, "$func_name");
+    LDAPControl ** sctrl
+    LDAPControl ** cctrl
 
 int
 ldap_rename(ld,dn,newrdn,newSuperior,deleteoldrdn,sctrls,cctrls,msgidp)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAP_CHAR *     newrdn
-    LDAP_CHAR *     newSuperior
-    int             deleteoldrdn
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
-    int *           msgidp
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    LDAP_CHAR *    newrdn
+    LDAP_CHAR *    newSuperior
+    int            deleteoldrdn
+    LDAPControl ** sctrls
+    LDAPControl ** cctrls
+    int *          msgidp
 
 int
 ldap_rename_s(ld,dn,newrdn,newSuperior,deleteoldrdn,sctrls,cctrls)
@@ -561,7 +577,7 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
     LDAPControl **   cctrls
     struct timeval * timeout
     int              sizelimit
-    int            msgidp = NO_INIT
+    int              msgidp = NO_INIT
 
     CODE:
     {
@@ -635,6 +651,7 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
           croak("Net::LDAPapi::ldap_search_ext_s needs ARRAY reference as argument 5.");
           XSRETURN(1);
        }
+       printf("ctrl oid = %s\n", sctrls[0]->ldctl_oid);
        RETVAL = ldap_search_ext_s(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,timeout,sizelimit,&res);
        Safefree(attrs_char);
     }
@@ -1454,8 +1471,8 @@ ldap_create_control(oid, bv_val, bv_len, iscritical, ctrlp)
     {
         LDAPControl *ctrl = malloc(sizeof(LDAPControl));
 
-        ctrl->ldctl_oid          = oid;
-        ctrl->ldctl_value.bv_val = bv_val;
+        ctrl->ldctl_oid          = ber_strdup(oid);
+        ctrl->ldctl_value.bv_val = ber_strdup(bv_val);
         ctrl->ldctl_value.bv_len = bv_len;
         ctrl->ldctl_iscritical   = iscritical;
 
@@ -1466,6 +1483,10 @@ ldap_create_control(oid, bv_val, bv_len, iscritical, ctrlp)
     OUTPUT:
     RETVAL
     ctrlp
+
+void
+ldap_control_free (ctrl)
+    LDAPControl *ctrl
 
 BerElement *
 ber_alloc_t(options);
