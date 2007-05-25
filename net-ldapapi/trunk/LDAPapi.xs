@@ -475,17 +475,33 @@ ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
        Safefree(ldap_change_ref);
 
 int
-ldap_sasl_bind(ld, dn, mechanism, cred, sctrls, cctrls, msgidp)
+ldap_sasl_bind(ld, dn, passwd, sctrls, serverctrls, clientctrls, msgidp)
     LDAP *          ld
     LDAP_CHAR *     dn
-    LDAP_CHAR *     mechanism
-    struct berval * cred
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
-    int *           msgidp
+    LDAP_CHAR *     passwd
+    LDAPControl **  serverctrls
+    LDAPControl **  clientctrls
+    int             msgidp = NO_INIT
+    CODE:
+    {
+        struct berval cred;
+
+        if( passwd == NULL )
+            cred.bv_val = "";
+        else
+            cred.bv_val = passwd;
+
+        cred.bv_len = strlen(cred.bv_val);
+
+        RETVAL = ldap_sasl_bind_s(ld, dn, LDAP_SASL_SIMPLE, &cred,
+                                  serverctrls, clientctrls, &msgidp);
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
 
 int
-ldap_modify_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
+ldap_modify_ext(ld, dn, ldap_change_ref, sctrls, cctrls, msgidp)
     LDAP *         ld
     LDAP_CHAR *    dn
     SV *           ldap_change_ref
@@ -494,7 +510,7 @@ ldap_modify_ext(ld,dn,ldap_change_ref,sctrls,cctrls,msgidp)
     int            msgidp = NO_INIT
     CODE:
     {
-        LDAPMod ** mods  = hash2mod(ldap_change_ref, 0, "$func_name");
+        LDAPMod ** mods  = hash2mod(ldap_change_ref, 0, "ldap_modify_ext");
         RETVAL = ldap_modify_ext(ld, dn, mods, sctrls, cctrls, &msgidp);
         Safefree(mods);
     }
@@ -511,7 +527,7 @@ ldap_modify_ext_s(ld,dn,ldap_change_ref,sctrl,cctrl)
     LDAPControl ** cctrl
 
 int
-ldap_rename(ld,dn,newrdn,newSuperior,deleteoldrdn,sctrls,cctrls,msgidp)
+ldap_rename(ld, dn, newrdn, newSuperior, deleteoldrdn, sctrls, cctrls, msgidp)
     LDAP *         ld
     LDAP_CHAR *    dn
     LDAP_CHAR *    newrdn
@@ -519,17 +535,24 @@ ldap_rename(ld,dn,newrdn,newSuperior,deleteoldrdn,sctrls,cctrls,msgidp)
     int            deleteoldrdn
     LDAPControl ** sctrls
     LDAPControl ** cctrls
-    int *          msgidp
+    int            msgidp = NO_INIT
+    CODE:
+    {
+        RETVAL = ldap_rename(ld, dn, newrdn, newSuperior,
+                    deleteoldrdn, sctrls, cctrls, &msgidp);
+    }
+    OUTPUT:
+    RETVAL
 
 int
-ldap_rename_s(ld,dn,newrdn,newSuperior,deleteoldrdn,sctrls,cctrls)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAP_CHAR *     newrdn
-    LDAP_CHAR *     newSuperior
-    int             deleteoldrdn
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
+ldap_rename_s(ld, dn, newrdn, newSuperior, deleteoldrdn, sctrls, cctrls)
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    LDAP_CHAR *    newrdn
+    LDAP_CHAR *    newSuperior
+    int            deleteoldrdn
+    LDAPControl ** sctrls
+    LDAPControl ** cctrls
 
 int
 ldap_compare_ext(ld,dn,attr,bvalue,sctrls,cctrls,msgidp)
@@ -967,8 +990,6 @@ int ldap_str2rdn(str,rdn,n_in,flags)
 
 #endif
 
-#if defined(MOZILLA_LDAP)
-
 void
 ldap_explode_dn(dn,notypes)
     char *          dn
@@ -1008,8 +1029,6 @@ ldap_explode_rdn(dn,notypes)
           ldap_value_free(LDAPGETVAL);
        }
     }
-
-#endif
 
 SV *
 ldap_first_attribute(ld,entry,ber)
@@ -1378,21 +1397,23 @@ ldap_start_tls_s(ld,serverctrls,clientctrls)
 
 
 int
-ldap_sasl_interactive_bind_s(ld, who, passwd, mech, realm, authzid, props, flags)
-    LDAP *  ld
-    LDAP_CHAR * who
-    LDAP_CHAR * passwd
-    LDAP_CHAR * mech
-    LDAP_CHAR * realm
-    LDAP_CHAR * authzid
-    LDAP_CHAR * props
-    unsigned    flags
+ldap_sasl_interactive_bind_s(ld, who, passwd, serverctrls, clientctrls, mech, realm, authzid, props, flags)
+    LDAP *         ld
+    LDAP_CHAR *    who
+    LDAP_CHAR *    passwd
+    LDAPControl ** serverctrls
+    LDAPControl ** clientctrls
+    LDAP_CHAR *    mech
+    LDAP_CHAR *    realm
+    LDAP_CHAR *    authzid
+    LDAP_CHAR *    props
+    unsigned       flags
     CODE:
     {
         bictx ctx = {who, passwd, realm, authzid};
         if (props)
-            ldap_set_option(ld,LDAP_OPT_X_SASL_SECPROPS,props);
-        RETVAL = ldap_sasl_interactive_bind_s( ld, NULL, mech, NULL, NULL,
+            ldap_set_option(ld, LDAP_OPT_X_SASL_SECPROPS, props);
+        RETVAL = ldap_sasl_interactive_bind_s( ld, NULL, mech, serverctrls, clientctrls,
             flags, ldap_b2_interact, &ctx );
     }
     OUTPUT:

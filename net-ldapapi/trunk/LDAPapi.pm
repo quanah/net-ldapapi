@@ -368,28 +368,39 @@ sub add_ext_s
 } # end of add_ext_s
 
 
-# needs to use ldap_sasl_bind XXX
 sub bind
 {
     my ($self,@args) = @_;
 
-    my ($errdn,$extramsg,$msgid);
+    my ($msgid, $sctrls, $cctrls, $status);
 
-    my ($dn, $pass, $authtype) = $self->rearrange(['DN', 'PASSWORD', 'TYPE'],@args);
+    my ($dn, $pass, $authtype, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'PASSWORD', 'TYPE', 'SCTRLS', 'CCTRLS'],@args);
 
-    $dn = "" unless $dn;
-    $pass = "" unless $pass;
-    $authtype = $self->LDAP_AUTH_SIMPLE unless $authtype;
+    $dn       = "" unless $dn;
+    $pass     = "" unless $pass;
+    $authtype = $authtype || $self->LDAP_AUTH_SIMPLE;
 
-    $msgid = ldap_bind($self->{"ld"}, $dn, $pass, $authtype);
+    croak("bind supports only LDAP_AUTH_SIMPLE auth type")
+        unless $authtype == $self->LDAP_AUTH_SIMPLE;
 
-    if ($msgid < 0)
-    {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_sasl_bind($self->{"ld"}, $dn,     $pass,
+                             $sctrls,       $cctrls, $msgid);
+
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
     }
 
-    return($msgid);
+    return $msgid;
 } # end of bind
 
 
@@ -397,25 +408,34 @@ sub bind_s
 {
     my ($self, @args) = @_;
 
-    my ($saslmech, $status, $servercredp);
+    my ($saslmech, $status, $servercredp, $sctrls, $cctrls);
 
-    my ($dn, $pass, $authtype) = $self->rearrange(['DN', 'PASSWORD', 'TYPE'], @args);
+    my ($dn, $pass, $authtype, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'PASSWORD', 'TYPE', 'SCTRLS', 'CCTRLS'], @args);
 
     $dn       = "" unless $dn;
     $pass     = "" unless $pass;
     $authtype = $authtype || $self->LDAP_AUTH_SIMPLE;
 
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
     if ($authtype == $self->LDAP_AUTH_SASL) {
-        $status = ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
-                                               $saslmech,
-                                               $self->{"saslrealm"},
-                                               $self->{"saslauthzid"},
-                                               $self->{"saslsecprops"},
-                                               $self->{"saslflags"});
+        $status =
+            ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
+                                         $sctrls, $cctrls, $saslmech,
+                                         $self->{"saslrealm"},
+                                         $self->{"saslauthzid"},
+                                         $self->{"saslsecprops"},
+                                         $self->{"saslflags"});
     } else {
+        # not sure here what to do with $servercredp
         $status = ldap_sasl_bind_s($self->{"ld"}, $dn, $pass,
-                                   undef, undef, \$servercredp);
+                                   $sctrls, $cctrls, \$servercredp);
     }
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
 
     $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
@@ -567,21 +587,16 @@ sub dn2ufn
 } # end of dn2ufn
 
 
-# needs testing XXX
 sub explode_dn
 {
     my ($self, @args) = @_;
 
-    my (@components);
-
     my ($dn, $notypes) = $self->rearrange(['DN', 'NOTYPES'],@args);
 
-    @components = ldap_explode_dn($dn, $notypes); # depricated call XXX
-    return @components;
+    return ldap_explode_dn($dn, $notypes);
 } # end of explode_dn
 
 
-# needs testing XXX
 sub explode_rdn
 {
     my ($self, @args) = @_;
@@ -590,8 +605,7 @@ sub explode_rdn
 
     my ($rdn, $notypes) = $self->rearrange(['RDN', 'NOTYPES'], @args);
 
-    @components = ldap_explode_rdn($rdn, $notypes); # depricated call XXX
-    return @components;
+    return ldap_explode_rdn($rdn, $notypes);
 } # end of explode_rdn
 
 sub first_entry
@@ -844,12 +858,15 @@ sub modify
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
     $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
-    $status = ldap_modify_ext($self->{"ld"}, $dn, $mod, $sctrls, $sctrls, $msgid);
+    $status = ldap_modify_ext($self->{"ld"}, $dn, $mod, $sctrls, $cctrls, $msgid);
 
     if( $status != $self->LDAP_SUCCESS ) {
         $self->errorize($status);
         return undef;
     }
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
 
     return $msgid;
 } # end of modify
@@ -870,15 +887,22 @@ sub modify_s
 
     my ($status, $sctrls, $cctrls);
 
+    # fix this one XXX
     my ($dn, $mod, $serverctrls, $clientctrls) =
-        $self->rearrange(['DN', 'MOD', 'CCTRLS', 'TIMEOUT'], @args);
+        $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
 
     croak("No DN Specified") if ($dn eq "");
     croak("LDAP Modify Structure Not a Reference") if (ref($mod) ne "HASH");
 
-    $status = ldap_modify_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $sctrls);
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
-    self->errorize($status) unless $status= $self->LDAP_SUCCESS;
+    $status = ldap_modify_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $cctrls);
+
+    $self->errorize($status) unless $status= $self->LDAP_SUCCESS;
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
 
     return $status;
 } # end of modify_s
@@ -893,41 +917,57 @@ sub modify_ext_s
 } # end of modify_ext
 
 
-# needs to use ldap_rename XXX
-sub modrdn2
-{
-    my ($self,@args) = @_;
-    my ($msgid,$errdn,$extramsg);
+sub rename {
+    my ($self, @args) = @_;
 
-    my ($dn,$newrdn,$delete) = $self->rearrange(['DN','NEWRDN','DELETE'],@args);
+    my ($sctrls, $cctrls, $msgid, $status);
 
-    $msgid = ldap_modrdn2($self->{"ld"},$dn,$newrdn,$delete);
-    if ($msgid < 0)
-    {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
+    my ($dn, $newrdn, $newsuper, $delete, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'NEWRDN', 'NEWSUPER', 'DELETE', 'SCTRLS', 'CCTRLS'],
+                         @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status =
+        ldap_rename($self->{"ld"}, $dn,     $newrdn, $newsuper,
+                    $delete,       $sctrls, $cctrls, $msgid);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
     }
+
     return $msgid;
-} # end of modrdn2
+} # end of rename
 
 
-# needs to user ldap_rename_s XXX
-sub modrdn2_s
-{
-    my ($self,@args) = @_;
-    my ($status,$errdn,$extramsg);
+sub rename_s {
+    my ($self, @args) = @_;
 
-    my ($dn,$newrdn,$delete) = $self->rearrange(['DN','NEWRDN','DELETE'],@args);
+    my ($sctrls, $cctrls, $status);
 
+    my ($dn, $newrdn, $newsuper, $delete, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'NEWRDN', 'NEWSUPER', 'DELETE', 'SCTRLS', 'CCTRLS'],
+                         @args);
 
-    $status = ldap_modrdn2_s($self->{"ld"},$dn,$newrdn,$delete);
-    if ($status != $self->LDAP_SUCCESS)
-    {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
-    }
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status =
+        ldap_rename_s($self->{"ld"}, $dn,     $newrdn, $newsuper,
+                      $delete,       $sctrls, $cctrls);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+
     return $status;
-} # end of modrdn2_s
+} # end of rename_s
 
 
 # this function is used to retrieve results of asynchronous search operation
@@ -1888,11 +1928,11 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Can also be accessed directly as 'ldap_explode_dn' if no session is
   initialized and you don't want the object oriented form.
 
-  Only available when compiled with Mozilla SDK.
+  In OpenLDAP this call is depricated.
 
   Example:
 
-    @components = $ld->explode_dn($dn,0);
+    @components = $ld->explode_dn($dn, 0);
 
 =item explode_rdn RDN NOTYPES
 
@@ -1904,11 +1944,11 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Can also be accessed directly as 'ldap_explode_rdn' if no session is
   initialized and you don't want the object oriented form.
 
-  Only available with Mozilla SDK.
+  In OpenLDAP this call is depricated.
 
   Example:
 
-    @components = $ld->explode_rdn($rdn,0);
+    @components = $ld->explode_rdn($rdn, 0);
 
 =item first_attribute
 
@@ -2018,25 +2058,11 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
 =item modrdn2 DN NEWRDN DELETE
 
-  Asynchronous method to change the name of an entry.  DELETE
-  is non-zero if you wish to remove the attribute values from the
-  old name.  Returns a MSGID.
-
-  Example:
-
-    $msgid = $ld->modrdn2("cn=Clayton Donley, o=Motorola, c=US", \
-        "cn=Clay Donley",0);
+  No longer available. Use function 'rename'.
 
 =item modrdn2_s DN NEWRDN DELETE
 
-  Synchronous method to change the name of an entry.  DELETE is
-  non-zero if you wish to remove the attribute values from the old
-  name.  Returns an LDAP STATUS.
-
-  Example:
-
-    $status = $ld->modrdn2_s("cn=Clayton Donley, o=Motorola, c=US", \
-        "cn=Clay Donley",0);
+  No longer available. Use function 'rename_s'.
 
 =item next_attribute
 
@@ -2068,6 +2094,30 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $ld->perror("add_s");
+
+=item rename DN NEWRDN NEWSUPER DELETE SCTRLS CCTRLS
+
+  Asynchronous method to change the name of an entry. NEWSUPER is a new
+  parent (superior entry).  If set to NULL then only the RDN is changed.
+  Set DELETE to non-zero if you wish to remove the attribute values from the
+  old name.  Returns a MSGID.
+
+  Example:
+
+    $msgid = $ld->rename("cn=Clayton Donley, o=Motorola, c=US", \
+        "cn=Clay Donley", NULL, 0);
+
+=item rename_s DN NEWRDN NEWSUPER DELETE SCTRLS CCTRLS
+
+  Synchronous method to change the name of an entry. NEWSUPER is a new
+  parent (superior entry).  If set to NULL then only the RDN is changed.
+  Set DELETE to non-zero if you wish to remove the attribute values from the
+  old name.  Returns a LDAP STATUS.
+
+  Example:
+
+    $status = $ld->rename("cn=Clayton Donley, o=Motorola, c=US", \
+        "cn=Clay Donley", NULL, 0);
 
 =item result MSGID ALL TIMEOUT
 
