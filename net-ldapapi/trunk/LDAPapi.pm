@@ -1,6 +1,6 @@
 package Net::LDAPapi;
 
-#use strict;
+use strict;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 
@@ -269,7 +269,7 @@ sub DESTROY {};
 
 sub abandon
 {
-    my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
     my ($status, $sctrls, $cctrls);
 
@@ -281,7 +281,7 @@ sub abandon
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
     $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
-    $status = ldap_abandon_ext($self->{"ld"}, $msgid, $sctrls,  $cctrls);
+    $status = ldap_abandon_ext($self->{"ld"}, $msgid, $sctrls, $cctrls);
 
     $self->errorize($status) unless( $status == $self->LDAP_SUCCESS );
 
@@ -310,7 +310,6 @@ sub add
         $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
 
     croak("No DN Specified") if ($dn eq "");
-
     croak("LDAPMod structure is not a hash reference.") if( ref($mod) ne "HASH" );
 
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
@@ -348,10 +347,15 @@ sub add_s
         $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
 
     croak("No DN Specified") if ($dn eq "");
-
     croak("LDAP Modify Structure Not a HASH Reference") if (ref($mod) ne "HASH");
 
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
     $status = ldap_add_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $cctrls);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
 
     $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
@@ -464,27 +468,42 @@ sub sasl_parms
 } # end of sasl_parms
 
 
-# needs to use ldap_compare_ext
 sub compare
 {
-    my ($self,@args) = @_;
+    my ($self, @args) = @_;
 
-    my ($errdn,$extramsg,$msgid);
+    my ($status, $msgid, $sctrls, $cctrls);
 
-    my ($dn,$attr,$value) = $self->rearrange(['DN','ATTR',['VALUE','VALUES']],
-                                             @args);
+    my ($dn, $attr, $value, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN','ATTR', ['VALUE', 'VALUES'], 'SCTRLS', 'CCTRLS'],  @args);
 
     croak("No DN Specified") if ($dn eq "");
+    $value = "" unless $value;
 
-    $msgid = ldap_compare($self->{"ld"}, $dn, $attr, $value);
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
-    if ($msgid < 0) {
-        $self->errorize(-20);
+    $status =
+        ldap_compare_ext($self->{"ld"}, $dn, $attr, $value, $sctrls, $cctrls, $msgid);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
-    return($msgid);
+    return $msgid;
 } # end of compare
+
+
+# synonym for compare
+sub compare_ext {
+    my ($self, @args) = @_;
+
+    return $self->compare(@args);
+} # end of compare_ext
 
 
 # needs to use ldap_compare_ext_s
@@ -492,14 +511,21 @@ sub compare_s
 {
     my ($self, @args) = @_;
 
-    my ($status);
+    my ($status, $sctrls, $cctrls);
 
-    my ($dn, $attr, $value) =
-        $self->rearrange(['DN', 'ATTR' , ['VALUE', 'VALUES']], @args);
+    my ($dn, $attr, $value, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'ATTR' , ['VALUE', 'VALUES'], 'SCTRLS', 'CCTRLS'], @args);
 
     croak("No DN Specified") if ($dn eq "");
+    $value = "" unless $value;
 
-    $status = ldap_compare_s($self->{"ld"}, $dn, $attr, $value);
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_compare_ext_s($self->{"ld"}, $dn, $attr, $value, $sctrls, $cctrls);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
 
     if( $status != $self->LDAP_COMPARE_FALSE && $status != $self->LDAP_COMPARE_TRUE ) {
         $self->errorize($status);
@@ -509,16 +535,60 @@ sub compare_s
 } # end of compare_s
 
 
+# synonym for compare
+sub compare_ext_s {
+    my ($self, @args) = @_;
+
+    return $self->compare_s(@args);
+} # end of compare_ext
+
+
+# needs DOC in POD bellow. XXX
+sub start_tls
+{
+    my ($self, @args) = @_;
+
+    my ($msgid, $status, $sctrls, $cctrls);
+
+    my ($serverctrls, $clientctrls) =
+        $self->rearrange(['SCTRLS', 'CCTRLS'], @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_start_tls($self->{"ld"}, $sctrls, $cctrls, $msgid);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
+    }
+
+    return $msgid;
+} # end of start_tls
+
+
+# needs DOC in POD bellow. XXX
 sub start_tls_s
 {
-    my ($self) = @_;
+    my ($self, @args) = @_;
 
-    my ($errdn, $extramsg,$status);
+    my ($status, $sctrls, $cctrls);
 
-    if(($status = ldap_start_tls_s($self->{"ld"})) != $self->LDAP_SUCCESS) {
-        $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
-    }
+    my ($serverctrls, $clientctrls) = $self->rearrange(['SCTRLS', 'CCTRLS'], @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_start_tls_s($self->{"ld"}, $sctrls, $cctrls);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+
     return $status;
 } # end of start_tls_s
 
@@ -541,41 +611,52 @@ sub delete
 {
     my ($self,@args) = @_;
 
-    my ($msgid);
+    my ($msgid, $status, $sctrls, $cctrls);
 
-    my ($dn) = $self->rearrange(['DN'], @args);
+    my ($dn, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'SCTRLS', 'CCTRLS'], @args);
 
     croak("No DN Specified") if ($dn eq "");
 
-    $msgid = ldap_delete($self->{"ld"}, $dn);
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
-    if ($msgid < 0)
-    {
-        $self->errorize(-20);
+    $status = ldap_delete_ext($self->{"ld"}, $dn, $sctrls, $cctrls, $msgid);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
-    return($msgid);
+    return $msgid;
 } # end of delete
-
 
 sub delete_s
 {
     my ($self,@args) = @_;
 
-    my ($status);
+    my ($status, $sctrls, $cctrls);
 
-    my ($dn) = $self->rearrange(['DN'], @args);
+    my ($dn, $serverctrls, $clientctrls) =
+        $self->rearrange(['DN', 'SCTRLS', 'CCTRLS'], @args);
 
     croak("No DN Specified") if ($dn eq "");
 
-    $status = ldap_delete_s($self->{"ld"}, $dn);
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
-    $self->errorize($status) unless $status != $self->LDAP_SUCCESS;
+    $status = ldap_delete_ext_s($self->{"ld"}, $dn, $sctrls, $cctrls);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     return $status;
 } # end of delete_s
-
 
 sub dn2ufn
 {
@@ -597,6 +678,7 @@ sub explode_dn
 } # end of explode_dn
 
 
+# needs testing XXX
 sub explode_rdn
 {
     my ($self, @args) = @_;
@@ -741,7 +823,7 @@ sub entry_attribute {
 } # end of entry_attribute
 
 
-# call to ldap_parse_result(...)
+# needs doc in POD bellow XXX
 sub parse_result {
     my ($self, @args) = @_;
 
@@ -827,19 +909,16 @@ sub get_values_len {
 } # end of get_values_len
 
 
+# needs testing XXX
 sub msgfree
 {
-    my ($self) = @_;
-    my ($type);
+    my ($self, @args) = @_;
 
-    if ($self->{"result"} eq "")
-    {
-        croak("No current result");
-    }
+    my ($result) = $self->rearrange(['RESULT'], @args);
 
-    $type = ldap_msgfree($self->{"result"});
+    $result = $self->{"result"} unless $result;
 
-    return $type;
+    return ldap_msgfree($self->{"result"});
 } # end of msgfree
 
 
@@ -887,7 +966,6 @@ sub modify_s
 
     my ($status, $sctrls, $cctrls);
 
-    # fix this one XXX
     my ($dn, $mod, $serverctrls, $clientctrls) =
         $self->rearrange(['DN', 'MOD', 'SCTRLS', 'CCTRLS'], @args);
 
@@ -917,6 +995,7 @@ sub modify_ext_s
 } # end of modify_ext
 
 
+# needs updated docs in POD bellow
 sub rename {
     my ($self, @args) = @_;
 
@@ -945,6 +1024,7 @@ sub rename {
 } # end of rename
 
 
+# needs updated docs in POD bellow
 sub rename_s {
     my ($self, @args) = @_;
 
@@ -995,20 +1075,6 @@ sub result
 } # end of result
 
 
-sub result2error
-{
-    my ($self,@args) = @_;
-
-    my ($freeit) = $self->rearrange(['FREEIT'],@args);
-
-    croak("No Current Result") unless $self->{"result"};
-
-    $self->{"errno"} = ldap_result2error($self->{"ld"}, $self->{"result"}, $freeit);
-
-    return $self->{"errno"};
-} # end of result2error
-
-
 sub is_ldap_url
 {
     my ($self,@args) = @_;
@@ -1019,6 +1085,7 @@ sub is_ldap_url
 } # end of is_ldap_url
 
 
+# needs testing XXX
 sub url_parse
 {
     my ($self,@args) = @_;
@@ -1028,6 +1095,7 @@ sub url_parse
 } # end of url_parse
 
 
+# needs testing XXX. present only in Mozilla SDK
 sub url_search
 {
     my ($self,@args) = @_;
@@ -1044,6 +1112,7 @@ sub url_search
 } # end of url_search
 
 
+# needs testing XXX. present only in Mozilla SDK
 sub url_search_s
 {
     my ($self, @args) = @_;
@@ -1062,6 +1131,7 @@ sub url_search_s
 } # end of url_search_s
 
 
+# needs testing XXX. present only in Mozilla SDK
 sub url_search_st
 {
     my ($self,@args) = @_;
@@ -1081,6 +1151,7 @@ sub url_search_st
 } # end of url_search_st
 
 
+# needs testing XXX. present only in Mozilla SDK
 sub multisort_entries
 {
     my ($self,@args) = @_;
@@ -1193,6 +1264,7 @@ sub search_ext_s
 } # end of search_ext_s
 
 
+# needs docs in POD bellow XXX
 sub count_references
 {
     my ($self, @args) = @_;
@@ -1205,6 +1277,7 @@ sub count_references
 } # end of count_references
 
 
+# needs testing XXX
 sub get_option
 {
     my ($self,@args) = @_;
@@ -1212,12 +1285,13 @@ sub get_option
 
     my ($option,$optdata) = $self->rearrange(['OPTION','OPTDATA'], @args);
 
-    $status = ldap_get_option($self->{"ld"},$option,$$optdata);
+    $status = ldap_get_option($self->{"ld"},$option, $optdata);
 
     return $status;
 } # end of get_option
 
 
+# needs testing XXX
 sub set_option
 {
     my ($self,@args) = @_;
@@ -1231,6 +1305,7 @@ sub set_option
 } # end of set_option
 
 
+# needs testing XXX
 sub set_rebind_proc
 {
     my ($self,@args) = @_;
@@ -1240,7 +1315,7 @@ sub set_rebind_proc
 
     if (ref($rebindproc) eq "CODE")
     {
-        $status = ldap_set_rebind_proc($self->{"ld"},$rebindproc);
+        $status = ldap_set_rebind_proc($self->{"ld"}, $rebindproc);
     } else {
         croak("REBINDPROC is not a CODE Reference");
     }
@@ -1248,6 +1323,7 @@ sub set_rebind_proc
 } # end of set_rebind_proc
 
 
+# needs testing XXX
 sub get_all_entries
 {
     my ($self) = shift;
@@ -1255,19 +1331,36 @@ sub get_all_entries
 
     croak("NULL Result") unless $self->{"result"};
 
-    $record = ldap_get_all_entries($self->{"ld"},$self->{"result"});
+    $record = ldap_get_all_entries($self->{"ld"}, $self->{"result"});
     return $record;
 } # end of get_all_entries
 
 
+# need to amend docs in POD bellow XXX
 sub unbind
 {
-    my ($self) = @_;
+    my ($self, @args) = @_;
 
-    ldap_unbind($self->{"ld"});
+    my ($status, $sctrls, $cctrls);
+
+    my ($serverctrls, $clientctrls) =
+        $self->rearrange(['SCTRLS', 'CCTRLS'], @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_unbind_ext_s($self->{"ld"}, $sctrls, $cctrls);
+
+    $self->errorize($status) unless( $status == $self->LDAP_SUCCESS );
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    return $status;
 } # end of unbind
 
 
+# do we need these ssl function
 sub ssl_client_init
 {
     my ($self,@args) = @_;
@@ -1281,6 +1374,7 @@ sub ssl_client_init
 } # end of ssl_client_init
 
 
+# do we need these ssl function
 sub ssl
 {
     my ($self) = @_;
@@ -1795,7 +1889,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
 =head1 SUPPORTED METHODS
 
-=item abandon MSGID
+=item abandon MSGID SCTRLS CCTRLS
 
   This cancels an asynchronous LDAP operation that has not completed.  It
   returns an LDAP STATUS code upon completion.
@@ -1804,9 +1898,9 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $status = ldap_abandon($ld, $msgid);
 
-=item add DN ATTR
+=item add DN ATTR SCTRLS CCTRLS
 
-  Begins an an asynchronous LDAP Add operation.  It returns a MSGID or -1
+  Begins an an asynchronous LDAP Add operation.  It returns a MSGID or undef
   upon completion.
 
   Example:
@@ -1827,7 +1921,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Note that in most cases, you will need to be bound to the LDAP server
   as an administrator in order to add users.
 
-=item add_s DN ATTR
+=item add_s DN ATTR SCTRLS CCTRLS
 
   Synchronous version of the 'add' method.  Arguments are identical
   to the 'add' method, but this operation returns an LDAP STATUS,
@@ -1840,7 +1934,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   See the section on creating the modify structure for more information
   on populating the ATTRIBUTES field for Add and Modify operations.
 
-=item bind DN PASSWORD TYPE
+=item bind DN PASSWORD TYPE SCTRLS CCTRLS
 
   Asynchronous method for binding to the LDAP server.  It returns a
   MSGID.
@@ -1851,7 +1945,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     $msgid = $ld->bind("cn=Clayton Donley, o=Motorola, c=US", "abc123");
 
 
-=item bind_s DN PASSWORD TYPE
+=item bind_s DN PASSWORD TYPE SCTRLS CCTRLS
 
   Synchronous method for binding to the LDAP server.  It returns
   an LDAP STATUS.
@@ -1862,17 +1956,17 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     $status = $ld->bind_s("cn=Clayton Donley, o=Motorola, c=US", "abc123");
 
 
-=item compare DN ATTR VALUE
+=item compare DN ATTR VALUE SCTRLS CCTRLS
 
   Asynchronous method for comparing a value with the value contained
-  within DN.  Returns a MSGID.
+  within DN.  Returns a MSGID or undef.
 
   Example:
 
     $msgid = $ld->compare("cn=Clayton Donley, o=Motorola, c=US", \
         $type, $value);
 
-=item compare_s DN ATTR VALUE
+=item compare_s DN ATTR VALUE SCTRLS CCTRLS
 
   Synchronous method for comparing a value with the value contained
   within DN.  Returns an LDAP_COMPARE_TRUE, LDAP_COMPARE_FALSE or an error code.
@@ -2132,18 +2226,6 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $type = $ld->result($msgid,0,1);
-
-=item result2error FREEIT
-
-  Returns the LDAP error code from an LDAP result message.  FREEIT will
-  free the memory occupied by the result if set non-zero.
-
-  This routine also updates message returned by err and errstring
-  methods.
-
-  Example:
-
-    $lderrno = $ld->result2error(0);
 
 =item search BASE SCOPE FILTER ATTRS ATTRSONLY
 

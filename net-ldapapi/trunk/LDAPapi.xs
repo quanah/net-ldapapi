@@ -396,17 +396,11 @@ ldap_get_option(ld,option,optdata)
     int             optdata = NO_INIT
     CODE:
     {
-       RETVAL = ldap_get_option(ld,option,&optdata);
+       RETVAL = ldap_get_option(ld, option, &optdata);
     }
     OUTPUT:
     RETVAL
     optdata
-
-int
-ldap_unbind_ext(ld,sctrls,cctrls)
-    LDAP *          ld
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
 
 int
 ldap_unbind_ext_s(ld,sctrls,cctrls)
@@ -456,7 +450,7 @@ ldap_add_ext(ld, dn, ldap_change_ref, sctrls, cctrls, msgidp)
     int            msgidp = NO_INIT
     CODE:
     {
-        LDAPMod ** attrs = hash2mod(ldap_change_ref, 1, "$func_name");
+        LDAPMod ** attrs = hash2mod(ldap_change_ref, 1, "ldap_add_ext");
         RETVAL = ldap_add_ext(ld, dn, attrs, sctrls, cctrls, &msgidp);
         Safefree(attrs);
     }
@@ -468,7 +462,7 @@ int
 ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
     LDAP *         ld
     LDAP_CHAR *    dn
-    LDAPMod **     ldap_change_ref = hash2mod($arg, 1, "$func_name");
+    LDAPMod **     ldap_change_ref = hash2mod($arg, 1, "ldap_add_ext_s");
     LDAPControl ** sctrls
     LDAPControl ** cctrls
     CLEANUP:
@@ -493,8 +487,8 @@ ldap_sasl_bind(ld, dn, passwd, sctrls, serverctrls, clientctrls, msgidp)
 
         cred.bv_len = strlen(cred.bv_val);
 
-        RETVAL = ldap_sasl_bind_s(ld, dn, LDAP_SASL_SIMPLE, &cred,
-                                  serverctrls, clientctrls, &msgidp);
+        RETVAL = ldap_sasl_bind(ld, dn, LDAP_SASL_SIMPLE, &cred,
+                                serverctrls, clientctrls, &msgidp);
     }
     OUTPUT:
     RETVAL
@@ -555,31 +549,57 @@ ldap_rename_s(ld, dn, newrdn, newSuperior, deleteoldrdn, sctrls, cctrls)
     LDAPControl ** cctrls
 
 int
-ldap_compare_ext(ld,dn,attr,bvalue,sctrls,cctrls,msgidp)
-    LDAP *              ld
-    LDAP_CHAR *         dn
-    LDAP_CHAR *         attr
-    struct berval *     bvalue
-    LDAPControl **      sctrls
-    LDAPControl **      cctrls
-    int *               msgidp
+ldap_compare_ext(ld,dn,attr,value,sctrls,cctrls,msgidp)
+    LDAP *          ld
+    LDAP_CHAR *     dn
+    LDAP_CHAR *     attr
+    LDAP_CHAR *     value
+    LDAPControl **  sctrls
+    LDAPControl **  cctrls
+    int             msgidp = NO_INIT
+    CODE:
+    {
+        struct berval bvalue;
+        bvalue.bv_len = strlen(value);
+        bvalue.bv_val = value;
+        RETVAL = ldap_compare_ext(ld, dn, attr, &bvalue, sctrls, cctrls, &msgidp);
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
 
 int
-ldap_compare_ext_s(ld,dn,attr,bvalue,sctrl,cctrl)
-    LDAP *              ld
-    LDAP_CHAR *         dn
-    LDAP_CHAR *         attr
-    struct berval *     bvalue
-    LDAPControl **      sctrl
-    LDAPControl **      cctrl
+ldap_compare_ext_s(ld, dn, attr, value, sctrls, cctrls)
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    LDAP_CHAR *    attr
+    LDAP_CHAR *    value
+    LDAPControl ** sctrls
+    LDAPControl ** cctrls
+    CODE:
+    {
+        struct berval bvalue;
+        bvalue.bv_len = strlen(value);
+        bvalue.bv_val = value;
+        RETVAL = ldap_compare_ext_s(ld, dn, attr, &bvalue, sctrls, cctrls);
+    }
+    OUTPUT:
+    RETVAL
 
 int
 ldap_delete_ext(ld,dn,sctrls,cctrls,msgidp)
-    LDAP *          ld
-    LDAP_CHAR *     dn
-    LDAPControl **  sctrls
-    LDAPControl **  cctrls
-    int *           msgidp
+    LDAP *         ld
+    LDAP_CHAR *    dn
+    LDAPControl ** sctrls
+    LDAPControl ** cctrls
+    int            msgidp = NO_INIT
+    CODE:
+    {
+        RETVAL = ldap_delete_ext(ld, dn, sctrls, cctrls, &msgidp);
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
 
 int
 ldap_delete_ext_s(ld,dn,sctrls,cctrls)
@@ -1199,11 +1219,11 @@ ldap_get_all_entries(ld,result)
 
 int
 ldap_is_ldap_url(url)
-    char *      url
+    LDAP_CHAR * url
 
 SV *
 ldap_url_parse(url)
-    char *      url
+    LDAP_CHAR *      url
     CODE:
     {
        LDAPURLDesc *realcomp;
@@ -1387,7 +1407,14 @@ ldap_start_tls(ld,serverctrls,clientctrls,msgidp)
     LDAP *         ld
     LDAPControl ** serverctrls
     LDAPControl ** clientctrls
-    int *          msgidp
+    int            msgidp = NO_INIT
+    CODE:
+    {
+        RETVAL = ldap_start_tls(ld, serverctrls, clientctrls, &msgidp);
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
 
 int
 ldap_start_tls_s(ld,serverctrls,clientctrls)
@@ -1438,7 +1465,8 @@ ldap_sasl_bind_s(ld, dn, passwd, serverctrls, clientctrls, servercredp)
 
         cred.bv_len = strlen(cred.bv_val);
 
-        RETVAL = ldap_sasl_bind_s(ld, dn, LDAP_SASL_SIMPLE, &cred, serverctrls, clientctrls, servercredp);
+        RETVAL = ldap_sasl_bind_s(ld, dn, LDAP_SASL_SIMPLE, &cred,
+                                  serverctrls, clientctrls, servercredp);
     }
     OUTPUT:
     RETVAL
