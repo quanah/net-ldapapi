@@ -694,7 +694,6 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
           croak("Net::LDAPapi::ldap_search_ext_s needs ARRAY reference as argument 5.");
           XSRETURN(1);
        }
-       printf("ctrl oid = %s\n", sctrls[0]->ldctl_oid);
        RETVAL = ldap_search_ext_s(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,timeout,sizelimit,&res);
        Safefree(attrs_char);
     }
