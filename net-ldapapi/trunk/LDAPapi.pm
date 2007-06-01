@@ -977,7 +977,7 @@ sub modify_s
 
     $status = ldap_modify_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $cctrls);
 
-    $self->errorize($status) unless $status= $self->LDAP_SUCCESS;
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
