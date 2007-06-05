@@ -432,6 +432,7 @@ sub bind_s
                                          $self->{"saslauthzid"},
                                          $self->{"saslsecprops"},
                                          $self->{"saslflags"});
+
     } else {
         # not sure here what to do with $servercredp
         $status = ldap_sasl_bind_s($self->{"ld"}, $dn, $pass,
@@ -845,8 +846,6 @@ sub parse_result {
     $status =
         ldap_parse_result($self->{"ld"}, $msg,           $errcode,         $matcheddn,
                           $errmsg,       $referrals_ref, $serverctrls_ref, $freeMsg);
-
-    print "ldap_parse_result status = $status\n";
 
     if( $status != $self->LDAP_SUCCESS ) {
         $self->errorize($status);
@@ -1497,7 +1496,7 @@ sub free_control
 
     my ($control) = $self->rearrange(['CONTROL'], @args);
 
-    ldap_free_control($control);
+    ldap_control_free($control);
 } # end of free_control
 
 
