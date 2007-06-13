@@ -23,7 +23,7 @@ require AutoLoader;
        ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
        ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
        ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
-       ldap_err2string ldap_dn2ufn ldap_str2dn ldap_str2rdn
+       ldap_err2string ldap_dn2ufn ldap_str2dn ldap_str2rdn ldap_explode_rdn
        ldap_explode_dns ldap_first_attribute ldap_next_attribute
        ldap_get_values ldap_get_values_len ldap_sasl_bind ldap_sasl_bind_s
        ldapssl_client_init ldapssl_init ldapssl_install_routines
@@ -679,7 +679,6 @@ sub explode_dn
 } # end of explode_dn
 
 
-# needs testing XXX
 sub explode_rdn
 {
     my ($self, @args) = @_;
@@ -824,11 +823,10 @@ sub entry_attribute {
 } # end of entry_attribute
 
 
-# needs doc in POD bellow XXX
 sub parse_result {
     my ($self, @args) = @_;
 
-    my ($freeMsg, $msg) = $self->rearrange(['FREEMSG', 'MSG'], @args);
+    my ($msg, $freeMsg) = $self->rearrange(['MSG', 'FREEMSG'], @args);
 
     my ($status, %result);
 
@@ -874,11 +872,15 @@ sub perror
 # get dn for current entry
 sub get_dn
 {
-    my ($self) = @_;
+    my ($self, @args) = @_;
 
-    croak("No Current Entry") if ($self->{"entry"} == 0);
+    my ($entry) = $self->rearrange(['MSG'], @args);
 
-    my $dn = ldap_get_dn($self->{"ld"}, $self->{"entry"});
+    $entry = $self->{"entry"} unless $entry;
+
+    croak("No Current Entry") unless $entry;
+
+    my $dn = ldap_get_dn($self->{"ld"}, $entry);
 
     return $dn;
 } # end of get_dn
@@ -889,7 +891,7 @@ sub get_values
 {
     my ($self, @args) = @_;
 
-    my ($attr) = $self->rearrange(['ATTR'],@args);
+    my ($attr) = $self->rearrange(['ATTR'], @args);
 
     croak("No Current Entry")       if ($self->{"entry"} == 0);
     croak("No Attribute Specified") if ($attr eq "");
@@ -908,7 +910,6 @@ sub get_values_len {
 } # end of get_values_len
 
 
-# needs testing XXX
 sub msgfree
 {
     my ($self, @args) = @_;
@@ -1084,7 +1085,6 @@ sub is_ldap_url
 } # end of is_ldap_url
 
 
-# needs testing XXX
 sub url_parse
 {
     my ($self,@args) = @_;
@@ -1263,7 +1263,6 @@ sub search_ext_s
 } # end of search_ext_s
 
 
-# needs docs in POD bellow XXX
 sub count_references
 {
     my ($self, @args) = @_;
@@ -1276,21 +1275,19 @@ sub count_references
 } # end of count_references
 
 
-# needs testing XXX
 sub get_option
 {
-    my ($self,@args) = @_;
+    my ($self, @args) = @_;
     my ($status);
 
-    my ($option,$optdata) = $self->rearrange(['OPTION','OPTDATA'], @args);
+    my ($option, $optdata) = $self->rearrange(['OPTION', 'OPTDATA'], @args);
 
-    $status = ldap_get_option($self->{"ld"},$option, $optdata);
+    $status = ldap_get_option($self->{"ld"}, $option, $optdata);
 
     return $status;
 } # end of get_option
 
 
-# needs testing XXX
 sub set_option
 {
     my ($self,@args) = @_;
@@ -1304,38 +1301,39 @@ sub set_option
 } # end of set_option
 
 
-# needs testing XXX
+# needs testing more XXX
 sub set_rebind_proc
 {
-    my ($self,@args) = @_;
+    my ($self, @args) = @_;
     my ($status);
 
-    my ($rebindproc) = $self->rearrange(['REBINDPROC'],@args);
+    my ($rebindproc) = $self->rearrange(['REBINDPROC'], @args);
 
-    if (ref($rebindproc) eq "CODE")
-    {
+    if( ref($rebindproc) eq "CODE" ) {
         $status = ldap_set_rebind_proc($self->{"ld"}, $rebindproc);
     } else {
         croak("REBINDPROC is not a CODE Reference");
     }
+
     return $status;
 } # end of set_rebind_proc
 
 
-# needs testing XXX
+# needs docs in a POD bellow. XXX
 sub get_all_entries
 {
-    my ($self) = shift;
-    my $record;
+    my ($self, @args) = shift;
 
-    croak("NULL Result") unless $self->{"result"};
+    my ($result) = $self->rearrange(['RESULT'], @args);
 
-    $record = ldap_get_all_entries($self->{"ld"}, $self->{"result"});
-    return $record;
+    $result = $self->{"result"} unless $result;
+
+    croak("NULL Result") unless $result;
+
+    return ldap_get_all_entries($self->{"ld"}, $result);
 } # end of get_all_entries
 
 
-# need to amend docs in POD bellow XXX
 sub unbind
 {
     my ($self, @args) = @_;
@@ -1977,11 +1975,19 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
 =item count_entries
 
-  Calculates and returns the number of entries in an LDAP result chain.
+  Returns the number of entries in an LDAP result chain.
 
   Example:
 
     $number = $ld->count_entries;
+
+=item count_references MSG
+
+  Return number of references in a given/current message.
+
+  Example:
+
+    $number = $ld->count_references
 
 =item delete DN
 
@@ -2064,7 +2070,33 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $entry = $ld->first_entry;
 
-=item get_dn
+=item get_all_entries RESULT
+
+  Returns result of the search operation in the following format
+    (HASH)
+    dn -> (HASH)
+          key -> (ARRAY)
+
+  Example:
+    my $all_entries_ref = $ld->get_all_entries;
+    my %all_entries = %$all_entries_ref;
+
+    foreach (keys %all_entries) {
+        print "<$_> -> <".$all_entries{$_}.">\n";
+        $entry = $all_entries{$_};
+
+        local %entry_h = %$entry;
+        foreach $k (keys %entry_h) {
+            $values = $entry_h{$k};
+
+            print "  <$k> ->\n";
+            foreach $val (@$values) {
+                print "     <$val>\n";
+            }
+        }
+    }
+
+=item get_dn MSG
 
   Returns a string containing the DN for the specified entry or an
   empty string if an error occurs.
@@ -2175,6 +2207,22 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $entry = $ld->next_entry;
 
+=item parse_result MSG FREEMSG
+
+  This function is used to retrieve auxiliary data associated with the
+  message. The return value is a hashtable containing following kevalue
+  pairs.
+    'errcode'     -> numeric
+    'matcheddn'   -> string
+    'errmsg'      -> string
+    'referrals'   -> array reference
+    'serverctrls' -> array reference
+
+  The FREEMSG parameter determines whether the parsed message is freed
+  or not after the extraction. Any non-zero value will make it free the
+  message. The msgfree() routine can also be used to free the message
+  later.
+
 =item perror MSG
 
   If an error occurs while performing an LDAP function, this procedure
@@ -2282,7 +2330,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     $status = $ld->search_st("o=Motorola, c=US",LDAP_SCOPE_SUBTREE, \
         "(sn=Donley),[],0,3);
 
-=item unbind
+=item unbind SCTRLS CCTRLS
 
   Unbind LDAP connection with specified SESSION handler.
 

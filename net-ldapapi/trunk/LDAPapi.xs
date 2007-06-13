@@ -1180,35 +1180,34 @@ ldap_get_all_entries(ld,result)
           SV* HashRef = newRV((SV*) ResultHash);
 
           if ((dn = ldap_get_dn(ld, entry)) == NULL)
-         continue;
+              continue;
 
           for ( attr = ldap_first_attribute(ld, entry, &ber);
           attr != NULL;
           attr = ldap_next_attribute(ld, entry, ber) )
           {
-
-         AV* AttributeValsArray = newAV();
-         SV* ArrayRef = newRV((SV*) AttributeValsArray);
-         if ((vals = ldap_get_values_len(ld, entry, attr)) != NULL)
-         {
-            for (count=0; vals[count] != NULL; count++)
-            {
-               SV* SVval = newSVpv(vals[count]->bv_val,vals[count]->bv_len);
-               av_push(AttributeValsArray, SVval);
-            }
+              AV* AttributeValsArray = newAV();
+              SV* ArrayRef = newRV((SV*) AttributeValsArray);
+              if ((vals = ldap_get_values_len(ld, entry, attr)) != NULL)
+              {
+                  for (count=0; vals[count] != NULL; count++)
+                  {
+                      SV* SVval = newSVpvn(vals[count]->bv_val, vals[count]->bv_len);
+                      av_push(AttributeValsArray, SVval);
+                  }
+              }
+              hv_store(ResultHash, attr, strlen(attr), ArrayRef, 0);
+              if (vals != NULL)
+                  ldap_value_free_len(vals);
          }
-         hv_store(ResultHash, attr, strlen(attr), ArrayRef, 0);
-             if (vals != NULL)
-            ldap_value_free_len(vals);
-          }
-          if (attr != NULL)
+         if (attr != NULL)
              ldap_memfree(attr);
-          hv_store(FullHash, dn, strlen(dn), HashRef, 0);
-          if (dn != NULL)
+         hv_store(FullHash, dn, strlen(dn), HashRef, 0);
+         if (dn != NULL)
              ldap_memfree(dn);
 #if defined(MOZILLA_LDAP) || defined(OPENLDAP)
-          if (ber != NULL)
-             ber_free(ber,0);
+         if (ber != NULL)
+            ber_free(ber,0);
 #endif
        }
        RETVAL = FullHash;
