@@ -33,6 +33,9 @@ extern "C" {
  #define LDAP_CHAR char
 #endif
 
+#ifndef LDAP_RES_INTERMEDIATE
+ #define LDAP_RES_INTERMEDIATE  0x79U /* 121 */
+#endif
 
 /* Function Prototypes for Internal Functions */
 
@@ -840,6 +843,44 @@ ldap_set_lderrno(ld,e,m,s)
 #endif
 
 int
+ldap_get_entry_controls(ld, entry, serverctrls_ref)
+    LDAP        * ld
+    LDAPMessage * entry
+    SV *          serverctrls_ref
+    CODE:
+    {
+        int i;
+
+        if (SvTYPE(SvRV(serverctrls_ref)) != SVt_PVAV)
+        {
+           croak("Net::LDAPapi::ldap_get_entry_controls needs ARRAY reference as argument 3.");
+            XSRETURN(-1);
+        }
+
+        AV *serverctrls_av = (AV *)SvRV(serverctrls_ref);
+
+        LDAPControl **serverctrls = malloc(sizeof(LDAPControl **));
+        if( serverctrls == NULL ) {
+            croak("In ldap_parse_result(...) failed to allocate memory for serverctrls.");
+            XSRETURN(-1);
+        }
+
+        RETVAL = ldap_get_entry_controls( ld, entry, &serverctrls);
+
+        // transfer returned controls to the perl code
+        if( serverctrls != NULL ) {
+            for( i = 0; serverctrls[i] != NULL; i++ )
+                av_push(serverctrls_av, newSViv((IV)serverctrls[i]));
+        }
+
+        free(serverctrls);
+
+        SvRV( serverctrls_ref ) = (SV *)serverctrls_av;
+    }
+    OUTPUT:
+    RETVAL
+
+int
 ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serverctrls_ref, freeit)
     LDAP *        ld
     LDAPMessage * msg
@@ -875,9 +916,9 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
         }
 
         char **referrals  = malloc(sizeof(char **));
-        if( serverctrls == NULL ) {
+        if( referrals == NULL ) {
             croak("In ldap_parse_result(...) failed to allocate memory for referrals.");
-            free(serverctrls);
+            free(referrals);
             XSRETURN(-1);
         }
 
@@ -900,6 +941,7 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
         free(serverctrls);
         free(referrals);
 
+        SvRV( referrals_ref ) = (SV *)referrals_av;
         SvRV( serverctrls_ref ) = (SV *)serverctrls_av;
     }
     OUTPUT:
@@ -907,6 +949,58 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
     errorcodep
     matcheddnp
     errmsgp
+
+int
+ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
+    LDAP        * ld
+    LDAPMessage * msg
+    char *        retoidp  = NO_INIT
+    char *        retdatap = NO_INIT
+    SV *          serverctrls_ref
+    int           freeit
+    CODE:
+    {
+        int i;
+        struct berval *retdata;
+
+        if (SvTYPE(SvRV(serverctrls_ref)) != SVt_PVAV)
+        {
+            croak("Net::LDAPapi::ldap_parse_intermediate needs ARRAY reference as argument 5.");
+            XSRETURN(-1);
+        }
+
+        AV *serverctrls_av = (AV *)SvRV(serverctrls_ref);
+
+        LDAPControl **serverctrls = malloc(sizeof(LDAPControl **));
+        if( serverctrls == NULL ) {
+            croak("In ldap_parse_intermediate(...) failed to allocate memory for serverctrls.");
+            XSRETURN(-1);
+        }
+
+        retdata = malloc(sizeof(struct berval *));
+
+        RETVAL =
+            ldap_parse_intermediate(ld,       msg,          &retoidp,
+                                    &retdata, &serverctrls, freeit);
+
+        if( retdata != NULL )
+            retdatap = ldap_strdup(retdata->bv_val);
+
+        // transfer returned controls to the perl code
+        if( serverctrls != NULL ) {
+            for( i = 0; serverctrls[i] != NULL; i++ )
+                av_push(serverctrls_av, newSViv((IV)serverctrls[i]));
+        }
+
+        free(serverctrls);
+        free(retdata);
+
+        SvRV( serverctrls_ref ) = (SV *)serverctrls_av;
+    }
+    OUTPUT:
+    RETVAL
+    retoidp
+    retdatap
 
 
 char *
@@ -969,6 +1063,16 @@ LDAPMessage *
 ldap_next_entry(ld,preventry)
     LDAP *          ld
     LDAPMessage *   preventry
+
+LDAPMessage *
+ldap_first_message(ld, chain)
+    LDAP        *ld
+    LDAPMessage *chain
+
+LDAPMessage *
+ldap_next_message(ld, chain)
+    LDAP        *ld
+    LDAPMessage *chain
 
 SV *
 ldap_get_dn(ld,entry)
