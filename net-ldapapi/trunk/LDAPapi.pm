@@ -2,6 +2,7 @@ package Net::LDAPapi;
 
 use strict;
 use Carp;
+use Convert::ASN1;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 
 require Exporter;
@@ -32,6 +33,19 @@ require AutoLoader;
        ldap_url_search_st ber_free ldap_init ldap_initialize ldap_start_tls_s
        ldap_sasl_interactive_bind_s
        ldap_create_control ldap_control_berval
+       LDAP_RES_BIND
+       LDAP_RES_SEARCH_ENTRY
+       LDAP_RES_SEARCH_REFERENCE
+       LDAP_RES_SEARCH_RESULT
+       LDAP_RES_MODIFY
+       LDAP_RES_ADD
+       LDAP_RES_DELETE
+       LDAP_RES_MODDN
+       LDAP_RES_COMPARE
+       LDAP_RES_EXTENDED
+       LDAP_RES_INTERMEDIATE
+       LDAP_RES_ANY
+       LDAP_RES_UNSOLICITED
        LDAPS_PORT
        LDAP_ADMIN_LIMIT_EXCEEDED
        LDAP_AFFECTS_MULTIPLE_DSAS
@@ -153,19 +167,6 @@ require AutoLoader;
        LDAP_PROTOCOL_ERROR
        LDAP_REFERRAL
        LDAP_RESULTS_TOO_LARGE
-       LDAP_RES_ADD
-       LDAP_RES_ANY
-       LDAP_RES_BIND
-       LDAP_RES_COMPARE
-       LDAP_RES_DELETE
-       LDAP_RES_EXTENDED
-       LDAP_RES_MODIFY
-       LDAP_RES_MODRDN
-       LDAP_RES_RESUME
-       LDAP_RES_SEARCH_ENTRY
-       LDAP_RES_SEARCH_REFERENCE
-       LDAP_RES_SEARCH_RESULT
-       LDAP_RES_SESSION
        LDAP_SASL_AUTOMATIC
        LDAP_SASL_INTERACTIVE
        LDAP_SASL_NULL
@@ -180,6 +181,7 @@ require AutoLoader;
        LDAP_STRONG_AUTH_NOT_SUPPORTED
        LDAP_STRONG_AUTH_REQUIRED
        LDAP_SUCCESS
+       LDAP_SYNC_INFO
        LDAP_TIMELIMIT_EXCEEDED
        LDAP_TIMEOUT
        LDAP_TYPE_OR_VALUE_EXISTS
@@ -198,6 +200,32 @@ require AutoLoader;
        LDAP_VERSION1
        LDAP_VERSION2
        LDAP_VERSION3
+       LDAP_TAG_SYNC_NEW_COOKIE
+       LDAP_TAG_SYNC_REFRESH_DELETE
+       LDAP_TAG_SYNC_REFRESH_PRESENT
+       LDAP_TAG_SYNC_ID_SET
+       LDAP_TAG_SYNC_COOKIE
+       LDAP_TAG_REFRESHDELETES
+       LDAP_TAG_REFRESHDONE
+       LDAP_TAG_RELOAD_HINT
+       LDAP_TAG_EXOP_MODIFY_PASSWD_ID
+       LDAP_TAG_EXOP_MODIFY_PASSWD_OLD
+       LDAP_TAG_EXOP_MODIFY_PASSWD_NEW
+       LDAP_TAG_EXOP_MODIFY_PASSWD_GEN
+       LDAP_TAG_MESSAGE
+       LDAP_TAG_MSGID
+       LDAP_TAG_LDAPDN
+       LDAP_TAG_LDAPCRED
+       LDAP_TAG_CONTROLS
+       LDAP_TAG_REFERRAL
+       LDAP_TAG_NEWSUPERIOR
+       LDAP_TAG_EXOP_REQ_OID
+       LDAP_TAG_EXOP_REQ_VALUE
+       LDAP_TAG_EXOP_RES_OID
+       LDAP_TAG_EXOP_RES_VALUE
+       LDAP_TAG_IM_RES_OID
+       LDAP_TAG_IM_RES_VALUE
+       LDAP_TAG_SASL_RES_CREDS
        );
 $VERSION = '3.0.0';
 
@@ -255,6 +283,51 @@ sub new
         return -1 unless ( ldap_initialize($ld, "ldap://$host:$port") == $self-> LDAP_SUCCESS);
     }
 
+    # Following ASN.1 contains definitions for synrepl API
+    my $asn = Convert::ASN1->new;
+    $asn->prepare(<<ASN) or die "prepare: ", $asn->error;
+
+    syncUUID ::= OCTET STRING
+
+    syncCookie ::= OCTET STRING
+
+    syncRequestValue ::= SEQUENCE {
+        mode       ENUMERATED,
+        cookie     syncCookie OPTIONAL,
+        reloadHint BOOLEAN
+        }
+
+    syncStateValue ::= SEQUENCE {
+        state     ENUMERATED,
+        entryUUID syncUUID,
+        cookie    syncCookie OPTIONAL
+        }
+
+    refresh_Delete ::= SEQUENCE {
+        cookie         syncCookie OPTIONAL,
+        refreshDone    BOOLEAN OPTIONAL
+        }
+
+    refresh_Present ::= SEQUENCE {
+        cookie         syncCookie OPTIONAL,
+        refreshDone    BOOLEAN OPTIONAL
+        }
+
+    syncId_Set      ::= SEQUENCE {
+        cookie         syncCookie OPTIONAL,
+        refreshDeletes BOOLEAN OPTIONAL,
+        syncUUIDs      SET OF syncUUID
+        }
+
+    syncInfoValue ::= CHOICE {
+        newcookie      [0] syncCookie,
+        refreshDelete  [1] refresh_Delete,
+        refreshPresent [2] refresh_Present,
+        syncIdSet      [3] syncId_Set
+        }
+ASN
+
+    $self->{"asn"}       = $asn;
     $self->{"ld"}        = $ld;
     $self->{"errno"}     = 0;
     $self->{"errstring"} = undef;
@@ -690,6 +763,150 @@ sub explode_rdn
     return ldap_explode_rdn($rdn, $notypes);
 } # end of explode_rdn
 
+
+sub first_message
+{
+    my ($self, @args) = @_;
+
+    my ($result) = $self->rearrange(['RESULT'], @args);
+
+    $result = $self->{"result"} unless $result;
+
+    croak("No Current Result") unless $result;
+
+    $self->{"msg"} = ldap_first_message($self->{"ld"}, $self->{"result"});
+
+    return $self->{"msg"};
+} # end of first_message
+
+
+sub next_message
+{
+    my ($self, @args) = @_;
+
+    my ($msg) = $self->rearrange(['MSG'], @args);
+
+    $msg = $self->{"msg"} unless $msg;
+
+    croak("No Current Message") unless $msg;
+
+    $self->{"msg"} = ldap_next_message($self->{"ld"}, $msg);
+
+    return $self->{"msg"};
+} # end of next_message
+
+
+# using this function you don't have to call fist_message and next_message
+# here is an example:
+#
+# print "message = $message\n" while( $msg = $ld->result_message );
+#
+sub result_message
+{
+    my ($self, @args) = @_;
+
+    my ($result) = $self->rearrange(['RESULT'], @args);
+
+    $result = $self->{"result"} unless $result;
+
+    croak("No Current Result") unless $result;
+
+    if( $self->{"msg"} == 0 ) {
+        $self->{"msg"} = ldap_first_message($self->{"ld"}, $self->{"result"});
+    } else {
+        $self->{"msg"} = ldap_next_message($self->{"ld"},  $self->{"msg"});
+    }
+
+    return $self->{"msg"};
+} # end of result_message
+
+
+sub next_changed_entries {
+    my ($self, @args) = @_;
+
+    my ($msgid, $allnone, $timeout) =
+        $self->rearrange(['MSGID', 'ALL', 'TIMEOUT'], @args);
+
+    my ($rc,             $msg,            $msgtype, $asn,            $syncInfoValue,
+        $syncInfoValues, $refreshPresent, $ctrl,    $oid,            %parsed,
+        $retdatap,       $retoidp,        @entries, $syncStateValue, $syncStateValues,
+        $state,          $berval,         $cookie);
+
+    $rc = $self->result($msgid, $allnone, $timeout);
+
+    @entries = ();
+
+    $asn = $self->{"asn"};
+
+    while( $msg = $self->result_message ) {
+        $msgtype = $self->msgtype($msg);
+
+        if( $msgtype eq $self->LDAP_RES_SEARCH_ENTRY ) {
+            my %entr =  ('entry' => $msg);
+            push(@entries, \%entr);
+            $self->{"entry"} = $msg;
+
+            # extract controls if any
+            my @sctrls = $self->get_entry_controls($msg);
+            foreach $ctrl (@sctrls) {
+                $oid = $self->get_control_oid($ctrl);
+                if( $oid eq $self->LDAP_CONTROL_SYNC_STATE ) {
+                    $berval = $self->get_control_berval($ctrl);
+                    $syncStateValue = $asn->find('syncStateValue');
+                    $syncStateValues = $syncStateValue->decode($berval);
+                    $state = $syncStateValues->{'state'};
+                    if(      $state == 0 ) {
+                        $entr{'state'} = "present";
+                    } elsif( $state == 1 ) {
+                        $entr{'state'} = "add";
+                    } elsif( $state == 2 ) {
+                        $entr{'state'} = "modify";
+                    } elsif( $state == 3 ) {
+                        $entr{'state'} = "delete";
+                    } else {
+                        $entr{'state'} = "unknown";
+                    }
+                }
+
+                $cookie = $syncStateValues->{'cookie'};
+                if( $cookie ) {
+                    # save the cookie
+                    open(COOKIE_FILE,">".$self->{"cookie"}) ||
+                        die("Cannot open file '".$self->{"cookie"}."' for writing.");
+                    print COOKIE_FILE $cookie;
+                    close(COOKIE_FILE);
+                }
+            }
+
+        } elsif( $msgtype eq $self->LDAP_RES_INTERMEDIATE ) {
+            %parsed = $self->parse_intermediate($msg);
+            $retdatap = $parsed{'retdatap'};
+            $retoidp  = $parsed{'retoidp'};
+
+            if( $retoidp eq $self->LDAP_SYNC_INFO ) {
+                $asn->configure(encoding => "DER");
+                $syncInfoValue = $asn->find('syncInfoValue');
+                $syncInfoValues = $syncInfoValue->decode($retdatap);
+                my $refreshPresent = $syncInfoValues->{'refreshPresent'};
+                if( $refreshPresent ) {
+                    my $cookie = $refreshPresent->{'cookie'};
+                    if( $cookie ) {
+                        # save the cookie
+                        open(COOKIE_FILE,">".$self->{"cookie"}) ||
+                            die("Cannot open file '".$self->{"cookie"}."' for writing.");
+                        print COOKIE_FILE $cookie;
+                        close(COOKIE_FILE);
+                    }
+                }
+                $asn->configure(encoding => "BER");
+            }
+        }
+    }
+
+    return @entries;
+} # next_changed_entries
+
+
 sub first_entry
 {
     my ($self) = @_;
@@ -712,6 +929,7 @@ sub next_entry
     return $self->{"entry"};
 } # end of next_entry
 
+
 # using this function you don't have to call fist_entry and next_entry
 # here is an example:
 #
@@ -733,20 +951,23 @@ sub result_entry
 } # end of result_entry
 
 
-sub first_attribute
+sub get_entry_controls
 {
-    my ($self) = @_;
+    my ($self, @args) = @_;
 
-    my ($attr, $ber);
+    my ($msg) = $self->rearrange(['MSG'], @args);
 
-    croak("No Current Entry") if ($self->{"entry"} == 0);
+    $msg = $self->{"msg"} unless $msg;
 
-    $attr = ldap_first_attribute($self->{"ld"}, $self->{"entry"}, $ber);
+    croak("No Current Message/Entry") unless $msg;
 
-    $self->{"ber"} = $ber;
+    my @serverctrls = ();
+    my $serverctrls_ref = \@serverctrls;
 
-    return $attr;
-} # end of first_attribute
+    ldap_get_entry_controls($self->{"ld"}, $msg, $serverctrls_ref);
+
+    return @serverctrls;
+} # end of get_entry_controls
 
 
 sub get_control_oid {
@@ -776,6 +997,22 @@ sub get_control_critical {
 } # end of get_control_critical
 
 
+sub first_attribute
+{
+    my ($self) = @_;
+
+    my ($attr, $ber);
+
+    croak("No Current Entry") if ($self->{"entry"} == 0);
+
+    $attr = ldap_first_attribute($self->{"ld"}, $self->{"entry"}, $ber);
+
+    $self->{"ber"} = $ber;
+
+    return $attr;
+} # end of first_attribute
+
+
 sub next_attribute
 {
     my ($self) = @_;
@@ -800,19 +1037,23 @@ sub next_attribute
 #
 sub entry_attribute {
 
-    my ($self) = @_;
+    my ($self, @args) = @_;
+
+    my ($msg) = $self->rearrange(['MSG'], @args);
 
     my ($attr, $ber);
 
-    croak("No Current Entry") if ($self->{"entry"} == 0);
+    $msg = $self->{"entry"} unless $msg;
+
+    croak("No Current Entry") unless $msg;
 
     if ($self->{"ber"} == 0) {
-        $attr = ldap_first_attribute($self->{"ld"}, $self->{"entry"}, $ber);
+        $attr = ldap_first_attribute($self->{"ld"}, $msg, $ber);
         $self->{"ber"} = $ber;
 
     } else {
         croak("Empty Ber Value") if ($self->{"ber"} == 0);
-        $attr = ldap_next_attribute($self->{"ld"}, $self->{"entry"}, $self->{"ber"});
+        $attr = ldap_next_attribute($self->{"ld"}, $msg, $self->{"ber"});
         if (!$attr) {
             ber_free($self->{"ber"}, 0);
             $self->{"ber"} = undef;
@@ -845,6 +1086,7 @@ sub parse_result {
         ldap_parse_result($self->{"ld"}, $msg,           $errcode,         $matcheddn,
                           $errmsg,       $referrals_ref, $serverctrls_ref, $freeMsg);
 
+
     if( $status != $self->LDAP_SUCCESS ) {
         $self->errorize($status);
         return undef;
@@ -854,6 +1096,40 @@ sub parse_result {
     $result{"matcheddn"}   = $matcheddn;
     $result{"errmsg"}      = $errmsg;
     $result{"referrals"}   = $referrals_ref;
+    $result{"serverctrls"} = $serverctrls_ref;
+
+    return %result;
+} # end of parse_result(...)
+
+
+# needs docs bellow in POD. XXX
+sub parse_intermediate {
+    my ($self, @args) = @_;
+
+    my ($msg, $freeMsg) = $self->rearrange(['MSG', 'FREEMSG'], @args);
+
+    my ($status, %result);
+
+    $freeMsg = 0          unless $freeMsg;
+    $msg = $self->{"msg"} unless $msg;
+
+    my ($retoidp, $retdatap, @serverctrls);
+
+    @serverctrls = ();
+    my $serverctrls_ref = \@serverctrls;
+
+    $status =
+        ldap_parse_intermediate($self->{"ld"}, $msg,             $retoidp,
+                                $retdatap,     $serverctrls_ref, $freeMsg);
+
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
+    }
+
+    $result{"retoidp"}     = $retoidp;
+    $result{"retdatap"}    = $retdatap;
     $result{"serverctrls"} = $serverctrls_ref;
 
     return %result;
@@ -1051,8 +1327,9 @@ sub rename_s {
 
 
 # this function is used to retrieve results of asynchronous search operation
-# it returns LDAPMesage which is to be processed by functions first_entry or
-# result_entry. To find message type one should use function msgtype(...)
+# it returns LDAPMesage which is to be processed by functions first_entry,
+# result_entry, first_message, result_message. To find message type one
+# should use function msgtype(...)
 sub result
 {
     my ($self, @args) = @_;
@@ -1169,9 +1446,72 @@ sub multisort_entries
 } # end of multisort_entries
 
 
+sub listen_for_changes
+{
+    my ($self, @args) = @_;
+
+    my ($msgid, $status, $sctrls, $the_cookie, $syncRequestBerval);
+
+    my ($basedn,    $scope,   $filter,    $attrs,
+        $attrsonly, $timeout, $sizelimit, $cookie) =
+            $self->rearrange(['BASEDN',    'SCOPE',  'FILTER',    'ATTRS',
+                              'ATTRSONLY', 'TIMEOUT','SIZELIMIT', 'COOKIE'], @args);
+
+    croak("No Filter Specified") if ($filter eq "");
+    croak("No cookie file specified") unless $cookie;
+
+    $self->{"cookie"} = $cookie;
+
+    if( $attrs == undef ) {
+        my @null_array = ();
+        $attrs = \@null_array;
+    }
+
+    # load cookie from the file
+    if( open(COOKIE, $cookie) ) {
+        read COOKIE, $the_cookie, 1024, 0;
+    } else {
+        warn "Failed to open file '".$cookie."' for reading.\n";
+    }
+
+    my $asn = $self->{"asn"};
+    my $syncRequestValue  = $asn->find('syncRequestValue');
+
+    # refreshAndPersist mode
+    if( $the_cookie ) { # we have the cookie
+        $syncRequestBerval = $asn->encode(mode => 3, cookie => $the_cookie, reloadHint => 1);
+    } else {
+        $syncRequestBerval = $asn->encode(mode => 3, reloadHint => 1);
+    }
+
+    my $ctrl_persistent =
+        $self->create_control(-oid      => $self->LDAP_CONTROL_SYNC,
+                              -berval   => $syncRequestBerval,
+                              -critical => $self->CRITICAL);
+
+    my @controls = ($ctrl_persistent);
+    $sctrls = $self->create_controls_array(@controls);
+
+    $status =
+        ldap_search_ext($self->{"ld"}, $basedn,    $scope,  $filter,
+                        $attrs,        $attrsonly, $sctrls, undef,
+                        $timeout,      $sizelimit, $msgid);
+
+    ldap_controls_array_free($sctrls);
+    ldap_control_free($ctrl_persistent);
+
+    if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
+        return undef;
+    }
+
+    return $msgid;
+} # listen_for_changes
+
+
 sub search
 {
-    my ($self,@args) = @_;
+    my ($self, @args) = @_;
     my ($msgid, $status, $sctrls, $cctrls);
 
     my ($basedn,      $scope,       $filter,  $attrs,    $attrsonly,
@@ -1428,12 +1768,49 @@ sub msgtype
 {
     my ($self, @args) = @_;
 
-    my ($result) = $self->rearrange(['RESULT'], @args);
+    my ($msg) = $self->rearrange(['MSG'], @args);
 
-    $result = $self->{"result"} unless $result;
+    $msg = $self->{"msg"} unless $msg;
 
-    return ldap_msgtype($self->{"ld"}, $result);
+    return ldap_msgtype($msg);
 } # end of msgtype
+
+sub msgtype2str
+{
+    my ($self, @args) = @_;
+
+    my ($type) = $self->rearrange(['TYPE'], @args);
+
+    if(      $type == $self->LDAP_RES_BIND ) {
+        return "LDAP_RES_BIND";
+    } elsif( $type == $self->LDAP_RES_SEARCH_ENTRY ) {
+        return "LDAP_RES_SEARCH_ENTRY";
+    } elsif( $type == $self->LDAP_RES_SEARCH_REFERENCE ) {
+        return "LDAP_RES_SEARCH_REFERENCE";
+    } elsif( $type == $self->LDAP_RES_SEARCH_RESULT ) {
+        return "LDAP_RES_SEARCH_RESULT";
+    } elsif( $type == $self->LDAP_RES_MODIFY ) {
+        return "LDAP_RES_MODIFY";
+    } elsif( $type == $self->LDAP_RES_ADD ) {
+        return "LDAP_RES_ADD";
+    } elsif( $type == $self->LDAP_RES_DELETE ) {
+        return "LDAP_RES_DELETE";
+    } elsif( $type == $self->LDAP_RES_MODDN ) {
+        return "LDAP_RES_MODDN";
+    } elsif( $type == $self->LDAP_RES_COMPARE ) {
+        return "LDAP_RES_COMPARE";
+    } elsif( $type == $self->LDAP_RES_EXTENDED ) {
+        return "LDAP_RES_EXTENDED";
+    } elsif( $type == $self->LDAP_RES_INTERMEDIATE ) {
+        return "LDAP_RES_INTERMEDIATE";
+    } elsif( $type == $self->LDAP_RES_ANY ) {
+        return "LDAP_RES_ANY";
+    } elsif( $type == $self->LDAP_RES_UNSOLICITED ) {
+        return "LDAP_RES_UNSOLICITED";
+    } else {
+        return "UNKNOWN";
+    }
+} # end of msgtype2str
 
 
 sub msgid
@@ -1517,7 +1894,7 @@ sub make_attributes
         ($key="\L$key") =~ tr/_/-/; # parameters are lower case, use dashes
 
         my $value = $escape ? simple_escape($attr->{$_}) : $attr->{$_};
-        push(@att,defined($attr->{$_}) ? qq/$key="$value"/ : qq/$key/);
+        push(@att, defined($attr->{$_}) ? qq/$key="$value"/ : qq/$key/);
     }
     return @att;
 } # end of make_attributes
@@ -2098,8 +2475,9 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
 =item get_dn MSG
 
-  Returns a string containing the DN for the specified entry or an
-  empty string if an error occurs.
+  Returns a string containing the DN for the specified message or an
+  empty string if an error occurs. If no message is specified then
+  then default entry is used.
 
   Example:
 
@@ -2143,6 +2521,22 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $type = $ld->msgfree;
+
+=item msgtype MSG
+
+  Returns the numeric id of a given message. If no MSG is given as a parameter
+  then current message is used.
+
+  Example:
+
+    $type = $ld->msgtype
+
+=item msgtype2str TYPE
+
+  Returns string representation of a given numeric message type.
+
+  Example:
+    print "type = ".$ld->msgtype2str($ld->msgtype)."\n";
 
 =item modify DN MOD
 
@@ -2263,7 +2657,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 =item result MSGID ALL TIMEOUT
 
   Retrieves the result of an operation initiated using an asynchronous
-  LDAP call.  Returns the type of result returned or -1 if error.
+  LDAP call.  Returns LDAP message or undef if error.
 
   MSGID is the MSGID returned by the Asynchronous LDAP call.  Set ALL to
   0 to receive entries as they arrive, or non-zero to receive all entries
@@ -2272,7 +2666,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
   Example:
 
-    $type = $ld->result($msgid,0,1);
+    $entry = $ld->result($msgid,0,1);
 
 =item search BASE SCOPE FILTER ATTRS ATTRSONLY
 
