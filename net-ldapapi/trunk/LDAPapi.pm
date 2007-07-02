@@ -1497,7 +1497,7 @@ sub listen_for_changes
     }
 
     my $ctrl_persistent =
-        $self->create_control(-oid      => $self->"1.3.6.1.4.1.4203.1.9.1.1", # should be LDAP_CONTROL_SYNC
+        $self->create_control(-oid      => "1.3.6.1.4.1.4203.1.9.1.1", # should be LDAP_CONTROL_SYNC
                               -berval   => $syncRequestBerval,
                               -critical => $self->CRITICAL);
 
