@@ -884,21 +884,33 @@ sub next_changed_entries {
             $retoidp  = $parsed{'retoidp'};
 
             if( $retoidp eq $self->LDAP_SYNC_INFO ) {
+                my $cookie;
+
                 $asn->configure(encoding => "DER");
                 $syncInfoValue = $asn->find('syncInfoValue');
                 $syncInfoValues = $syncInfoValue->decode($retdatap);
+
+                # trying to get the cookie from one of the foolowing choices.
+                my $cookie = $syncInfoValues->{'newcookie'};
+
                 my $refreshPresent = $syncInfoValues->{'refreshPresent'};
-                if( $refreshPresent ) {
-                    my $cookie = $refreshPresent->{'cookie'};
-                    if( $cookie ) {
-                        # save the cookie
-                        open(COOKIE_FILE,">".$self->{"cookie"}) ||
-                            die("Cannot open file '".$self->{"cookie"}."' for writing.");
-                        print COOKIE_FILE $cookie;
-                        close(COOKIE_FILE);
-                    }
-                }
+                $cookie = $refreshPresent->{'cookie'} if( $refreshPresent );
+
+                my $refreshDelete = $syncInfoValues->{'refreshDelete'};
+                $cookie = $refreshDelete->{'cookie'} if( $refreshDelete );
+
+                my $syncIdSet = $syncInfoValues->{'syncIdSet'};
+                $cookie = $syncIdSet->{'cookie'} if( $syncIdSet );
+
                 $asn->configure(encoding => "BER");
+
+                # see if we got any and save it.
+                if( $cookie ) {
+                    open(COOKIE_FILE,">".$self->{"cookie"}) ||
+                        die("Cannot open file '".$self->{"cookie"}."' for writing.");
+                    print COOKIE_FILE $cookie;
+                    close(COOKIE_FILE);
+                }
             }
         }
     }
@@ -933,7 +945,7 @@ sub next_entry
 # using this function you don't have to call fist_entry and next_entry
 # here is an example:
 #
-# print "entry = $entry\n" while( $entry = $ld->result_entry );#     ;
+# print "entry = $entry\n" while( $entry = $ld->result_entry );
 #
 sub result_entry
 {
@@ -1454,8 +1466,8 @@ sub listen_for_changes
 
     my ($basedn,    $scope,   $filter,    $attrs,
         $attrsonly, $timeout, $sizelimit, $cookie) =
-            $self->rearrange(['BASEDN',    'SCOPE',  'FILTER',    'ATTRS',
-                              'ATTRSONLY', 'TIMEOUT','SIZELIMIT', 'COOKIE'], @args);
+            $self->rearrange(['BASEDN',    'SCOPE',   'FILTER',    'ATTRS',
+                              'ATTRSONLY', 'TIMEOUT', 'SIZELIMIT', 'COOKIE'], @args);
 
     croak("No Filter Specified") if ($filter eq "");
     croak("No cookie file specified") unless $cookie;
@@ -2270,7 +2282,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
   Example:
 
-    $status = ldap_abandon($ld, $msgid);
+    $status = ldap_abandon($ld, $msgid); # XXX fix this
 
 =item add DN ATTR SCTRLS CCTRLS
 
@@ -2447,6 +2459,14 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $entry = $ld->first_entry;
 
+=item first_message
+
+   Return the first message in a chain of result returned by the search
+   operation. LDAP search operations return LDAPMessage, which is a head
+   in chain of messages accessable to the user. Not all all of them are
+   entries though. Type of the message can be obtained by calling
+   msgtype(...) function.
+
 =item get_all_entries RESULT
 
   Returns result of the search operation in the following format
@@ -2483,6 +2503,18 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $dn = $ld->get_dn;
 
+=item get_entry_controls MSG
+
+  Returns an array of controls returned with the given entry. If not MSG
+  is given as a paramater then current message/entry is used.
+
+  Example:
+
+    my @sctrls = $ld->get_entry_controls($msg);
+    foreach $ctrl (@sctrls) {
+        print "control oid is ".$self->get_control_oid($ctrl)."\n";
+    }
+
 =item get_values ATTR
 
   Obtain a list of all values associated with a given attribute.
@@ -2514,6 +2546,19 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $isurl = $ld->is_ldap_url("ldap://x500.my.org/o=Org,c=US");
 
+=item listen_for_changes BASEDN SCOPE FILTER ATTRS ATTRSONLY TIMEOUT SIZELIMIT COOKIE
+
+  Experimental function which implements syncrepl API in
+  refreshAndPersist mode. All but one arguments are the same as in search
+  function. Argument 'cookie' is the special one here. It must be specified
+  and is a file name in which cookie is to be stored. On a subsequent
+  restart of the seach only the newer results will be returned than those
+  indicated by the stored cookie. To refresh all entries, one would have to
+  remove that file.
+
+  This function is to be used in conjunction with next_changed_entries(...),
+  there you will also find example of its usage.
+
 =item msgfree
 
   Frees the current LDAP result.  Returns the type of message freed.
@@ -2525,7 +2570,11 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 =item msgtype MSG
 
   Returns the numeric id of a given message. If no MSG is given as a parameter
-  then current message is used.
+  then current message is used. Following types are recognized: LDAP_RES_BIND,
+  LDAP_RES_SEARCH_ENTRY, LDAP_RES_SEARCH_REFERENCE, LDAP_RES_SEARCH_RESULT,
+  LDAP_RES_MODIFY, LDAP_RES_ADD, LDAP_RES_DELETE, LDAP_RES_MODDN,
+  LDAP_RES_COMPARE, LDAP_RES_EXTENDED, LDAP_RES_INTERMEDIATE, LDAP_RES_ANY,
+  LDAP_RES_UNSOLICITED.
 
   Example:
 
@@ -2593,6 +2642,28 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $attr = $ld->next_attribute;
 
+=item next_changed_entries MSGID ALL TIMEOUT
+
+ This function is too be used together with listen_for_changes(...) (see above).
+ It returns an array of Entries, which has just changed. Each element in this
+ array is a hash reference with two key value pairs, 'entry' which contains usual
+ entry and 'state' which contain one of the following strings 'present', 'add',
+ 'modify' or 'delete'.
+
+ Example:
+
+    my $msgid = $ld->listen_for_changes('', LDAP_SCOPE_SUBTREE, "(cn=Dm*)", NULL, NULL,
+                                    NULL, NULL, $cookie);
+
+    while(1) {
+        while( @entries = $ld->next_changed_entries($msgid, 0, -1) ) {
+            foreach $entry (@entries) {
+                print "entry dn is <".$ld->get_dn($entry->{'entry'})."> ".
+                    $entry->{'state'}."\n";
+            }
+        }
+    }
+
 =item next_entry
 
   Moves internal pointer to the next entry in a chain of search results.
@@ -2600,6 +2671,14 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $entry = $ld->next_entry;
+
+=item next_message
+
+  Moves internal pointer to the next message in a chain of search results.
+
+  Example:
+
+    $msg = $ld->next_message;
 
 =item parse_result MSG FREEMSG
 
@@ -2668,6 +2747,26 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     $entry = $ld->result($msgid,0,1);
 
+=item result_entry
+
+  This function is a shortcut for moving pointer along the chain of entries
+  in the result. It is used instead of first_entry and next_entry functions.
+
+  Example
+    while( $entry = $ld->result_entry ) {
+        print "dn = ".$ld->get_dn($entry)."\n";
+    }
+
+=item result_message
+
+  This function is a shortcut for moving pointer along the chain of messages
+  in the result. It is used instead of first_message and next_message functions.
+
+  Example
+    while( $msg = $ld->result_message ) {
+        $msgtype = $self->msgtype($msg);
+    }
+
 =item search BASE SCOPE FILTER ATTRS ATTRSONLY
 
   Begins an asynchronous LDAP search.  Returns a MSGID or -1 if an
@@ -2687,8 +2786,8 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
     @attrs = ("cn","sn");    # Return specific attributes
     @attrs = ();             # Return all Attributes
 
-    $msgid = $ld->search("o=Motorola, c=US",LDAP_SCOPE_SUBTREE, \
-        "(sn=Donley),\@attrs,0);
+    $msgid = $ld->search("o=Motorola, c=US", LDAP_SCOPE_SUBTREE, \
+        "(sn=Donley), \@attrs, 0);
 
 =item search_s BASE SCOPE FILTER ATTRS ATTRSONLY (rewrite XXX)
 
