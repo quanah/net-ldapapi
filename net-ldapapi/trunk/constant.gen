@@ -26,6 +26,26 @@ __END__
 
 /* This file is generated from constants.gen.  Changes here will be lost! */
 
+#ifndef LDAP_CONTROL_SYNC
+#define LDAP_CONTROL_SYNC "1.3.6.1.4.1.4203.1.9.1.1"
+#endif
+
+#ifndef LDAP_CONTROL_SYNC_STATE
+#define LDAP_CONTROL_SYNC_STATE "1.3.6.1.4.1.4203.1.9.1.2"
+#endif
+
+#ifndef LDAP_CONTROL_SYNC_DONE
+#define LDAP_CONTROL_SYNC_DONE "1.3.6.1.4.1.4203.1.9.1.3"
+#endif
+
+#ifndef LDAP_SYNC_INFO
+#define LDAP_SYNC_INFO "1.3.6.1.4.1.4203.1.9.1.2"
+#endif
+
+#ifndef LDAP_RES_INTERMEDIATE
+#define LDAP_RES_INTERMEDIATE ((ber_tag_t) 0x79U) /* V3+: application + constructed */
+#endif
+
 static char *
 constant_s(name)
 char *name;
