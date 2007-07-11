@@ -1353,6 +1353,7 @@ sub result
 
     $status = ldap_result($self->{"ld"}, $msgid, $allnone, $timeout, $result);
     $self->{"result"} = $result;
+    $self->{"status"} = $status;
 
     if( $status == -1 || $status == 0 ) {
         $self->errorize($status);
@@ -2734,8 +2735,11 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
 =item result MSGID ALL TIMEOUT
 
-  Retrieves the result of an operation initiated using an asynchronous
-  LDAP call.  Returns LDAP message or undef if error.
+  Retrieves the result of an operation initiated using an asynchronous LDAP
+  call.  It calls internally ldap_result function.  Returns LDAP message or
+  undef if error. Return value of ldap_result call stored in $ld->{"status"}
+  and is set -1 if something wrong happened, 0 if specified timeout was
+  exceeded or type of the returned message.
 
   MSGID is the MSGID returned by the Asynchronous LDAP call.  Set ALL to
   0 to receive entries as they arrive, or non-zero to receive all entries
@@ -2744,7 +2748,8 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
   Example:
 
-    $entry = $ld->result($msgid,0,1);
+    $entry = $ld->result($msgid, 0, 1);
+    print "msgtype = ".$ld->msgtype2str($ld->{"status"})."\n";
 
 =item result_entry
 
