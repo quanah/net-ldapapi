@@ -23,7 +23,7 @@ use Net::LDAPapi;
 my $ldap_server = "localhost";
 my $BASEDN = "o=Org, c=US";
 my $sizelimit = 100;            # Set to Maximum Number of Entries to Return
-                                # Can set small to test error routines
+# Can set small to test error routines
 
 #  Various Variable Declarations...
 my $ld;
@@ -33,7 +33,6 @@ my $ent;
 my $ber;
 my @vals;
 my %record;
-my $rc;
 my $result;
 
 #
@@ -41,7 +40,7 @@ my $result;
 
 if (($ld = new Net::LDAPapi($ldap_server)) == -1)
 {
-   die "Connection Failed!";
+    die "Connection Failed!";
 }
 
 #ldap_set_option(0,LDAP_OPT_DEBUG_LEVEL,-1);
@@ -54,8 +53,8 @@ if (($ld = new Net::LDAPapi($ldap_server)) == -1)
 #if ($ld->bind_s("tester","tester",LDAP_AUTH_SASL) != LDAP_SUCCESS)
 if ($ld->bind_s != LDAP_SUCCESS)
 {
-   $ld->unbind;
-   die "bind: ", $ld->errstring, ": ", $ld->extramsg;
+    $ld->unbind;
+    die "bind: ", $ld->errstring, ": ", $ld->extramsg;
 }
 
 #  This will set the size limit to $sizelimit from above.  The command
@@ -80,8 +79,8 @@ my $msgid = $ld->search($BASEDN,LDAP_SCOPE_SUBTREE,$filter,\@attrs,0);
 
 if ($msgid < 0)
 {
-   $ld->unbind;
-   die "search: ", $ld->errstring, ": ", $ld->extramsg;
+    $ld->unbind;
+    die "search: ", $ld->errstring, ": ", $ld->extramsg;
 }
 
 # Reset Number of Entries Counter
@@ -92,45 +91,48 @@ my $timeout = -1;
 
 #
 #  Cycle Through Entries
-while (($rc = $ld->result($msgid,0,$timeout)) == LDAP_RES_SEARCH_ENTRY)
+while (1)
 {
-  $nentries++;
+    $result = $ld->result($msgid, 0, $timeout);
 
-  for ($ent = $ld->first_entry; $ent != 0; $ent = $ld->next_entry)
-  {
+    last unless $result;
+    last if( $ld->{"status"} == $ld->LDAP_RES_SEARCH_RESULT );
+    next if( $ld->{"status"} != $ld->LDAP_RES_SEARCH_ENTRY );
 
-#
-#  Get Full DN
+    $nentries++;
 
-   if (($dn = $ld->get_dn) eq "")
-   {
-      $ld->unbind;
-      die "get_dn: ", $ld->errstring, ": ", $ld->extramsg;
-   }
+    for ($ent = $ld->first_entry; $ent != 0; $ent = $ld->next_entry)
+    {
 
-#
-#  Cycle Through Each Attribute
+        #
+        #  Get Full DN
+        if (($dn = $ld->get_dn) eq "")
+        {
+            $ld->unbind;
+            die "get_dn: ", $ld->errstring, ": ", $ld->extramsg;
+        }
 
-   for ($attr = $ld->first_attribute; $attr ne ""; $attr = $ld->next_attribute)
-   {
+        #
+        #  Cycle Through Each Attribute
+        for ($attr = $ld->first_attribute; $attr ne ""; $attr = $ld->next_attribute)
+        {
 
-#
-#  Notice that we're using get_values_len.  This will retrieve binary
-#  as well as text data.  You can change to get_values to only get text
-#  data.
-#
-      @vals = $ld->get_values_len($attr);
-      $record{$dn}->{$attr} = [@vals];
-   }
-  }
-  $ld->msgfree;
+            #
+            #  Notice that we're using get_values_len.  This will retrieve binary
+            #  as well as text data.  You can change to get_values to only get text
+            #  data.
+            #
+            @vals = $ld->get_values_len($attr);
+            $record{$dn}->{$attr} = [@vals];
+        }
+    }
+    $ld->msgfree;
 
 }
-if ($rc == LDAP_RES_SEARCH_RESULT &&
-     $ld->err != LDAP_SUCCESS)
+if ( $result == undef && $ld->err != LDAP_SUCCESS)
 {
-   $ld->unbind;
-   die "result: ", $ld->errstring, ": ", $ld->extramsg;
+    $ld->unbind;
+    die "result: ", $ld->errstring, ": ", $ld->extramsg;
 }
 
 print "Found $nentries records\n";
@@ -139,29 +141,29 @@ $ld->unbind;
 
 foreach $dn (keys %record)
 {
-   my $item;
-   print "dn: $dn\n";
-   foreach $attr (keys %{$record{$dn}})
-   {
-      for $item ( @{$record{$dn}{$attr}})
-      {
-         if ($attr =~ /binary/ )
-         {
-	    print "$attr: <binary>\n";
-	 } elsif ($attr eq "jpegphoto") {
+    my $item;
+    print "dn: $dn\n";
+    foreach $attr (keys %{$record{$dn}})
+    {
+        for $item ( @{$record{$dn}{$attr}})
+        {
+            if ($attr =~ /binary/ )
+            {
+                print "$attr: <binary>\n";
+            } elsif ($attr eq "jpegphoto") {
 #
 #  Notice how easy it is to take a binary attribute and dump it to a file
 #  or such.  Gotta love PERL.
 #
-	    print "$attr: JpegPhoto (length: " . length($item). ")\n";
-	    open (TEST,">$dn.jpg");
-	    print TEST $item;
-	    close (TEST);
-         } else {
-            print "$attr: $item\n";
-         }
-      }
-   }
+                print "$attr: JpegPhoto (length: " . length($item). ")\n";
+                open (TEST,">$dn.jpg");
+                print TEST $item;
+                close (TEST);
+            } else {
+                print "$attr: $item\n";
+            }
+        }
+    }
 }
 
 exit;
@@ -169,6 +171,5 @@ exit;
 sub rebindproc
 {
 
-   return("","",LDAP_AUTH_SIMPLE);
+    return("","",LDAP_AUTH_SIMPLE);
 }
-
