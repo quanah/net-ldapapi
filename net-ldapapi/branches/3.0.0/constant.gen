@@ -2,7 +2,7 @@
 #
 #  constants.gen - h.b.furuseth@usit.uio.no
 #     some OpenLDAP constants added by hyc@symas.com
-#
+#     some OpenLDAP constants added by priimak@stanford.edu
 
 sub SYM
 {

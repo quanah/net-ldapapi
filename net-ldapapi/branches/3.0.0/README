@@ -1,6 +1,7 @@
 =======================================================================
-                Net::LDAPapi Module v2.00 for Perl5
-		by Quanah Gibson-Mount @ Stanford University
+                Net::LDAPapi Module v3.0.0 for Perl5
+		by Quanah Gibson-Mount @ Zimbra, Inc.
+	based on version 2.00 by Quanah Gibson-Mount @ Stanford University
 	based on version 1.50 by Howard Chu @ Symas Corporation
 	based on version 1.43 by Clayton Donley, <donley@wwa.com>
 =======================================================================
@@ -51,6 +52,9 @@ and Perl 5.004+.
 
 Please let me know if you compile it successfully on a new platform or have
 any problems. For problems, please include the compilation errors. 
+
+Support for the Mozilla SDK has not been tested with the v3 rewrites.  Testing
+welcomed.
 
 
 NEW PERL-OO INTERFACE
@@ -213,7 +217,7 @@ Core Team, OpenLDAP Project		http://www.openldap.org
 
 Quanah Gibson-Mount
 email: mishikal@yahoo.com
-CPAN: /authors/id/MISHIKAL
-Principal Software Developer
-Stanford University				http://www.stanford.edu
+CPAN: /by-authors/id/M/MI/MISHIKAL
+Principal Software Engineer
+Zimbra, Inc				http://www.zimbra.com
 Core Team, OpenLDAP Project		http://www.openldap.org
