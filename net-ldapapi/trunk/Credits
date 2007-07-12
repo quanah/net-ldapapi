@@ -25,7 +25,14 @@ Rob Weltman <rweltman@netscape.com>
 Andrew J Cosgriff <ajc@bing.wattle.id.au>
    - The wonderful ldap_mod_attr.pl script
    - Various Useful Bug Reports
-
+Dmitri Priimak <priimak@stanford.edu>
+   - For doing the majority of the Net::LDAPapi 3.0 work
+Howard Chu <hyc@symas.com>
+   - For getting this project started again
+--
+Quanah Gibson-Mount
+mishikal@yahoo.com
+CPAN: /by-authors/id/M/MI/MISHIKAL/
 --
 Clayton Donley
 donley@wwa.com

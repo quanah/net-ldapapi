@@ -1,5 +1,7 @@
 Revision history for Perl5 Net::LDAPapi Module.
 
+3.0.0 Thu Jul 12 12:13:00 PDT 2007
+	- New 3.0 release, using the LDAP V3 api
 2.01  Fri Feb 09 08:41:46 PST 2007
 	- Fix library linking
 2.00  Tue Feb 06 18:46:38 PST 2007
