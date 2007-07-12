@@ -1,9 +1,11 @@
 use ExtUtils::MakeMaker qw(prompt WriteMakefile);
 use Config;
 
-print "\n\nNet::LDAPapi Perl5 Module - by Clayton Donley <donley\@cig.mcel.mot.com>\n\n";
+print "\n\nNet::LDAPapi Perl5 Module - by Quanah Gibson-Mount <mishikal\@yahoo.com\n\n";
 print "OpenLDAP support by Symas Corporation -- http://www.symas.com\n";
 print "Updated by Quanah Gibson-Mount to match modern products and vendors.\n";
+print "Updated by Dmitri Priimak to use the v3 OpenLDAP API.\n";
+print "\nOriginally by Clayton Donley <donley\@cig.mcel.mot.com>\n\n";
 
 $pl_path = $Config{'perlpath'};
 
