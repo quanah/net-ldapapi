@@ -1,7 +1,7 @@
 use ExtUtils::MakeMaker qw(prompt WriteMakefile);
 use Config;
 
-print "\n\nNet::LDAPapi Perl5 Module - by Quanah Gibson-Mount <mishikal\@yahoo.com\n\n";
+print "\n\nNet::LDAPapi Perl5 Module - by Quanah Gibson-Mount <mishikal\@yahoo.com>\n\n";
 print "OpenLDAP support by Symas Corporation -- http://www.symas.com\n";
 print "Updated by Quanah Gibson-Mount to match modern products and vendors.\n";
 print "Updated by Dmitri Priimak to use the v3 OpenLDAP API.\n";
@@ -25,6 +25,7 @@ use Getopt::Long;
 my $result = GetOptions("sdk=s"       => \$sdk,
                         "lib_path=s"  => \$lib_ldap,
                         "include_path=s" => \$include_ldap,
+                        "sasl_include_path=s" => \$include_sasl,
                );
 unless ($result) {
   print STDERR <<END;
@@ -33,12 +34,14 @@ Usage: perl Makefile.PL [options]
 Configure Net::LDAPapi module.
 
  Options:
-     -sdk          SDK   which SDK to use(openldap or mozilla)
-     -lib_path     path  path to the LDAP libraries
-     -include_path path  path to the LDAP includes
+     -sdk               SDK   which SDK to use(openldap or mozilla)
+     -lib_path          path  path to the LDAP libraries
+     -include_path      path  path to the LDAP includes
+     -sasl_include_path path  path to the SASL includes (optional)
 
-If no options are passed on the command line will prompt for this
-value interactively.
+
+If no options are passed on the command line will prompt for these
+values interactively.
 END
 }
 
@@ -106,7 +109,11 @@ constant.h:     constant.gen
 WriteMakefile(
 	'NAME'          =>      'Net::LDAPapi',
 	'VERSION_FROM'  =>      'LDAPapi.pm',
+        ($include_sasl ne "" ? (
+	'INC'           =>      "-I$include_ldap -I $include_sasl",
+        ) : ( 
 	'INC'           =>      "-I$include_ldap",
+        )),
 	($version eq "MOZILLA" ? (
 	'LIBS'          =>      ["-L$lib_ldap -l$ldap_lib"],
 	'DEFINE'        =>      '-DMOZILLA_LDAP',
