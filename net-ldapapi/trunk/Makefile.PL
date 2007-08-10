@@ -110,9 +110,9 @@ WriteMakefile(
 	'NAME'          =>      'Net::LDAPapi',
 	'VERSION_FROM'  =>      'LDAPapi.pm',
         ($include_sasl ne "" ? (
-	'INC'           =>      "-I/usr/include -I$include_ldap -I $include_sasl",
+	'INC'           =>      "-I$include_ldap -I$include_sasl -I/usr/include",
         ) : ( 
-	'INC'           =>      "-I/usr/include -I$include_ldap",
+	'INC'           =>      "-I$include_ldap -I/usr/include",
         )),
 	($version eq "MOZILLA" ? (
 	'LIBS'          =>      ["-L$lib_ldap -l$ldap_lib"],
