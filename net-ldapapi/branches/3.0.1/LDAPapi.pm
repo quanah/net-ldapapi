@@ -227,7 +227,7 @@ require AutoLoader;
        LDAP_TAG_IM_RES_VALUE
        LDAP_TAG_SASL_RES_CREDS
        );
-$VERSION = '3.0.0';
+$VERSION = '3.0.1';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
