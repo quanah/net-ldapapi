@@ -5,6 +5,9 @@
 #   Date:  Thu Jul 12 12:27:19 PST 2007     #
 #############################################
 
+Platforms:
+- Test on windows
+
 LDAPv3 API Support:
 - Test against Mozilla C SDK
 

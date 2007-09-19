@@ -29,6 +29,8 @@ Dmitri Priimak <priimak@stanford.edu>
    - For doing the majority of the Net::LDAPapi 3.0 work
 Howard Chu <hyc@symas.com>
    - For getting this project started again
+Marcus Watts
+   - For submitting patches to the new code line
 --
 Quanah Gibson-Mount
 mishikal@yahoo.com
