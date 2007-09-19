@@ -1094,6 +1094,11 @@ ldap_get_dn(ld,entry)
     OUTPUT:
     RETVAL
 
+void
+ldap_perror(ld,s)
+	LDAP *          ld
+	LDAP_CHAR *     s
+
 char *
 ldap_dn2ufn(dn)
     LDAP_CHAR *     dn
@@ -1567,6 +1572,7 @@ ldap_sasl_bind_s(ld, dn, passwd, serverctrls, clientctrls, servercredp)
 
         cred.bv_len = strlen(cred.bv_val);
 
+	servercredp = 0;	/* mdw 20070918 */
         RETVAL = ldap_sasl_bind_s(ld, dn, LDAP_SASL_SIMPLE, &cred,
                                   serverctrls, clientctrls, servercredp);
     }

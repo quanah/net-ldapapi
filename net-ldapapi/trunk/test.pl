@@ -126,5 +126,5 @@ print "count    - ok\n";
 ##  Unbind LDAP Connection
 ##
 
-$ld->unbind($ld);
+$ld->unbind();
 
