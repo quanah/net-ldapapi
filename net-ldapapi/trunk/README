@@ -47,8 +47,7 @@ PLATFORMS SUPPORTED
 This version should be easily compiled on various platforms. It has been tested
 extensively under Solaris and Linux.
 
-Additionally, as of 1.39, the module has been verified to work with NT 4.0
-and Perl 5.004+.
+As of 3.00, the module has not been tested on Windows.
 
 Please let me know if you compile it successfully on a new platform or have
 any problems. For problems, please include the compilation errors. 
