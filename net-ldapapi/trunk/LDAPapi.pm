@@ -890,7 +890,7 @@ sub next_changed_entries {
                 $syncInfoValues = $syncInfoValue->decode($retdatap);
 
                 # trying to get the cookie from one of the foolowing choices.
-                my $cookie = $syncInfoValues->{'newcookie'};
+                $cookie = $syncInfoValues->{'newcookie'};
 
                 my $refreshPresent = $syncInfoValues->{'refreshPresent'};
                 $cookie = $refreshPresent->{'cookie'} if( $refreshPresent );
