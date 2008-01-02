@@ -1,5 +1,6 @@
 Revision history for Perl5 Net::LDAPapi Module.
-3.0.2 Wed Sep 19 13:30:00 PDT 2007
+3.0.2 Wed Jan 02 12:23:00 PST 2008
+	- Fix various variable initializations and scope issues
 	- Fix initialization of sasl parm
 	- Fix test unbind
 	- Add ldap_perror function
