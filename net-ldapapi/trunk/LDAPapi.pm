@@ -355,7 +355,7 @@ sub abandon
 
     $status = ldap_abandon_ext($self->{"ld"}, $msgid, $sctrls, $cctrls);
 
-    $self->errorize($status) unless( $status == $self->LDAP_SUCCESS );
+    $self->errorize($status);
 
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
@@ -392,8 +392,8 @@ sub add
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -429,7 +429,7 @@ sub add_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    $self->errorize($status);
 
     return $status;
 } # end of add_s
@@ -466,13 +466,11 @@ sub bind
     $status = ldap_sasl_bind($self->{"ld"}, $dn,     $pass,
                              $sctrls,       $cctrls, $msgid);
 
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
-
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -516,7 +514,7 @@ sub bind_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    $self->errorize($status);
 
     return $status;
 } # end of bind_s
@@ -564,8 +562,8 @@ sub compare
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -602,10 +600,7 @@ sub compare_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    if( $status != $self->LDAP_COMPARE_FALSE && $status != $self->LDAP_COMPARE_TRUE ) {
-        $self->errorize($status);
-    }
-
+    $self->errorize($status);
     return $status;
 } # end of compare_s
 
@@ -636,8 +631,8 @@ sub start_tls
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -664,7 +659,7 @@ sub start_tls_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    $self->errorize($status);
 
     return $status;
 } # end of start_tls_s
@@ -706,8 +701,8 @@ sub delete
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -733,7 +728,7 @@ sub delete_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    $self->errorize($status);
 
     return $status;
 } # end of delete_s
@@ -1105,8 +1100,8 @@ sub parse_result {
                           $errmsg,       $referrals_ref, $serverctrls_ref, $freeMsg);
 
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -1140,9 +1135,8 @@ sub parse_intermediate {
         ldap_parse_intermediate($self->{"ld"}, $msg,             $retoidp,
                                 $retdatap,     $serverctrls_ref, $freeMsg);
 
-
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -1233,8 +1227,8 @@ sub modify
 
     $status = ldap_modify_ext($self->{"ld"}, $dn, $mod, $sctrls, $cctrls, $msgid);
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -1271,11 +1265,10 @@ sub modify_s
 
     $status = ldap_modify_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $cctrls);
 
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
-
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     return $status;
 } # end of modify_s
 
@@ -1309,8 +1302,8 @@ sub rename {
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -1338,7 +1331,7 @@ sub rename_s {
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    $self->errorize($status);
 
     return $status;
 } # end of rename_s
@@ -1362,8 +1355,8 @@ sub result
     $self->{"result"} = $result;
     $self->{"status"} = $status;
 
+    $self->errorize($status);
     if( $status == -1 || $status == 0 ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -1401,7 +1394,10 @@ sub url_search
     if (($msgid = ldap_url_search($self->{"ld"},$url,$attrsonly)) < 0)
     {
         $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = $extramsg;
+        $self->{"extramsg"} = undef;
+    } else {
+        $self->{"errno"} = 0;
+        $self->{"extramsg"} = "";
     }
     return $msgid;
 } # end of url_search
@@ -1420,6 +1416,9 @@ sub url_search_s
     {
         $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
         $self->{"extramsg"} = $extramsg;
+    } else {
+        $self->{"errno"} = 0;
+        $self->{"extramsg"} = undef;
     }
     $self->{"result"} = $result;
     return $status;
@@ -1440,6 +1439,9 @@ sub url_search_st
     {
         $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
         $self->{"extramsg"} = $extramsg;
+    } else {
+        $self->{"errno"} = 0;
+        $self->{"extramsg"} = undef;
     }
     $self->{"result"} = $result;
     return $status;
@@ -1460,7 +1462,7 @@ sub multisort_entries
     }
 
     $status = ldap_multisort_entries($self->{"ld"},$self->{"result"},$attr);
-    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+    $self->errorize($status);
     return $status;
 } # end of multisort_entries
 
@@ -1519,8 +1521,8 @@ sub listen_for_changes
     ldap_controls_array_free($sctrls);
     ldap_control_free($ctrl_persistent);
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -1558,8 +1560,8 @@ sub search
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
-        $self->errorize($status);
         return undef;
     }
 
@@ -1603,12 +1605,12 @@ sub search_s
                           $attrs,        $attrsonly, $sctrls,  $cctrls,
                           $timeout,      $sizelimit, $result);
 
-    $self->errorize($status) unless ($status == $self->LDAP_SUCCESS);
-    $self->{"result"} = $result;
 
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
+    $self->{"result"} = $result;
     return $status;
 } # end of search_s
 
@@ -1710,11 +1712,10 @@ sub unbind
 
     $status = ldap_unbind_ext_s($self->{"ld"}, $sctrls, $cctrls);
 
-    $self->errorize($status) unless( $status == $self->LDAP_SUCCESS );
-
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
+    $self->errorize($status);
     return $status;
 } # end of unbind
 
@@ -1881,8 +1882,7 @@ sub create_control
     my ($ctrl) = undef;
     my $status = ldap_create_control($oid, $berval, length($berval), $critical, $ctrl);
 
-    $self->errorize($status) if( $status != $self->LDAP_SUCCESS );
-
+    $self->errorize($status);
     return $ctrl;
 } # end of create_control
 
