@@ -2,7 +2,7 @@
 #   Net::LDAPapi - TODO List                #
 #                                           #
 #   Last Modified                           #
-#   Date:  Thu Jul 12 12:27:19 PST 2007     #
+#   Date:  Wed Aug 20 15:27:19 PST 2007     #
 #############################################
 
 Platforms:
@@ -13,3 +13,5 @@ LDAPv3 API Support:
 
 Package:
 - Update examples to be compliant with version 3.0 builds
+- use the prompt() function provided by ExtUtils::MakeMaker,
+  which plays well with CPAN.pm etc.
