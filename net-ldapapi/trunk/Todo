@@ -13,5 +13,3 @@ LDAPv3 API Support:
 
 Package:
 - Update examples to be compliant with version 3.0 builds
-- use the prompt() function provided by ExtUtils::MakeMaker,
-  which plays well with CPAN.pm etc.
