@@ -1,0 +1,13 @@
+libnet-ldapapi-perl (2.0.1-2) unstable; urgency=low
+  * Fix control file issues
+  * Fix Changes file formatting to be consistent
+
+ -- Quanah Gibson-Mount <quanah@stanford.edu>  Fri, 09 Feb 2007 17:50:20 -0800
+
+libnet-ldapapi-perl (2.0.1-1) unstable; urgency=low
+
+  * Initial Release.
+  * First pass at packaging the Net::LDAPapi perl module.
+
+ -- Quanah Gibson-Mount <quanah@stanford.edu>  Fri, 09 Feb 2007 08:41:46 -0800
+

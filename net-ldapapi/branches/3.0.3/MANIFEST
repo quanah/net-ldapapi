@@ -1,0 +1,20 @@
+Changes
+Credits
+LDAPapi.pm
+LDAPapi.xs
+MANIFEST
+Makefile.PL
+README
+Todo
+constant.gen
+ldap_compat.h
+test.pl
+typemap
+examples/ldap_mod_attr.pl
+examples/ldapwalk.pl
+examples/ldapwalk2.pl
+examples/testwrite.pl
+examples/updatepw.pl
+examples/web500.pl
+examples/www-ldap.pl
+META.yml                                 Module meta-data (added by MakeMaker)
