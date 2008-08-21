@@ -109,7 +109,7 @@ constant.h:     constant.gen
 WriteMakefile(
 	'NAME'          =>      'Net::LDAPapi',
 	'VERSION_FROM'  =>      'LDAPapi.pm',
-	'PREREQ_PM'	=>	'Convert::ASN1',
+	'PREREQ_PM'	=>	{ 'Convert::ASN1' => '0.19'},
         ($include_sasl ne "" ? (
 	'INC'           =>      "-I$include_ldap -I$include_sasl -I/usr/include",
         ) : ( 
