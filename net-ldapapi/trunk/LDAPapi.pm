@@ -1966,13 +1966,18 @@ sub errorize {
 
     my ($errdn, $extramsg);
 
-    $self->{"errno"}    = ldap_get_lderrno($self->{"ld"}, $errdn, $extramsg);
-    $self->{"extramsg"} = $extramsg;
+    if ($status != $self->LDAP_SUCCESS) {
+        $self->{"errno"}    = ldap_get_lderrno($self->{"ld"}, $errdn, $extramsg);
+        $self->{"extramsg"} = $extramsg;
 
-    if( $self->{"debug"} ) {
-        print  "LDAP ERROR STATUS: $status ".ldap_err2string($status)."\n";
-        printf("LDAP ERROR CODE:   %x\n", $self->{"errno"});
-        print  "LDAP ERROR MESSAGE: $extramsg\n";
+        if( $self->{"debug"} ) {
+            print  "LDAP ERROR STATUS: $status ".ldap_err2string($status)."\n";
+            printf("LDAP ERROR CODE:   %x\n", $self->{"errno"});
+            print  "LDAP ERROR MESSAGE: $extramsg\n";
+        }
+    } else {
+        $self->{"errno"}=0;
+        $self->{"errstring"}=undef;
     }
 } # end of errorize
 
