@@ -54,8 +54,7 @@ unless ($sdk)
    print "\nSelect your Development Kit:\n";
    print "  1.  OpenLDAP (default)\n";
    print "  2.  Mozilla\n";
-   print "Choose: ";
-   $sdk = <>;
+   $sdk=prompt("Choose:",1);
 }
 
 $version = ($sdk == 2 ? 'MOZILLA' :
@@ -63,17 +62,22 @@ $version = ($sdk == 2 ? 'MOZILLA' :
 
 if ($include_ldap eq "")
 {
-   print "Location of $lname Include Files (default: /usr/include):  ";
-   chomp($include_ldap = <>);
+   $include_ldap=prompt("Location of LDAP include files:","/usr/include");
+   chomp($include_ldap);
    $include_ldap = "/usr/include" unless $include_ldap =~ /\S/;
 }
 
 if ($lib_ldap eq "")
 {
    $df_lib = ($include_ldap =~ m%^(\S+)/include% ? "$1/lib" : "/usr/lib");
-   print "Location of $lname Library Files (default: $df_lib):  ";
-   chomp($lib_ldap = <>);
+   $lib_ldap=prompt("Location of LDAP library files:",$df_lib);
+   chomp($lib_ldap);
    $lib_ldap = $df_lib unless $lib_ldap =~ /\S/;
+}
+
+if ( $sdk == 1 && $include_sasl eq "") {
+   $include_sasl=prompt("Location of SASL include files if needed:");
+   chomp($include_sasl);
 }
 
 if ($version eq "MOZILLA")
