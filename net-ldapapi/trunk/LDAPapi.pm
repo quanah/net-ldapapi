@@ -1483,7 +1483,7 @@ sub listen_for_changes
 
     $self->{"cookie"} = $cookie;
 
-    if( $attrs == undef ) {
+    if( !defined($attrs) ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
@@ -1592,7 +1592,7 @@ sub search_s
 
     croak("No Filter Passed as Argument 3") if ($filter eq "");
 
-    if( $attrs == undef ) {
+    if( !defined($attrs) == undef ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
@@ -1877,7 +1877,7 @@ sub create_control
 
     croak("No OID of controls is passed") unless $oid;
     croak("No BerVal is passed")          unless $berval;
-    $critical = 1                         if $critical == undef;
+    $critical = 1                         if !defined($critical);
 
     my ($ctrl) = undef;
     my $status = ldap_create_control($oid, $berval, length($berval), $critical, $ctrl);
