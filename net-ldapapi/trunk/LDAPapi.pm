@@ -1544,7 +1544,7 @@ sub search
 
     croak("No Filter Specified") if ($filter eq "");
 
-    if( $attrs == undef ) {
+    if( !defined($attrs) ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
