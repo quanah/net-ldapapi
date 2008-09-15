@@ -1,4 +1,6 @@
 Revision history for Perl5 Net::LDAPapi Module.
+3.0.4 uncommitted
+	- Fix undef comparison
 3.0.3 Wed Aug 20 12:23:00 PST 2008
 	- Add Convert::ASN1 requirement.
 	- Fix error code handling (CPAN bug#35910)
