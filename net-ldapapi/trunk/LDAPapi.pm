@@ -1478,7 +1478,7 @@ sub listen_for_changes
             $self->rearrange(['BASEDN',    'SCOPE',   'FILTER',    'ATTRS',
                               'ATTRSONLY', 'TIMEOUT', 'SIZELIMIT', 'COOKIE'], @args);
 
-    croak("No Filter Specified") if ($filter eq "");
+    croak("No Filter Specified") if (!defined($filter));
     croak("No cookie file specified") unless $cookie;
 
     $self->{"cookie"} = $cookie;
@@ -1542,7 +1542,7 @@ sub search
                               'SIZELIMIT'],
                              @args);
 
-    croak("No Filter Specified") if ($filter eq "");
+    croak("No Filter Specified") if (!defined($filter));
 
     if( !defined($attrs) ) {
         my @null_array = ();
