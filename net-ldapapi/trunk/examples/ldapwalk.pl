@@ -129,7 +129,7 @@ while (1)
     $ld->msgfree;
 
 }
-if ( $result == undef && $ld->err != LDAP_SUCCESS)
+if ( !defined($result) && $ld->err != LDAP_SUCCESS)
 {
     $ld->unbind;
     die "result: ", $ld->errstring, ": ", $ld->extramsg;
