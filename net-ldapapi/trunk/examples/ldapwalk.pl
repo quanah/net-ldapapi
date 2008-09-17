@@ -53,8 +53,9 @@ if (($ld = new Net::LDAPapi($ldap_server)) == -1)
 #if ($ld->bind_s("tester","tester",LDAP_AUTH_SASL) != LDAP_SUCCESS)
 if ($ld->bind_s != LDAP_SUCCESS)
 {
+    my $errstr=$ld->errstring;
     $ld->unbind;
-    die "bind: ", $ld->errstring, ": ", $ld->extramsg;
+    die "bind: ", $errstr;
 }
 
 #  This will set the size limit to $sizelimit from above.  The command
