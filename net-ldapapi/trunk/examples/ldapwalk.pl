@@ -40,7 +40,7 @@ my $result;
 
 if (($ld = new Net::LDAPapi($ldap_server)) == -1)
 {
-    die "Connection Failed!";
+    die "Unable to initialize!";
 }
 
 #ldap_set_option(0,LDAP_OPT_DEBUG_LEVEL,-1);
