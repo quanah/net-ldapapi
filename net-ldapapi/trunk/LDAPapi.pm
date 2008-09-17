@@ -482,7 +482,7 @@ sub bind_s
 {
     my ($self, @args) = @_;
 
-    my ($saslmech, $status, $servercredp, $sctrls, $cctrls);
+    my ($status, $servercredp, $sctrls, $cctrls);
 
     my ($dn, $pass, $authtype, $serverctrls, $clientctrls) =
         $self->rearrange(['DN', 'PASSWORD', 'TYPE', 'SCTRLS', 'CCTRLS'], @args);
@@ -499,7 +499,7 @@ sub bind_s
     if ($authtype == $self->LDAP_AUTH_SASL) {
         $status =
             ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
-                                         $sctrls, $cctrls, $saslmech,
+                                         $sctrls, $cctrls, $self->{"saslmech"},
                                          $self->{"saslrealm"},
                                          $self->{"saslauthzid"},
                                          $self->{"saslsecprops"},
