@@ -115,7 +115,7 @@ while (1)
 
         #
         #  Cycle Through Each Attribute
-        for ($attr = $ld->first_attribute; $attr ne ""; $attr = $ld->next_attribute)
+        for ($attr = $ld->first_attribute; defined($attr); $attr = $ld->next_attribute)
         {
 
             #
@@ -165,6 +165,7 @@ foreach $dn (keys %record)
             }
         }
     }
+    print "\n";
 }
 
 exit;
