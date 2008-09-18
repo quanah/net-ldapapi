@@ -4,6 +4,7 @@ use strict;
 use Carp;
 use Convert::ASN1;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
+no warnings "uninitialized";
 
 require Exporter;
 require DynaLoader;
