@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..8\n"; }
+BEGIN { $| = 1; print "1..10\n"; }
 END {print "modinit  - not ok\n" unless $loaded;}
 use Net::LDAPapi;
 $loaded = 1;
@@ -55,6 +55,35 @@ if ($ld->bind_s != LDAP_SUCCESS)
    exit -1;
 }
 print "bind     - ok\n";
+
+##
+## ldap_whoami_s
+##
+
+$id = '';
+
+if ($ld->whoami_s(\$id) != LDAP_SUCCESS)
+{
+   $ld->perror("whoami_s");
+   print "whoami   - not ok\n";
+   exit -1;
+}
+print "whoami   - ok\n";
+
+##
+## ldap_extended_operation_s
+##
+
+%result = ();
+
+if ($ld->extended_operation_s(-oid => "1.3.6.1.4.1.4203.1.11.3", -result => \%result) != LDAP_SUCCESS)
+{
+   $ld->perror("ldap_extended_operation_s");
+   print "ldap_extended_operation   - not ok\n";
+   exit -1;
+}
+print "ldap_extended_operation    - ok\n";
+
 
 ##
 ## ldap_search_s - Synchronous Search
@@ -121,6 +150,7 @@ print "count    - ok\n";
 
 
    }
+
 
 ##
 ##  Unbind LDAP Connection
