@@ -2440,7 +2440,26 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
        return($dn,$pass,LDAP_AUTH_SIMPLE);
     }
 
+=head1 EXTENDED OPERATIONS
 
+  Extended operations are supported.
+  
+  The extended_operation and extended_operation_s methods are used to
+  invoke extended operations.
+  
+  Example (WHOAMI):
+  
+    %result = ();
+  
+    if ($ld->extended_operation_s(-oid => "1.3.6.1.4.1.4203.1.11.3", -result => \%result) != LDAP_SUCCESS)
+    {
+      $ld->perror("ldap_extended_operation_s");
+      exit -1;
+    }
+  
+  Note that WHOAMI is already natively implemented via whoami and whoami_s 
+  methods.
+           
 =head1 SUPPORTED METHODS
 
 =item abandon MSGID SCTRLS CCTRLS
@@ -2606,6 +2625,27 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     @components = $ld->explode_rdn($rdn, 0);
 
+=item extended_operation OID BERVAL SCTRLS CCTRLS
+
+  Asynchronous method for invoking an extended operation. 
+  
+  Returns a non-negative MSGID upon success.
+  
+  Examples:
+  
+    $msgid = $ld->extended_operation("1.3.6.1.4.1.4203.1.11.3");
+
+=item extended_operation_s OID BERVAL SCTRLS CCTRLS RESULT
+
+  Synchronous method for invoking an extended operation. 
+  
+  Returns LDAP_SUCCESS upon success.
+      
+  Examples:
+  
+    $status = $ld->extended_operation_s(-oid => "1.3.6.1.4.1.4203.1.11.3", \
+        -result => \%result);
+    
 =item first_attribute
 
   Returns pointer to first attribute name found in the current entry.
@@ -3057,6 +3097,26 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $status = $ld->url_search_s($my_ldap_url,0,2);
+
+=item whoami SCTRLS CCTRLS
+
+  Asynchronous method for invoking an LDAP whoami extended operation. 
+
+  Returns a non-negative MSGID upon success.
+      
+  Examples:
+  
+    $msgid = $ld->whoami();
+
+=item whoami_s AUTHZID SCTRLS CCTRLS
+
+  Synchronous method for invoking an LDAP whoami extended operation.
+  
+  Returns LDAP_SUCCESS upon success.
+    
+  Examples:
+  
+    $status = $ld->whoami_s(\$authzid);
 
 =head1 AUTHOR
 
