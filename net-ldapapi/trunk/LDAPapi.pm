@@ -1194,8 +1194,6 @@ sub parse_whoami {
         return undef;
     }
 
-    #$result{"authzid"}     = $authzid;
-
     return $authzid;
 } # end of parse_whoami(...)
 
@@ -1760,8 +1758,8 @@ sub whoami_s
     my ($self, @args) = @_;
     my ($status, $authzidOut, $sctrls, $cctrls);
 
-    my ($serverctrls, $clientctrls, $authzid) =
-            $self->rearrange(['SCTRLS', 'CCTRLS', 'AUTHZID'],
+    my ($authzid, $serverctrls, $clientctrls) =
+            $self->rearrange(['AUTHZID', 'SCTRLS', 'CCTRLS'],
                              @args);
 
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
