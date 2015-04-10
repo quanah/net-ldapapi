@@ -704,6 +704,110 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
     RETVAL
     res
 
+int
+ldap_extended_operation(ld, oid, bv_val, bv_len,  sctrls, cctrls, msgidp)
+    LDAP *           ld
+    LDAP_CHAR *      oid
+    LDAP_CHAR *      bv_val
+    int              bv_len
+    LDAPControl **   sctrls
+    LDAPControl **   cctrls
+    int              msgidp = NO_INIT
+
+    CODE:
+    {
+       struct berval indata;
+
+       if (bv_len == 0) {
+          RETVAL = ldap_extended_operation(ld, oid, NULL,
+                                           sctrls, cctrls,
+                                           &msgidp);
+       } else {
+          indata.bv_val = bv_val;
+          indata.bv_len = bv_len;
+
+          RETVAL = ldap_extended_operation(ld, oid, &indata,
+                                      sctrls, cctrls,
+                                      &msgidp);
+       }
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
+
+int
+ldap_extended_operation_s(ld, oid, bv_val, bv_len,  sctrls, cctrls, retoidp, retdatap)
+    LDAP *           ld
+    LDAP_CHAR *      oid
+    LDAP_CHAR *      bv_val
+    int              bv_len
+    LDAPControl **   sctrls
+    LDAPControl **   cctrls
+    char *        retoidp  = NO_INIT
+    char *        retdatap = NO_INIT
+    CODE:
+    {
+       struct berval indata, *retdata;
+
+       if (bv_len == 0) {
+          RETVAL = ldap_extended_operation_s(ld, oid, NULL,
+                                             sctrls, cctrls,
+                                             &retoidp, &retdata);
+       } else {
+          indata.bv_val = bv_val;
+          indata.bv_len = bv_len;
+
+          RETVAL = ldap_extended_operation_s(ld, oid, &indata,
+                                             sctrls, cctrls,
+                                             &retoidp, &retdata);
+       }
+
+       if (retdata != NULL)
+          retdatap = ldap_strdup(retdata->bv_val);
+      
+       ber_memfree(retdata);
+   }
+   OUTPUT:
+   RETVAL
+   retoidp
+   retdatap
+
+int
+ldap_whoami(ld, sctrls, cctrls, msgidp)
+    LDAP *           ld
+    LDAPControl **   sctrls
+    LDAPControl **   cctrls
+    int              msgidp = NO_INIT
+
+    CODE:
+    {
+       RETVAL = ldap_whoami(ld, sctrls, cctrls,
+                            &msgidp);
+    }
+    OUTPUT:
+    RETVAL
+    msgidp
+
+int
+ldap_whoami_s(ld, authzid, sctrls, cctrls)
+    LDAP *           ld
+    LDAPControl **   sctrls
+    LDAPControl **   cctrls
+    char *        authzid = NO_INIT
+    CODE:
+    {
+       struct berval *retdata;
+
+       RETVAL = ldap_whoami_s(ld, &retdata, sctrls, cctrls);
+
+       if (retdata != NULL)
+          authzid = ldap_strdup(retdata->bv_val);
+      
+       ber_memfree(retdata);
+    }
+    OUTPUT:
+    RETVAL
+    authzid
 
 int
 ldap_result(ld, msgid, all, timeout, result)
@@ -951,6 +1055,33 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
     errmsgp
 
 int
+ldap_parse_extended_result(ld, msg, retoidp, retdatap, freeit)
+    LDAP        * ld
+    LDAPMessage * msg
+    char *        retoidp  = NO_INIT
+    char *        retdatap = NO_INIT
+    int           freeit
+    CODE:
+    {
+       struct berval *retdata;
+      
+       retdata = ber_memalloc(sizeof(struct berval *));
+   
+       RETVAL =
+           ldap_parse_extended_result(ld, msg, &retoidp,
+                                      &retdata, freeit);
+
+       if (retdata != NULL)
+          retdatap = ldap_strdup(retdata->bv_val);
+
+       ber_memfree(retdata);
+    }
+    OUTPUT:
+    RETVAL
+    retoidp
+   retdatap
+   
+int
 ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
     LDAP        * ld
     LDAPMessage * msg
@@ -1002,6 +1133,28 @@ ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
     retoidp
     retdatap
 
+int
+ldap_parse_whoami(ld, msg, authzid)
+    LDAP        * ld
+    LDAPMessage * msg
+    char *        authzid = NO_INIT
+    CODE:
+    {
+      struct berval *retdata;
+      
+        retdata = ber_memalloc(sizeof(struct berval *));
+   
+        RETVAL =
+            ldap_parse_whoami(ld, msg, &retdata);
+
+      if (retdata != NULL)
+         authzid = ldap_strdup(retdata->bv_val);
+
+      ber_memfree(retdata);
+    }
+    OUTPUT:
+    RETVAL
+    authzid
 
 char *
 ldap_control_oid(control)

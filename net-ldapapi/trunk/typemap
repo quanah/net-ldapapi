@@ -16,6 +16,7 @@ BerElement *        T_PTR
 BerElement **       T_PTR
 LDAPVersion *       T_PTR
 LDAPMod *           T_PTR
+LDAPMod **	    T_PTR
 struct berval *     T_PTR
 struct berval **    T_PTR
 struct timeval *    T_PTR

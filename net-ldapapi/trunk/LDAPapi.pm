@@ -22,6 +22,8 @@ require AutoLoader;
        ldap_rename ldap_rename_s
        ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
        ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
+       ldap_extended_operation ldap_extended_operation_s ldap_parse_extended_result
+       ldap_parse_whoami ldap_whoami ldap_whoami_s
        ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
        ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
        ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
@@ -1115,6 +1117,31 @@ sub parse_result {
     return %result;
 } # end of parse_result(...)
 
+sub parse_extended_result {
+    my ($self, @args) = @_;
+
+    my ($msg, $freeMsg) = $self->rearrange(['MSG', 'FREEMSG'], @args);
+
+    my ($status, %result);
+
+    $freeMsg = 0          unless $freeMsg;
+    $msg = $self->{"msg"} unless $msg;
+
+    my ($retoidp, $retdatap);
+
+    $status =
+        ldap_parse_extended_result($self->{"ld"}, $msg, $retoidp, $retdatap,  $freeMsg);
+
+    $self->errorize($status);
+    if( $status != $self->LDAP_SUCCESS ) {
+        return undef;
+    }
+
+    $result{"retoidp"}     = $retoidp;
+    $result{"retdatap"}    = $retdatap;
+
+    return %result;
+} # end of parse_extended_result(...)
 
 # needs docs bellow in POD. XXX
 sub parse_intermediate {
@@ -1148,6 +1175,27 @@ sub parse_intermediate {
     return %result;
 } # end of parse_result(...)
 
+sub parse_whoami {
+    my ($self, @args) = @_;
+
+    my ($msg) = $self->rearrange(['MSG'], @args);
+
+    my ($status, %result);
+
+    $msg = $self->{"msg"} unless $msg;
+
+    my ($authzid);
+
+    $status =
+        ldap_parse_whoami($self->{"ld"}, $msg, $authzid);
+
+    $self->errorize($status);
+    if( $status != $self->LDAP_SUCCESS ) {
+        return undef;
+    }
+
+    return $authzid;
+} # end of parse_whoami(...)
 
 sub perror
 {
@@ -1624,6 +1672,110 @@ sub search_ext_s
     return $self->search_s(@args);
 } # end of search_ext_s
 
+sub extended_operation
+{
+    my ($self, @args) = @_;
+    my ($msgid, $status, $sctrls, $cctrls);
+
+    my ($oid, $berval, $serverctrls, $clientctrls) =
+            $self->rearrange(['OID',    'BERVAL',  
+                              'SCTRLS', 'CCTRLS'],
+                             @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_extended_operation($self->{"ld"}, $oid, $berval, length($berval),
+                        $sctrls, $cctrls,
+                        $msgid);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    $self->errorize($status);
+    if( $status != $self->LDAP_SUCCESS ) {
+        return undef;
+    }
+
+    return $msgid;
+} # end of extended_operation
+
+sub extended_operation_s
+{
+    my ($self, @args) = @_;
+    my ($status, $retoidp, $retdatap, $sctrls, $cctrls);
+
+    my ($oid, $berval, $serverctrls, $clientctrls, $result) =
+            $self->rearrange(['OID',    'BERVAL',  
+                              'SCTRLS', 'CCTRLS', 'RESULT'],
+                             @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_extended_operation_s($self->{"ld"}, $oid, $berval, length($berval),
+                        $sctrls, $cctrls,
+                        $retoidp, $retdatap);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    $self->errorize($status);
+    
+    $result->{'retoidp'} = $retoidp;
+    $result->{'retdatap'} = $retdatap;
+    
+    return $status;
+} # end of extended_operation_s
+
+sub whoami
+{
+    my ($self, @args) = @_;
+    my ($msgid, $status, $sctrls, $cctrls);
+
+    my ($serverctrls, $clientctrls) =
+            $self->rearrange(['SCTRLS', 'CCTRLS'],
+                             @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_whoami($self->{"ld"}, $sctrls, $cctrls, $msgid);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    $self->errorize($status);
+    if( $status != $self->LDAP_SUCCESS ) {
+        return undef;
+    }
+
+    return $msgid;
+} # end of whoami
+
+sub whoami_s
+{
+    my ($self, @args) = @_;
+    my ($status, $authzidOut, $sctrls, $cctrls);
+
+    my ($authzid, $serverctrls, $clientctrls) =
+            $self->rearrange(['AUTHZID', 'SCTRLS', 'CCTRLS'],
+                             @args);
+
+    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
+    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
+
+    $status = ldap_whoami_s($self->{"ld"}, $authzidOut, $sctrls, $cctrls);
+
+    ldap_controls_array_free($sctrls) if $sctrls;
+    ldap_controls_array_free($cctrls) if $cctrls;
+
+    $self->errorize($status);
+    
+    $$authzid = $authzidOut;
+    
+    return $status;
+} # end of whoami_s
 
 sub count_references
 {
@@ -2288,7 +2440,26 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
        return($dn,$pass,LDAP_AUTH_SIMPLE);
     }
 
+=head1 EXTENDED OPERATIONS
 
+  Extended operations are supported.
+  
+  The extended_operation and extended_operation_s methods are used to
+  invoke extended operations.
+  
+  Example (WHOAMI):
+  
+    %result = ();
+  
+    if ($ld->extended_operation_s(-oid => "1.3.6.1.4.1.4203.1.11.3", -result => \%result) != LDAP_SUCCESS)
+    {
+      $ld->perror("ldap_extended_operation_s");
+      exit -1;
+    }
+  
+  Note that WHOAMI is already natively implemented via whoami and whoami_s 
+  methods.
+           
 =head1 SUPPORTED METHODS
 
 =item abandon MSGID SCTRLS CCTRLS
@@ -2454,6 +2625,27 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     @components = $ld->explode_rdn($rdn, 0);
 
+=item extended_operation OID BERVAL SCTRLS CCTRLS
+
+  Asynchronous method for invoking an extended operation. 
+  
+  Returns a non-negative MSGID upon success.
+  
+  Examples:
+  
+    $msgid = $ld->extended_operation("1.3.6.1.4.1.4203.1.11.3");
+
+=item extended_operation_s OID BERVAL SCTRLS CCTRLS RESULT
+
+  Synchronous method for invoking an extended operation. 
+  
+  Returns LDAP_SUCCESS upon success.
+      
+  Examples:
+  
+    $status = $ld->extended_operation_s(-oid => "1.3.6.1.4.1.4203.1.11.3", \
+        -result => \%result);
+    
 =item first_attribute
 
   Returns pointer to first attribute name found in the current entry.
@@ -2905,6 +3097,26 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $status = $ld->url_search_s($my_ldap_url,0,2);
+
+=item whoami SCTRLS CCTRLS
+
+  Asynchronous method for invoking an LDAP whoami extended operation. 
+
+  Returns a non-negative MSGID upon success.
+      
+  Examples:
+  
+    $msgid = $ld->whoami();
+
+=item whoami_s AUTHZID SCTRLS CCTRLS
+
+  Synchronous method for invoking an LDAP whoami extended operation.
+  
+  Returns LDAP_SUCCESS upon success.
+    
+  Examples:
+  
+    $status = $ld->whoami_s(\$authzid);
 
 =head1 AUTHOR
 
