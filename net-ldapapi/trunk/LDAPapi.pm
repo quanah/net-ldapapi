@@ -1821,10 +1821,10 @@ sub set_rebind_proc
     my ($self, @args) = @_;
     my ($status);
 
-    my ($rebindproc) = $self->rearrange(['REBINDPROC'], @args);
+    my ($rebindproc, $params) = $self->rearrange(['REBINDPROC', 'PARAMS'], @args);
 
     if( ref($rebindproc) eq "CODE" ) {
-        $status = ldap_set_rebind_proc($self->{"ld"}, $rebindproc);
+        $status = ldap_set_rebind_proc($self->{"ld"}, $rebindproc, $params);
     } else {
         croak("REBINDPROC is not a CODE Reference");
     }
