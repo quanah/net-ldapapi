@@ -472,7 +472,7 @@ ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
        Safefree(ldap_change_ref);
 
 int
-ldap_sasl_bind(ld, dn, passwd, sctrls, serverctrls, clientctrls, msgidp)
+ldap_sasl_bind(ld, dn, passwd, serverctrls, clientctrls, msgidp)
     LDAP *          ld
     LDAP_CHAR *     dn
     LDAP_CHAR *     passwd
