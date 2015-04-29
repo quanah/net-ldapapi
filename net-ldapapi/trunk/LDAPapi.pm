@@ -1641,7 +1641,7 @@ sub search_s
 
     croak("No Filter Passed as Argument 3") if ($filter eq "");
 
-    if( !defined($attrs) == undef ) {
+    if( !defined($attrs) ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
