@@ -540,6 +540,7 @@ ldap_rename(ld, dn, newrdn, newSuperior, deleteoldrdn, sctrls, cctrls, msgidp)
     }
     OUTPUT:
     RETVAL
+    msgidp
 
 int
 ldap_rename_s(ld, dn, newrdn, newSuperior, deleteoldrdn, sctrls, cctrls)
