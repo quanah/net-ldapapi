@@ -1168,12 +1168,12 @@ ldap_control_oid(control)
     RETVAL
 
 
-char *
+SV *
 ldap_control_berval(control)
     LDAPControl * control
     CODE:
     {
-        RETVAL = control->ldctl_value.bv_val;
+        RETVAL = newSVpv(control->ldctl_value.bv_val, control->ldctl_value.bv_len);
     }
     OUTPUT:
     RETVAL
