@@ -840,6 +840,10 @@ sub next_changed_entries {
 
     @entries = ();
 
+    if ($self->{'status'} == 0) { # ldap_result return 0 = timeout
+        return @entries;
+    }
+    
     $asn = $self->{"asn"};
 
     while( $msg = $self->result_message ) {

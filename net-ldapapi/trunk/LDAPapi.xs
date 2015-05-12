@@ -826,7 +826,7 @@ ldap_result(ld, msgid, all, timeout, result)
            tv_timeout->tv_sec = atof(timeout);
            tv_timeout->tv_usec = 0;
         }
-        RETVAL = ldap_result(ld, msgid, all, NULL, &result);
+        RETVAL = ldap_result(ld, msgid, all, tv_timeout, &result);
     }
     OUTPUT:
     RETVAL
