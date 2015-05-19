@@ -334,6 +334,26 @@ ldap_b2_interact(LDAP *ld, unsigned flags, void *def, void *inter)
     return LDAP_SUCCESS;
 }
 
+static struct timeval *
+sv2timeval(SV *data)
+{
+    struct timeval *tv = NULL;
+
+    if (SvPOK(data))
+    { 
+        /* set the NV flag if it's readable as a double */
+        SvNV(data);
+    }
+
+    if (SvIOK(data) || SvNOK(data)) {
+        Newx(tv, 1, struct timeval);
+
+        tv->tv_sec = SvIV(data);
+        tv->tv_usec = ((SvNV(data) - SvIV(data))*1000000);
+    }
+
+    return tv;
+}
 
 MODULE = Net::LDAPapi           PACKAGE = Net::LDAPapi
 
@@ -622,7 +642,7 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
     int              attrsonly
     LDAPControl **   sctrls
     LDAPControl **   cctrls
-    struct timeval * timeout
+    SV *             timeout
     int              sizelimit
     int              msgidp = NO_INIT
 
@@ -631,6 +651,7 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
        char **attrs_char;
        SV **current;
        int arraylen,count;
+       struct timeval *tv_timeout = NULL;
 
        if (SvTYPE(SvRV(attrs)) != SVt_PVAV)
        {
@@ -651,9 +672,13 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
           }
           attrs_char[arraylen+1] = NULL;
        }
+
+       tv_timeout = sv2timeval(timeout);
+
        RETVAL = ldap_search_ext(ld,        base,   scope,  filter,  attrs_char,
-                                attrsonly, sctrls, cctrls, timeout, sizelimit,
+                                attrsonly, sctrls, cctrls, tv_timeout, sizelimit,
                                 &msgidp);
+       Safefree(tv_timeout);
        Safefree(attrs_char);
     }
     OUTPUT:
@@ -670,7 +695,7 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
     int              attrsonly
     LDAPControl **   sctrls
     LDAPControl **   cctrls
-    struct timeval * timeout
+    SV *             timeout
     int              sizelimit
     LDAPMessage *    res = NO_INIT
     CODE:
@@ -678,6 +703,7 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
        char **attrs_char;
        SV **current;
        int arraylen,count;
+       struct timeval *tv_timeout = NULL;
 
        if (SvTYPE(SvRV(attrs)) == SVt_PVAV)
        {
@@ -698,7 +724,12 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
           croak("Net::LDAPapi::ldap_search_ext_s needs ARRAY reference as argument 5.");
           XSRETURN(1);
        }
-       RETVAL = ldap_search_ext_s(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,timeout,sizelimit,&res);
+
+       tv_timeout = sv2timeval(timeout);
+
+       RETVAL = ldap_search_ext_s(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,tv_timeout,sizelimit,&res);
+
+       Safefree(tv_timeout);
        Safefree(attrs_char);
     }
     OUTPUT:
@@ -815,18 +846,16 @@ ldap_result(ld, msgid, all, timeout, result)
     LDAP *        ld
     int           msgid
     int           all
-    LDAP_CHAR *   timeout
+    SV *          timeout
     LDAPMessage * result = NO_INIT
     CODE:
     {
-        struct timeval *tv_timeout = NULL, timeoutbuf;
-        if (atof(timeout) > 0 && timeout && *timeout)
-        {
-           tv_timeout = &timeoutbuf;
-           tv_timeout->tv_sec = atof(timeout);
-           tv_timeout->tv_usec = 0;
-        }
+        struct timeval *tv_timeout = NULL;
+
+        tv_timeout = sv2timeval(timeout);
+
         RETVAL = ldap_result(ld, msgid, all, tv_timeout, &result);
+        Safefree(tv_timeout);
     }
     OUTPUT:
     RETVAL
@@ -1590,18 +1619,16 @@ ldap_url_search_st(ld,url,attrsonly,timeout,result)
     LDAP *      ld
     char *      url
     int     attrsonly
-    LDAP_CHAR * timeout
+    SV * timeout
     LDAPMessage *   result = NO_INIT
     CODE:
     {
-       struct timeval *tv_timeout = NULL, timeoutbuf;
-       if (timeout && *timeout)
-       {
-          tv_timeout = &timeoutbuf;
-          tv_timeout->tv_sec = atof(timeout);
-          tv_timeout->tv_usec = 0;
-       }
+       struct timeval *tv_timeout = NULL;
+
+       tv_timeout = sv2timeval(timeout);
+
        RETVAL = ldap_url_search_st(ld,url,attrsonly,tv_timeout,&result);
+       Safefree(tv_timeout);
     }
     OUTPUT:
     RETVAL
