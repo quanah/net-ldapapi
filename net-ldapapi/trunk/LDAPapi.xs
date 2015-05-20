@@ -355,6 +355,12 @@ sv2timeval(SV *data)
     return tv;
 }
 
+static SV *
+timeval2sv(struct timeval *data)
+{
+   return newSVnv(data->tv_sec + ((double)data->tv_usec / 1000000));    
+}
+
 MODULE = Net::LDAPapi           PACKAGE = Net::LDAPapi
 
 PROTOTYPES: ENABLE
@@ -404,10 +410,41 @@ int
 ldap_set_option(ld,option,optdata)
     LDAP *          ld
     int             option
-    int             optdata
+    SV *            optdata
     CODE:
     {
-       RETVAL = ldap_set_option(ld,option,&optdata);
+       void *optptr = NULL;
+
+       bool must_safefree = 0;
+
+       int sv_i;
+
+       switch(option) 
+       {
+#ifdef OPENLDAP
+          case LDAP_OPT_TIMEOUT:
+          case LDAP_OPT_NETWORK_TIMEOUT:
+             optptr = (void *) sv2timeval(optdata);
+             must_safefree = 1;
+
+             break;
+#endif
+          default:
+             if (SvIOK(optdata)) 
+             {
+                sv_i = SvIV(optdata);
+                optptr = (void *) &sv_i;
+             }
+
+             break;
+       }
+
+       RETVAL = ldap_set_option(ld,option,optptr);
+
+       if (must_safefree) 
+       {
+          Safefree(optptr);
+       }
     }
     OUTPUT:
     RETVAL
@@ -416,10 +453,26 @@ int
 ldap_get_option(ld,option,optdata)
     LDAP *          ld
     int             option
-    int             optdata = NO_INIT
+    SV *            optdata
     CODE:
     {
-       RETVAL = ldap_get_option(ld, option, &optdata);
+       void *data = NULL;
+
+       RETVAL = ldap_get_option(ld, option, &data);
+
+       switch(option) 
+       {
+#ifdef OPENLDAP
+          case LDAP_OPT_TIMEOUT:
+          case LDAP_OPT_NETWORK_TIMEOUT:
+             sv_setsv(SvRV(optdata), timeval2sv(data));
+             break;
+#endif
+          default:
+             sv_setiv(SvRV(optdata), (long)data);
+             break;
+       }
+
     }
     OUTPUT:
     RETVAL
