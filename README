@@ -1,5 +1,5 @@
 =======================================================================
-                Net::LDAPapi Module v3.0.x for Perl5
+                Net::LDAPapi Module v3.0.1 for Perl5
 		by Quanah Gibson-Mount @ Zimbra, Inc.
 	based on version 2.00 by Quanah Gibson-Mount @ Stanford University
 	based on version 1.50 by Howard Chu @ Symas Corporation
@@ -47,7 +47,8 @@ PLATFORMS SUPPORTED
 This version should be easily compiled on various platforms. It has been tested
 extensively under Solaris and Linux.
 
-As of 3.00, the module has not been tested on Windows.
+Additionally, as of 1.39, the module has been verified to work with NT 4.0
+and Perl 5.004+.
 
 Please let me know if you compile it successfully on a new platform or have
 any problems. For problems, please include the compilation errors. 
@@ -195,16 +196,13 @@ Perl-OO style interface if you have never used the C API.
 
 FEEDBACK
 ========
-   Any feedback should be directed to quanah.gibsonmount@gmail.com
-
+ Any feedback should be directed to mishikal@yahoo.com
 
 BUGS
 ====
 
-   The non-OO stuff should work well.  Please let me know if I've introduced
+The non-OO stuff should work well.  Please let me know if I've introduced
 any bugs in the OO stuff or the changed examples.
-
-   Please report bugs at github - https://github.com/quanah/net-ldapapi/issues/
 
 --
 Clayton Donley
@@ -218,8 +216,8 @@ Chief Architect, Symas Corporation	http://www.symas.com
 Core Team, OpenLDAP Project		http://www.openldap.org
 
 Quanah Gibson-Mount
-email: quanah.gibsonmount@gmail.com
+email: mishikal@yahoo.com
 CPAN: /by-authors/id/M/MI/MISHIKAL
-Platform Architect
-Synacor, Inc				http://www.zimbra.com http://synacor.com/
+Principal Software Engineer
+Zimbra, Inc				http://www.zimbra.com
 Core Team, OpenLDAP Project		http://www.openldap.org

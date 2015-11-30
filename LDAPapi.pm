@@ -4,7 +4,6 @@ use strict;
 use Carp;
 use Convert::ASN1;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
-no warnings "uninitialized";
 
 require Exporter;
 require DynaLoader;
@@ -22,8 +21,6 @@ require AutoLoader;
        ldap_rename ldap_rename_s
        ldap_compare_ext ldap_compare_ext_s ldap_delete_ext
        ldap_delete_ext_s ldap_search_ext ldap_search_ext_s ldap_result
-       ldap_extended_operation ldap_extended_operation_s ldap_parse_extended_result
-       ldap_parse_whoami ldap_whoami ldap_whoami_s
        ldap_msgfree ldap_msg_free ldap_msgid ldap_msgtype
        ldap_get_lderrno ldap_set_lderrno ldap_parse_result ldap_err2string
        ldap_count_entries ldap_first_entry ldap_next_entry ldap_get_dn
@@ -162,8 +159,6 @@ require AutoLoader;
        LDAP_OPT_SSL
        LDAP_OPT_THREAD_FN_PTRS
        LDAP_OPT_TIMELIMIT
-       LDAP_OPT_TIMEOUT
-       LDAP_OPT_NETWORK_TIMEOUT
        LDAP_OTHER
        LDAP_PARAM_ERROR
        LDAP_PARTIAL_RESULTS
@@ -232,7 +227,7 @@ require AutoLoader;
        LDAP_TAG_IM_RES_VALUE
        LDAP_TAG_SASL_RES_CREDS
        );
-$VERSION = '3.0.x';
+$VERSION = '3.0.1';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -360,7 +355,7 @@ sub abandon
 
     $status = ldap_abandon_ext($self->{"ld"}, $msgid, $sctrls, $cctrls);
 
-    $self->errorize($status);
+    $self->errorize($status) unless( $status == $self->LDAP_SUCCESS );
 
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
@@ -397,8 +392,8 @@ sub add
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -434,7 +429,7 @@ sub add_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     return $status;
 } # end of add_s
@@ -471,11 +466,13 @@ sub bind
     $status = ldap_sasl_bind($self->{"ld"}, $dn,     $pass,
                              $sctrls,       $cctrls, $msgid);
 
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -487,15 +484,13 @@ sub bind_s
 {
     my ($self, @args) = @_;
 
-    my ($status, $servercredp, $sctrls, $cctrls);
+    my ($saslmech, $status, $servercredp, $sctrls, $cctrls);
 
     my ($dn, $pass, $authtype, $serverctrls, $clientctrls) =
         $self->rearrange(['DN', 'PASSWORD', 'TYPE', 'SCTRLS', 'CCTRLS'], @args);
 
     $dn       = "" unless $dn;
     $pass     = "" unless $pass;
-    $sctrls   = 0 unless $sctrls;
-    $cctrls   = 0 unless $cctrls;
     $authtype = $authtype || $self->LDAP_AUTH_SIMPLE;
 
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
@@ -504,7 +499,7 @@ sub bind_s
     if ($authtype == $self->LDAP_AUTH_SASL) {
         $status =
             ldap_sasl_interactive_bind_s($self->{"ld"}, $dn, $pass,
-                                         $sctrls, $cctrls, $self->{"saslmech"},
+                                         $sctrls, $cctrls, $saslmech,
                                          $self->{"saslrealm"},
                                          $self->{"saslauthzid"},
                                          $self->{"saslsecprops"},
@@ -519,7 +514,7 @@ sub bind_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     return $status;
 } # end of bind_s
@@ -567,8 +562,8 @@ sub compare
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -605,7 +600,10 @@ sub compare_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
+    if( $status != $self->LDAP_COMPARE_FALSE && $status != $self->LDAP_COMPARE_TRUE ) {
+        $self->errorize($status);
+    }
+
     return $status;
 } # end of compare_s
 
@@ -636,8 +634,8 @@ sub start_tls
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -651,8 +649,6 @@ sub start_tls_s
     my ($self, @args) = @_;
 
     my ($status, $sctrls, $cctrls);
-    $sctrls=0;
-    $cctrls=0;
 
     my ($serverctrls, $clientctrls) = $self->rearrange(['SCTRLS', 'CCTRLS'], @args);
 
@@ -664,7 +660,7 @@ sub start_tls_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     return $status;
 } # end of start_tls_s
@@ -695,9 +691,6 @@ sub delete
 
     croak("No DN Specified") if ($dn eq "");
 
-    $sctrls = 0;
-    $cctrls = 0;
-
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
     $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
@@ -706,8 +699,8 @@ sub delete
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -733,7 +726,7 @@ sub delete_s
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     return $status;
 } # end of delete_s
@@ -842,10 +835,6 @@ sub next_changed_entries {
 
     @entries = ();
 
-    if ($self->{'status'} == 0) { # ldap_result return 0 = timeout
-        return @entries;
-    }
-    
     $asn = $self->{"asn"};
 
     while( $msg = $self->result_message ) {
@@ -901,7 +890,7 @@ sub next_changed_entries {
                 $syncInfoValues = $syncInfoValue->decode($retdatap);
 
                 # trying to get the cookie from one of the foolowing choices.
-                $cookie = $syncInfoValues->{'newcookie'};
+                my $cookie = $syncInfoValues->{'newcookie'};
 
                 my $refreshPresent = $syncInfoValues->{'refreshPresent'};
                 $cookie = $refreshPresent->{'cookie'} if( $refreshPresent );
@@ -1109,8 +1098,8 @@ sub parse_result {
                           $errmsg,       $referrals_ref, $serverctrls_ref, $freeMsg);
 
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -1123,31 +1112,6 @@ sub parse_result {
     return %result;
 } # end of parse_result(...)
 
-sub parse_extended_result {
-    my ($self, @args) = @_;
-
-    my ($msg, $freeMsg) = $self->rearrange(['MSG', 'FREEMSG'], @args);
-
-    my ($status, %result);
-
-    $freeMsg = 0          unless $freeMsg;
-    $msg = $self->{"msg"} unless $msg;
-
-    my ($retoidp, $retdatap);
-
-    $status =
-        ldap_parse_extended_result($self->{"ld"}, $msg, $retoidp, $retdatap,  $freeMsg);
-
-    $self->errorize($status);
-    if( $status != $self->LDAP_SUCCESS ) {
-        return undef;
-    }
-
-    $result{"retoidp"}     = $retoidp;
-    $result{"retdatap"}    = $retdatap;
-
-    return %result;
-} # end of parse_extended_result(...)
 
 # needs docs bellow in POD. XXX
 sub parse_intermediate {
@@ -1169,8 +1133,9 @@ sub parse_intermediate {
         ldap_parse_intermediate($self->{"ld"}, $msg,             $retoidp,
                                 $retdatap,     $serverctrls_ref, $freeMsg);
 
-    $self->errorize($status);
+
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -1181,27 +1146,6 @@ sub parse_intermediate {
     return %result;
 } # end of parse_result(...)
 
-sub parse_whoami {
-    my ($self, @args) = @_;
-
-    my ($msg) = $self->rearrange(['MSG'], @args);
-
-    my ($status, %result);
-
-    $msg = $self->{"msg"} unless $msg;
-
-    my ($authzid);
-
-    $status =
-        ldap_parse_whoami($self->{"ld"}, $msg, $authzid);
-
-    $self->errorize($status);
-    if( $status != $self->LDAP_SUCCESS ) {
-        return undef;
-    }
-
-    return $authzid;
-} # end of parse_whoami(...)
 
 sub perror
 {
@@ -1282,8 +1226,8 @@ sub modify
 
     $status = ldap_modify_ext($self->{"ld"}, $dn, $mod, $sctrls, $cctrls, $msgid);
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -1320,10 +1264,11 @@ sub modify_s
 
     $status = ldap_modify_ext_s($self->{"ld"}, $dn, $mod, $sctrls, $cctrls);
 
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
+
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     return $status;
 } # end of modify_s
 
@@ -1357,8 +1302,8 @@ sub rename {
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -1386,7 +1331,7 @@ sub rename_s {
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
 
     return $status;
 } # end of rename_s
@@ -1410,8 +1355,8 @@ sub result
     $self->{"result"} = $result;
     $self->{"status"} = $status;
 
-    $self->errorize($status);
     if( $status == -1 || $status == 0 ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -1449,10 +1394,7 @@ sub url_search
     if (($msgid = ldap_url_search($self->{"ld"},$url,$attrsonly)) < 0)
     {
         $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
-        $self->{"extramsg"} = undef;
-    } else {
-        $self->{"errno"} = 0;
-        $self->{"extramsg"} = "";
+        $self->{"extramsg"} = $extramsg;
     }
     return $msgid;
 } # end of url_search
@@ -1471,9 +1413,6 @@ sub url_search_s
     {
         $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
         $self->{"extramsg"} = $extramsg;
-    } else {
-        $self->{"errno"} = 0;
-        $self->{"extramsg"} = undef;
     }
     $self->{"result"} = $result;
     return $status;
@@ -1494,9 +1433,6 @@ sub url_search_st
     {
         $self->{"errno"} = ldap_get_lderrno($self->{"ld"},$errdn,$extramsg);
         $self->{"extramsg"} = $extramsg;
-    } else {
-        $self->{"errno"} = 0;
-        $self->{"extramsg"} = undef;
     }
     $self->{"result"} = $result;
     return $status;
@@ -1517,7 +1453,7 @@ sub multisort_entries
     }
 
     $status = ldap_multisort_entries($self->{"ld"},$self->{"result"},$attr);
-    $self->errorize($status);
+    $self->errorize($status) unless $status == $self->LDAP_SUCCESS;
     return $status;
 } # end of multisort_entries
 
@@ -1533,12 +1469,12 @@ sub listen_for_changes
             $self->rearrange(['BASEDN',    'SCOPE',   'FILTER',    'ATTRS',
                               'ATTRSONLY', 'TIMEOUT', 'SIZELIMIT', 'COOKIE'], @args);
 
-    croak("No Filter Specified") if (!defined($filter));
+    croak("No Filter Specified") if ($filter eq "");
     croak("No cookie file specified") unless $cookie;
 
     $self->{"cookie"} = $cookie;
 
-    if( !defined($attrs) ) {
+    if( $attrs == undef ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
@@ -1576,8 +1512,8 @@ sub listen_for_changes
     ldap_controls_array_free($sctrls);
     ldap_control_free($ctrl_persistent);
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -1597,9 +1533,9 @@ sub search
                               'SIZELIMIT'],
                              @args);
 
-    croak("No Filter Specified") if (!defined($filter));
+    croak("No Filter Specified") if ($filter eq "");
 
-    if( !defined($attrs) ) {
+    if( $attrs == undef ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
@@ -1615,8 +1551,8 @@ sub search
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     if( $status != $self->LDAP_SUCCESS ) {
+        $self->errorize($status);
         return undef;
     }
 
@@ -1647,7 +1583,7 @@ sub search_s
 
     croak("No Filter Passed as Argument 3") if ($filter eq "");
 
-    if( !defined($attrs) ) {
+    if( $attrs == undef ) {
         my @null_array = ();
         $attrs = \@null_array;
     }
@@ -1660,12 +1596,12 @@ sub search_s
                           $attrs,        $attrsonly, $sctrls,  $cctrls,
                           $timeout,      $sizelimit, $result);
 
+    $self->errorize($status) unless ($status == $self->LDAP_SUCCESS);
+    $self->{"result"} = $result;
 
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
-    $self->{"result"} = $result;
     return $status;
 } # end of search_s
 
@@ -1678,110 +1614,6 @@ sub search_ext_s
     return $self->search_s(@args);
 } # end of search_ext_s
 
-sub extended_operation
-{
-    my ($self, @args) = @_;
-    my ($msgid, $status, $sctrls, $cctrls);
-
-    my ($oid, $berval, $serverctrls, $clientctrls) =
-            $self->rearrange(['OID',    'BERVAL',  
-                              'SCTRLS', 'CCTRLS'],
-                             @args);
-
-    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
-    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
-
-    $status = ldap_extended_operation($self->{"ld"}, $oid, $berval, length($berval),
-                        $sctrls, $cctrls,
-                        $msgid);
-
-    ldap_controls_array_free($sctrls) if $sctrls;
-    ldap_controls_array_free($cctrls) if $cctrls;
-
-    $self->errorize($status);
-    if( $status != $self->LDAP_SUCCESS ) {
-        return undef;
-    }
-
-    return $msgid;
-} # end of extended_operation
-
-sub extended_operation_s
-{
-    my ($self, @args) = @_;
-    my ($status, $retoidp, $retdatap, $sctrls, $cctrls);
-
-    my ($oid, $berval, $serverctrls, $clientctrls, $result) =
-            $self->rearrange(['OID',    'BERVAL',  
-                              'SCTRLS', 'CCTRLS', 'RESULT'],
-                             @args);
-
-    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
-    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
-
-    $status = ldap_extended_operation_s($self->{"ld"}, $oid, $berval, length($berval),
-                        $sctrls, $cctrls,
-                        $retoidp, $retdatap);
-
-    ldap_controls_array_free($sctrls) if $sctrls;
-    ldap_controls_array_free($cctrls) if $cctrls;
-
-    $self->errorize($status);
-    
-    $result->{'retoidp'} = $retoidp;
-    $result->{'retdatap'} = $retdatap;
-    
-    return $status;
-} # end of extended_operation_s
-
-sub whoami
-{
-    my ($self, @args) = @_;
-    my ($msgid, $status, $sctrls, $cctrls);
-
-    my ($serverctrls, $clientctrls) =
-            $self->rearrange(['SCTRLS', 'CCTRLS'],
-                             @args);
-
-    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
-    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
-
-    $status = ldap_whoami($self->{"ld"}, $sctrls, $cctrls, $msgid);
-
-    ldap_controls_array_free($sctrls) if $sctrls;
-    ldap_controls_array_free($cctrls) if $cctrls;
-
-    $self->errorize($status);
-    if( $status != $self->LDAP_SUCCESS ) {
-        return undef;
-    }
-
-    return $msgid;
-} # end of whoami
-
-sub whoami_s
-{
-    my ($self, @args) = @_;
-    my ($status, $authzidOut, $sctrls, $cctrls);
-
-    my ($authzid, $serverctrls, $clientctrls) =
-            $self->rearrange(['AUTHZID', 'SCTRLS', 'CCTRLS'],
-                             @args);
-
-    $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
-    $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
-
-    $status = ldap_whoami_s($self->{"ld"}, $authzidOut, $sctrls, $cctrls);
-
-    ldap_controls_array_free($sctrls) if $sctrls;
-    ldap_controls_array_free($cctrls) if $cctrls;
-
-    $self->errorize($status);
-    
-    $$authzid = $authzidOut;
-    
-    return $status;
-} # end of whoami_s
 
 sub count_references
 {
@@ -1827,10 +1659,10 @@ sub set_rebind_proc
     my ($self, @args) = @_;
     my ($status);
 
-    my ($rebindproc, $params) = $self->rearrange(['REBINDPROC', 'PARAMS'], @args);
+    my ($rebindproc) = $self->rearrange(['REBINDPROC'], @args);
 
     if( ref($rebindproc) eq "CODE" ) {
-        $status = ldap_set_rebind_proc($self->{"ld"}, $rebindproc, $params);
+        $status = ldap_set_rebind_proc($self->{"ld"}, $rebindproc);
     } else {
         croak("REBINDPROC is not a CODE Reference");
     }
@@ -1863,18 +1695,16 @@ sub unbind
     my ($serverctrls, $clientctrls) =
         $self->rearrange(['SCTRLS', 'CCTRLS'], @args);
 
-    $sctrls = 0;
-    $cctrls = 0;
-
     $sctrls = $self->create_controls_array(@$serverctrls) if $serverctrls;
     $cctrls = $self->create_controls_array(@$clientctrls) if $clientctrls;
 
     $status = ldap_unbind_ext_s($self->{"ld"}, $sctrls, $cctrls);
 
+    $self->errorize($status) unless( $status == $self->LDAP_SUCCESS );
+
     ldap_controls_array_free($sctrls) if $sctrls;
     ldap_controls_array_free($cctrls) if $cctrls;
 
-    $self->errorize($status);
     return $status;
 } # end of unbind
 
@@ -2036,12 +1866,13 @@ sub create_control
 
     croak("No OID of controls is passed") unless $oid;
     croak("No BerVal is passed")          unless $berval;
-    $critical = 1                         if !defined($critical);
+    $critical = 1                         if $critical == undef;
 
     my ($ctrl) = undef;
     my $status = ldap_create_control($oid, $berval, length($berval), $critical, $ctrl);
 
-    $self->errorize($status);
+    $self->errorize($status) if( $status != $self->LDAP_SUCCESS );
+
     return $ctrl;
 } # end of create_control
 
@@ -2125,18 +1956,13 @@ sub errorize {
 
     my ($errdn, $extramsg);
 
-    if ($status != $self->LDAP_SUCCESS) {
-        $self->{"errno"}    = ldap_get_lderrno($self->{"ld"}, $errdn, $extramsg);
-        $self->{"extramsg"} = $extramsg;
+    $self->{"errno"}    = ldap_get_lderrno($self->{"ld"}, $errdn, $extramsg);
+    $self->{"extramsg"} = $extramsg;
 
-        if( $self->{"debug"} ) {
-            print  "LDAP ERROR STATUS: $status ".ldap_err2string($status)."\n";
-            printf("LDAP ERROR CODE:   %x\n", $self->{"errno"});
-            print  "LDAP ERROR MESSAGE: $extramsg\n";
-        }
-    } else {
-        $self->{"errno"}=0;
-        $self->{"errstring"}=undef;
+    if( $self->{"debug"} ) {
+        print  "LDAP ERROR STATUS: $status ".ldap_err2string($status)."\n";
+        printf("LDAP ERROR CODE:   %x\n", $self->{"errno"});
+        print  "LDAP ERROR MESSAGE: $extramsg\n";
     }
 } # end of errorize
 
@@ -2446,26 +2272,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
        return($dn,$pass,LDAP_AUTH_SIMPLE);
     }
 
-=head1 EXTENDED OPERATIONS
 
-  Extended operations are supported.
-  
-  The extended_operation and extended_operation_s methods are used to
-  invoke extended operations.
-  
-  Example (WHOAMI):
-  
-    %result = ();
-  
-    if ($ld->extended_operation_s(-oid => "1.3.6.1.4.1.4203.1.11.3", -result => \%result) != LDAP_SUCCESS)
-    {
-      $ld->perror("ldap_extended_operation_s");
-      exit -1;
-    }
-  
-  Note that WHOAMI is already natively implemented via whoami and whoami_s 
-  methods.
-           
 =head1 SUPPORTED METHODS
 
 =item abandon MSGID SCTRLS CCTRLS
@@ -2631,27 +2438,6 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
     @components = $ld->explode_rdn($rdn, 0);
 
-=item extended_operation OID BERVAL SCTRLS CCTRLS
-
-  Asynchronous method for invoking an extended operation. 
-  
-  Returns a non-negative MSGID upon success.
-  
-  Examples:
-  
-    $msgid = $ld->extended_operation("1.3.6.1.4.1.4203.1.11.3");
-
-=item extended_operation_s OID BERVAL SCTRLS CCTRLS RESULT
-
-  Synchronous method for invoking an extended operation. 
-  
-  Returns LDAP_SUCCESS upon success.
-      
-  Examples:
-  
-    $status = $ld->extended_operation_s(-oid => "1.3.6.1.4.1.4203.1.11.3", \
-        -result => \%result);
-    
 =item first_attribute
 
   Returns pointer to first attribute name found in the current entry.
@@ -3103,26 +2889,6 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Example:
 
     $status = $ld->url_search_s($my_ldap_url,0,2);
-
-=item whoami SCTRLS CCTRLS
-
-  Asynchronous method for invoking an LDAP whoami extended operation. 
-
-  Returns a non-negative MSGID upon success.
-      
-  Examples:
-  
-    $msgid = $ld->whoami();
-
-=item whoami_s AUTHZID SCTRLS CCTRLS
-
-  Synchronous method for invoking an LDAP whoami extended operation.
-  
-  Returns LDAP_SUCCESS upon success.
-    
-  Examples:
-  
-    $status = $ld->whoami_s(\$authzid);
 
 =head1 AUTHOR
 

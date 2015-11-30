@@ -36,7 +36,7 @@ my $attr;
 
 if (($ldcon = new Net::LDAPapi($ldap_server)) == -1)
 {
-   die "Unable to initialize!";
+   die "Unable to Open LDAP Connection";
 }
 
 if ($ldcon->bind_s != LDAP_SUCCESS)

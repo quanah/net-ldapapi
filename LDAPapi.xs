@@ -334,32 +334,6 @@ ldap_b2_interact(LDAP *ld, unsigned flags, void *def, void *inter)
     return LDAP_SUCCESS;
 }
 
-static struct timeval *
-sv2timeval(SV *data)
-{
-    struct timeval *tv = NULL;
-
-    if (SvPOK(data))
-    { 
-        /* set the NV flag if it's readable as a double */
-        SvNV(data);
-    }
-
-    if (SvIOK(data) || SvNOK(data)) {
-        Newx(tv, 1, struct timeval);
-
-        tv->tv_sec = SvIV(data);
-        tv->tv_usec = ((SvNV(data) - SvIV(data))*1000000);
-    }
-
-    return tv;
-}
-
-static SV *
-timeval2sv(struct timeval *data)
-{
-   return newSVnv(data->tv_sec + ((double)data->tv_usec / 1000000));    
-}
 
 MODULE = Net::LDAPapi           PACKAGE = Net::LDAPapi
 
@@ -410,41 +384,10 @@ int
 ldap_set_option(ld,option,optdata)
     LDAP *          ld
     int             option
-    SV *            optdata
+    int             optdata
     CODE:
     {
-       void *optptr = NULL;
-
-       bool must_safefree = 0;
-
-       int sv_i;
-
-       switch(option) 
-       {
-#ifdef OPENLDAP
-          case LDAP_OPT_TIMEOUT:
-          case LDAP_OPT_NETWORK_TIMEOUT:
-             optptr = (void *) sv2timeval(optdata);
-             must_safefree = 1;
-
-             break;
-#endif
-          default:
-             if (SvIOK(optdata)) 
-             {
-                sv_i = SvIV(optdata);
-                optptr = (void *) &sv_i;
-             }
-
-             break;
-       }
-
-       RETVAL = ldap_set_option(ld,option,optptr);
-
-       if (must_safefree) 
-       {
-          Safefree(optptr);
-       }
+       RETVAL = ldap_set_option(ld,option,&optdata);
     }
     OUTPUT:
     RETVAL
@@ -453,26 +396,10 @@ int
 ldap_get_option(ld,option,optdata)
     LDAP *          ld
     int             option
-    SV *            optdata
+    int             optdata = NO_INIT
     CODE:
     {
-       void *data = NULL;
-
-       RETVAL = ldap_get_option(ld, option, &data);
-
-       switch(option) 
-       {
-#ifdef OPENLDAP
-          case LDAP_OPT_TIMEOUT:
-          case LDAP_OPT_NETWORK_TIMEOUT:
-             sv_setsv(SvRV(optdata), timeval2sv(data));
-             break;
-#endif
-          default:
-             sv_setiv(SvRV(optdata), (long)data);
-             break;
-       }
-
+       RETVAL = ldap_get_option(ld, option, &optdata);
     }
     OUTPUT:
     RETVAL
@@ -545,7 +472,7 @@ ldap_add_ext_s(ld,dn,ldap_change_ref,sctrls,cctrls)
        Safefree(ldap_change_ref);
 
 int
-ldap_sasl_bind(ld, dn, passwd, serverctrls, clientctrls, msgidp)
+ldap_sasl_bind(ld, dn, passwd, sctrls, serverctrls, clientctrls, msgidp)
     LDAP *          ld
     LDAP_CHAR *     dn
     LDAP_CHAR *     passwd
@@ -613,7 +540,6 @@ ldap_rename(ld, dn, newrdn, newSuperior, deleteoldrdn, sctrls, cctrls, msgidp)
     }
     OUTPUT:
     RETVAL
-    msgidp
 
 int
 ldap_rename_s(ld, dn, newrdn, newSuperior, deleteoldrdn, sctrls, cctrls)
@@ -695,7 +621,7 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
     int              attrsonly
     LDAPControl **   sctrls
     LDAPControl **   cctrls
-    SV *             timeout
+    struct timeval * timeout
     int              sizelimit
     int              msgidp = NO_INIT
 
@@ -704,7 +630,6 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
        char **attrs_char;
        SV **current;
        int arraylen,count;
-       struct timeval *tv_timeout = NULL;
 
        if (SvTYPE(SvRV(attrs)) != SVt_PVAV)
        {
@@ -725,13 +650,9 @@ ldap_search_ext(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, timeo
           }
           attrs_char[arraylen+1] = NULL;
        }
-
-       tv_timeout = sv2timeval(timeout);
-
        RETVAL = ldap_search_ext(ld,        base,   scope,  filter,  attrs_char,
-                                attrsonly, sctrls, cctrls, tv_timeout, sizelimit,
+                                attrsonly, sctrls, cctrls, timeout, sizelimit,
                                 &msgidp);
-       Safefree(tv_timeout);
        Safefree(attrs_char);
     }
     OUTPUT:
@@ -748,7 +669,7 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
     int              attrsonly
     LDAPControl **   sctrls
     LDAPControl **   cctrls
-    SV *             timeout
+    struct timeval * timeout
     int              sizelimit
     LDAPMessage *    res = NO_INIT
     CODE:
@@ -756,7 +677,6 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
        char **attrs_char;
        SV **current;
        int arraylen,count;
-       struct timeval *tv_timeout = NULL;
 
        if (SvTYPE(SvRV(attrs)) == SVt_PVAV)
        {
@@ -777,138 +697,31 @@ ldap_search_ext_s(ld, base, scope, filter, attrs, attrsonly, sctrls, cctrls, tim
           croak("Net::LDAPapi::ldap_search_ext_s needs ARRAY reference as argument 5.");
           XSRETURN(1);
        }
-
-       tv_timeout = sv2timeval(timeout);
-
-       RETVAL = ldap_search_ext_s(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,tv_timeout,sizelimit,&res);
-
-       Safefree(tv_timeout);
+       RETVAL = ldap_search_ext_s(ld,base,scope,filter,attrs_char,attrsonly,sctrls,cctrls,timeout,sizelimit,&res);
        Safefree(attrs_char);
     }
     OUTPUT:
     RETVAL
     res
 
-int
-ldap_extended_operation(ld, oid, bv_val, bv_len,  sctrls, cctrls, msgidp)
-    LDAP *           ld
-    LDAP_CHAR *      oid
-    LDAP_CHAR *      bv_val
-    int              bv_len
-    LDAPControl **   sctrls
-    LDAPControl **   cctrls
-    int              msgidp = NO_INIT
-
-    CODE:
-    {
-       struct berval indata;
-
-       if (bv_len == 0) {
-          RETVAL = ldap_extended_operation(ld, oid, NULL,
-                                           sctrls, cctrls,
-                                           &msgidp);
-       } else {
-          indata.bv_val = bv_val;
-          indata.bv_len = bv_len;
-
-          RETVAL = ldap_extended_operation(ld, oid, &indata,
-                                      sctrls, cctrls,
-                                      &msgidp);
-       }
-    }
-    OUTPUT:
-    RETVAL
-    msgidp
-
-int
-ldap_extended_operation_s(ld, oid, bv_val, bv_len,  sctrls, cctrls, retoidp, retdatap)
-    LDAP *           ld
-    LDAP_CHAR *      oid
-    LDAP_CHAR *      bv_val
-    int              bv_len
-    LDAPControl **   sctrls
-    LDAPControl **   cctrls
-    char *        retoidp  = NO_INIT
-    char *        retdatap = NO_INIT
-    CODE:
-    {
-       struct berval indata, *retdata;
-
-       if (bv_len == 0) {
-          RETVAL = ldap_extended_operation_s(ld, oid, NULL,
-                                             sctrls, cctrls,
-                                             &retoidp, &retdata);
-       } else {
-          indata.bv_val = bv_val;
-          indata.bv_len = bv_len;
-
-          RETVAL = ldap_extended_operation_s(ld, oid, &indata,
-                                             sctrls, cctrls,
-                                             &retoidp, &retdata);
-       }
-
-       if (retdata != NULL)
-          retdatap = ldap_strdup(retdata->bv_val);
-      
-       ber_memfree(retdata);
-   }
-   OUTPUT:
-   RETVAL
-   retoidp
-   retdatap
-
-int
-ldap_whoami(ld, sctrls, cctrls, msgidp)
-    LDAP *           ld
-    LDAPControl **   sctrls
-    LDAPControl **   cctrls
-    int              msgidp = NO_INIT
-
-    CODE:
-    {
-       RETVAL = ldap_whoami(ld, sctrls, cctrls,
-                            &msgidp);
-    }
-    OUTPUT:
-    RETVAL
-    msgidp
-
-int
-ldap_whoami_s(ld, authzid, sctrls, cctrls)
-    LDAP *           ld
-    LDAPControl **   sctrls
-    LDAPControl **   cctrls
-    char *        authzid = NO_INIT
-    CODE:
-    {
-       struct berval *retdata;
-
-       RETVAL = ldap_whoami_s(ld, &retdata, sctrls, cctrls);
-
-       if (retdata != NULL)
-          authzid = ldap_strdup(retdata->bv_val);
-      
-       ber_memfree(retdata);
-    }
-    OUTPUT:
-    RETVAL
-    authzid
 
 int
 ldap_result(ld, msgid, all, timeout, result)
     LDAP *        ld
     int           msgid
     int           all
-    SV *          timeout
+    LDAP_CHAR *   timeout
     LDAPMessage * result = NO_INIT
     CODE:
     {
-        struct timeval *tv_timeout = NULL;
-
-        tv_timeout = sv2timeval(timeout);
-
-        RETVAL = ldap_result(ld, msgid, all, tv_timeout, &result);
-        Safefree(tv_timeout);
+        struct timeval *tv_timeout = NULL, timeoutbuf;
+        if (atof(timeout) > 0 && timeout && *timeout)
+        {
+           tv_timeout = &timeoutbuf;
+           tv_timeout->tv_sec = atof(timeout);
+           tv_timeout->tv_usec = 0;
+        }
+        RETVAL = ldap_result(ld, msgid, all, NULL, &result);
     }
     OUTPUT:
     RETVAL
@@ -1138,33 +951,6 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
     errmsgp
 
 int
-ldap_parse_extended_result(ld, msg, retoidp, retdatap, freeit)
-    LDAP        * ld
-    LDAPMessage * msg
-    char *        retoidp  = NO_INIT
-    char *        retdatap = NO_INIT
-    int           freeit
-    CODE:
-    {
-       struct berval *retdata;
-      
-       retdata = ber_memalloc(sizeof(struct berval *));
-   
-       RETVAL =
-           ldap_parse_extended_result(ld, msg, &retoidp,
-                                      &retdata, freeit);
-
-       if (retdata != NULL)
-          retdatap = ldap_strdup(retdata->bv_val);
-
-       ber_memfree(retdata);
-    }
-    OUTPUT:
-    RETVAL
-    retoidp
-   retdatap
-   
-int
 ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
     LDAP        * ld
     LDAPMessage * msg
@@ -1216,28 +1002,6 @@ ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
     retoidp
     retdatap
 
-int
-ldap_parse_whoami(ld, msg, authzid)
-    LDAP        * ld
-    LDAPMessage * msg
-    char *        authzid = NO_INIT
-    CODE:
-    {
-      struct berval *retdata;
-      
-        retdata = ber_memalloc(sizeof(struct berval *));
-   
-        RETVAL =
-            ldap_parse_whoami(ld, msg, &retdata);
-
-      if (retdata != NULL)
-         authzid = ldap_strdup(retdata->bv_val);
-
-      ber_memfree(retdata);
-    }
-    OUTPUT:
-    RETVAL
-    authzid
 
 char *
 ldap_control_oid(control)
@@ -1250,12 +1014,12 @@ ldap_control_oid(control)
     RETVAL
 
 
-SV *
+char *
 ldap_control_berval(control)
     LDAPControl * control
     CODE:
     {
-        RETVAL = newSVpv(control->ldctl_value.bv_val, control->ldctl_value.bv_len);
+        RETVAL = control->ldctl_value.bv_val;
     }
     OUTPUT:
     RETVAL
@@ -1329,11 +1093,6 @@ ldap_get_dn(ld,entry)
     }
     OUTPUT:
     RETVAL
-
-void
-ldap_perror(ld,s)
-	LDAP *          ld
-	LDAP_CHAR *     s
 
 char *
 ldap_dn2ufn(dn)
@@ -1672,16 +1431,18 @@ ldap_url_search_st(ld,url,attrsonly,timeout,result)
     LDAP *      ld
     char *      url
     int     attrsonly
-    SV * timeout
+    LDAP_CHAR * timeout
     LDAPMessage *   result = NO_INIT
     CODE:
     {
-       struct timeval *tv_timeout = NULL;
-
-       tv_timeout = sv2timeval(timeout);
-
+       struct timeval *tv_timeout = NULL, timeoutbuf;
+       if (timeout && *timeout)
+       {
+          tv_timeout = &timeoutbuf;
+          tv_timeout->tv_sec = atof(timeout);
+          tv_timeout->tv_usec = 0;
+       }
        RETVAL = ldap_url_search_st(ld,url,attrsonly,tv_timeout,&result);
-       Safefree(tv_timeout);
     }
     OUTPUT:
     RETVAL
@@ -1806,7 +1567,6 @@ ldap_sasl_bind_s(ld, dn, passwd, serverctrls, clientctrls, servercredp)
 
         cred.bv_len = strlen(cred.bv_val);
 
-	servercredp = 0;	/* mdw 20070918 */
         RETVAL = ldap_sasl_bind_s(ld, dn, LDAP_SASL_SIMPLE, &cred,
                                   serverctrls, clientctrls, servercredp);
     }
