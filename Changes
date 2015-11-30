@@ -1,30 +1,5 @@
 Revision history for Perl5 Net::LDAPapi Module.
-3.0.4 uncommitted
-	- Fix undef comparison
-	- Misc variable initializations to quiet warnings
-	- Fixed sasl mechanisms initializtion
-	- Examples cleanup
-	- LDAPv3 extended operation support
-	- New developer mode test suite
-	- Fixed quanah/net-ldapapi#3: ldap_set_rebind_proc XS being called with invalid arguments from set_rebind_proc
-	- Fixed quanah/net-ldapapi#6: ldap_sasl_bind has wrong prototype in LDAPapi.xs
-	- Fixed quanah/net-ldapapi#8: search_s() clobbers ATTRS parameter
-	- Fixed quanah/net-ldapapi#11: result() blocking when called with output from rename()
-	- Fixed quanah/net-ldapapi#20: ldap_result() doesn't honour passed timeout value
-	- Fixed quanah/net-ldapapi#21: ldap_set_option(LDAP_OPT_TIMEOUT, 1) on OpenLDAP returns -1
-	- Fixed quanah/net-ldapapi#28: Server control responses get eaten after a NULL character in the berval
-	- Fixed quanah/net-ldapapi#30: ldap_search_ext() and ldap_search_ext_s() segfault when used with timeout
-	- Fixed quanah/net-ldapapi#31: ldap_result() and ldap_url_search_st() timeout parameters have a granularity of 1 second
-3.0.3 Wed Aug 20 12:23:00 PST 2008
-	- Add Convert::ASN1 requirement.
-	- Fix error code handling (CPAN bug#35910)
-3.0.2 Wed Jan 02 12:23:00 PST 2008
-	- Fix various variable initializations and scope issues
-	- Fix initialization of sasl parm
-	- Fix test unbind
-	- Add ldap_perror function
-3.0.1 Thu Aug 09 17:22:15 PDT 2007
-	- New 3.0.1 release, fixes sasl headers
+
 3.0.0 Thu Jul 12 12:13:00 PDT 2007
 	- New 3.0 release, using the LDAP V3 api
 2.01  Fri Feb 09 08:41:46 PST 2007
