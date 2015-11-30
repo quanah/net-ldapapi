@@ -40,7 +40,7 @@ my $result;
 
 if (($ld = new Net::LDAPapi($ldap_server)) == -1)
 {
-    die "Unable to initialize!";
+    die "Connection Failed!";
 }
 
 #ldap_set_option(0,LDAP_OPT_DEBUG_LEVEL,-1);
@@ -53,9 +53,8 @@ if (($ld = new Net::LDAPapi($ldap_server)) == -1)
 #if ($ld->bind_s("tester","tester",LDAP_AUTH_SASL) != LDAP_SUCCESS)
 if ($ld->bind_s != LDAP_SUCCESS)
 {
-    my $errstr=$ld->errstring;
     $ld->unbind;
-    die "bind: ", $errstr;
+    die "bind: ", $ld->errstring, ": ", $ld->extramsg;
 }
 
 #  This will set the size limit to $sizelimit from above.  The command
@@ -115,7 +114,7 @@ while (1)
 
         #
         #  Cycle Through Each Attribute
-        for ($attr = $ld->first_attribute; defined($attr); $attr = $ld->next_attribute)
+        for ($attr = $ld->first_attribute; $attr ne ""; $attr = $ld->next_attribute)
         {
 
             #
@@ -130,7 +129,7 @@ while (1)
     $ld->msgfree;
 
 }
-if ( !defined($result) && $ld->err != LDAP_SUCCESS)
+if ( $result == undef && $ld->err != LDAP_SUCCESS)
 {
     $ld->unbind;
     die "result: ", $ld->errstring, ": ", $ld->extramsg;
@@ -165,7 +164,6 @@ foreach $dn (keys %record)
             }
         }
     }
-    print "\n";
 }
 
 exit;

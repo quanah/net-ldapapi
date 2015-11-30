@@ -195,16 +195,13 @@ Perl-OO style interface if you have never used the C API.
 
 FEEDBACK
 ========
-   Any feedback should be directed to quanah.gibsonmount@gmail.com
-
+ Any feedback should be directed to mishikal@yahoo.com
 
 BUGS
 ====
 
-   The non-OO stuff should work well.  Please let me know if I've introduced
+The non-OO stuff should work well.  Please let me know if I've introduced
 any bugs in the OO stuff or the changed examples.
-
-   Please report bugs at github - https://github.com/quanah/net-ldapapi/issues/
 
 --
 Clayton Donley
@@ -218,8 +215,8 @@ Chief Architect, Symas Corporation	http://www.symas.com
 Core Team, OpenLDAP Project		http://www.openldap.org
 
 Quanah Gibson-Mount
-email: quanah.gibsonmount@gmail.com
+email: mishikal@yahoo.com
 CPAN: /by-authors/id/M/MI/MISHIKAL
-Platform Architect
-Synacor, Inc				http://www.zimbra.com http://synacor.com/
+Principal Software Engineer
+Zimbra, Inc				http://www.zimbra.com
 Core Team, OpenLDAP Project		http://www.openldap.org
