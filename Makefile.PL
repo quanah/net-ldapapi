@@ -128,14 +128,4 @@ WriteMakefile(
 	)),
 	'depend'        =>      { 'LDAPapi.c' => 'constant.h' },
 	'clean'         =>      { 'FILES'     => 'constant.h' },
-	META_MERGE => {
-		'meta-spec' => { version => 2 },
-		resources => {
-			repository => {
-				type => 'git',
-				url  => 'https://github.com/quanah/net-ldapapi.git',
-				web  => 'https://github.com/quanah/net-ldapapi',
-			},
-		},
-	},
 );
