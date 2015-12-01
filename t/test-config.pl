@@ -90,6 +90,16 @@ our %TestConfig = (
         'reverseOrder' => 1
       },
     ],
+    'vlv' => {
+      'beforeCount' => 0,
+      'afterCount' => 3,
+      'target' => {
+        'byOffset' => {
+          'offset' => 1,
+          'contentCount' => 0
+        }
+      }
+    },
   },
   'compare' => {
     'entry_attribute' => 'cn', 
