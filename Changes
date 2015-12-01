@@ -1,5 +1,5 @@
 Revision history for Perl5 Net::LDAPapi Module.
-3.0.4 Mon Dec 01 19:00:00 PST 2015
+3.0.4 Mon Nov 30 19:00:00 PST 2015
 	- Fix undef comparison
 	- Misc variable initializations to quiet warnings
 	- Fixed sasl mechanisms initializtion
