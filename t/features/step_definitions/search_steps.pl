@@ -14,7 +14,7 @@ When qr/I've (asynchronously )?searched for records with scope ([^, ]+)(?:, with
   my $scope = $2;
   my $timeout = $6;
 
-  my @server_ctrls = $3 ? map { S->{'server_controls'}{$_} } split(/(?:,|and)\s*/, $3) : undef;
+  my @server_ctrls = $3 ? map { S->{'server_controls'}{$_} } split(/\s*(?:,|and)\s*/, $3) : undef;
 
   my $func = "search_ext_s";
   if ($async) {
@@ -31,7 +31,7 @@ When qr/I've (asynchronously )?searched for records with scope ([^, ]+)(?:, with
     -filter => $TestConfig{'search'}{'filter'},
     -attrs => \@{['cn']},
     -attrsonly => 0,
-    -sctrls => @server_ctrls,
+    -sctrls => [@server_ctrls],
     -timeout => $timeout);
 };
 
