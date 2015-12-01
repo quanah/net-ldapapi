@@ -1863,8 +1863,7 @@ ldap_create_control(oid, bv_val, bv_len, iscritical, ctrlp)
         LDAPControl *ctrl = malloc(sizeof(LDAPControl));
 
         ctrl->ldctl_oid          = ber_strdup(oid);
-        ctrl->ldctl_value.bv_val = ber_strdup(bv_val);
-        ctrl->ldctl_value.bv_len = bv_len;
+        ber_mem2bv(bv_val, bv_len, 1, &ctrl->ldctl_value);
         ctrl->ldctl_iscritical   = iscritical;
 
         ctrlp = ctrl;
