@@ -15,6 +15,7 @@ Revision history for Perl5 Net::LDAPapi Module.
 	- Fixed quanah/net-ldapapi#28: Server control responses get eaten after a NULL character in the berval
 	- Fixed quanah/net-ldapapi#30: ldap_search_ext() and ldap_search_ext_s() segfault when used with timeout
 	- Fixed quanah/net-ldapapi#31: ldap_result() and ldap_url_search_st() timeout parameters have a granularity of 1 second
+	- Fixed quanah/net-ldapapi#40: Server control requests get eaten after a NULL character in the berval
 3.0.3 Wed Aug 20 12:23:00 PST 2008
 	- Add Convert::ASN1 requirement.
 	- Fix error code handling (CPAN bug#35910)
