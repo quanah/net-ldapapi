@@ -296,7 +296,10 @@ sub new
     syncCookie ::= OCTET STRING
 
     syncRequestValue ::= SEQUENCE {
-        mode       ENUMERATED,
+				mode ENUMERATED {
+						refreshOnly       (1),
+						refreshAndPersist (3)
+				},
         cookie     syncCookie OPTIONAL,
         reloadHint BOOLEAN
         }
