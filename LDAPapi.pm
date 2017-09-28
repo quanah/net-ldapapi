@@ -1555,9 +1555,9 @@ sub listen_for_changes
 
     # refreshAndPersist mode
     if( $the_cookie ) { # we have the cookie
-        $syncRequestBerval = $asn->encode(mode => 3, cookie => $the_cookie, reloadHint => 1);
+        $syncRequestBerval = $syncRequestValue->encode(mode => 3, cookie => $the_cookie, reloadHint => 1);
     } else {
-        $syncRequestBerval = $asn->encode(mode => 3, reloadHint => 1);
+        $syncRequestBerval = $syncRequestValue->encode(mode => 3, reloadHint => 1);
     }
 
     my $ctrl_persistent =
