@@ -884,10 +884,7 @@ sub next_changed_entries {
                 $cookie = $syncStateValues->{'cookie'};
                 if( $cookie ) {
                     # save the cookie
-                    open(COOKIE_FILE,">".$self->{"cookie"}) ||
-                        die("Cannot open file '".$self->{"cookie"}."' for writing.");
-                    print COOKIE_FILE $cookie;
-                    close(COOKIE_FILE);
+										save_cookie($cookie, $self->{"cookie"});
                 }
             }
 
@@ -919,10 +916,7 @@ sub next_changed_entries {
 
                 # see if we got any and save it.
                 if( $cookie ) {
-                    open(COOKIE_FILE,">".$self->{"cookie"}) ||
-                        die("Cannot open file '".$self->{"cookie"}."' for writing.");
-                    print COOKIE_FILE $cookie;
-                    close(COOKIE_FILE);
+										save_cookie($cookie, $self->{"cookie"});
                 }
             }
         }
@@ -930,6 +924,50 @@ sub next_changed_entries {
 
     return @entries;
 } # next_changed_entries
+
+sub save_cookie
+{
+        my ($self,@args) = @_;
+				my $cookiestr = $_[0];
+				my $cookie = $_[1];
+
+        # Skip all if there's no csn value
+        if ($cookiestr =~ m/csn=/) {
+
+								# Get new CSN array and a copy
+								chomp(my @newcsns = split(';',$cookiestr =~ s/(rid=\d{3},)|(sid=\d{3},)|(csn=)//rg));
+
+                # Get the old cookie for comparison/persisting
+                open(COOKIE_FILE, "<", $cookie) || die("Cannot open file '".$cookie."' for reading.");
+                chomp(my @oldcsns = <COOKIE_FILE>);
+                close(COOKIE_FILE);
+
+                # These will be the CSNs to write to the cookie file
+								# All CSNs from the new cookie must be used
+                # my @outcsns = @newcsns;
+								my @outcsns = @newcsns;
+
+                # Look for old CSNs with SIDs that don't match any of the new
+                # CSNs. If there are no matches, push the old CSN to the list
+                # of CSNs to be written to the cookie file.
+                foreach my $oldcsn (@oldcsns) {
+                        my $match = 0;
+                        my $p_sid  = ($oldcsn =~ /(#\d{3}#)/i)[0];
+                        foreach my $newcsn (@newcsns) {
+                                if ($newcsn =~ m/\Q$p_sid/) {
+                                        $match = 1;
+                                        last;
+                                }
+                        }
+                        if (!$match) { push @outcsns,$oldcsn; }
+                }
+
+                # Write the cookie
+                open(COOKIE_FILE, ">", $cookie) || die("Cannot open file '".$cookie."' for writing.");
+                print COOKIE_FILE "$_\n" for @outcsns;
+                close(COOKIE_FILE);
+        }
+} # end save_cookie
 
 
 sub first_entry
@@ -1548,7 +1586,10 @@ sub listen_for_changes
 
     # load cookie from the file
     if( open(COOKIE, $cookie) ) {
-        read COOKIE, $the_cookie, 1024, 0;
+				chomp(my @csns = <COOKIE>);
+        if (scalar(@csns)) {
+				  $the_cookie = sprintf("rid=000,csn=%s",join(';',@csns));
+        }
     } else {
         warn "Failed to open file '".$cookie."' for reading.\n";
     }
