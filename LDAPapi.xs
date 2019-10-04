@@ -1054,8 +1054,8 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
     LDAP *        ld
     LDAPMessage * msg
     int           errorcodep  = NO_INIT
-    char *        matcheddnp  = NO_INIT
-    char *        errmsgp     = NO_INIT
+    SV *          matcheddnp
+    SV *          errmsgp
     SV *          referrals_ref
     SV *          serverctrls_ref
     int           freeit
@@ -1077,23 +1077,11 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
 
         AV *serverctrls_av = (AV *)SvRV(serverctrls_ref);
         AV *referrals_av  = (AV *)SvRV(referrals_ref);
-
-        LDAPControl **serverctrls = malloc(sizeof(LDAPControl **));
-        if( serverctrls == NULL ) {
-            croak("In ldap_parse_result(...) failed to allocate memory for serverctrls.");
-            XSRETURN(-1);
-        }
-
-        char **referrals  = malloc(sizeof(char **));
-        if( referrals == NULL ) {
-            croak("In ldap_parse_result(...) failed to allocate memory for referrals.");
-            free(referrals);
-            XSRETURN(-1);
-        }
+        char *matcheddn = NULL, *errmsg = NULL;
 
         RETVAL =
-            ldap_parse_result(ld,       msg,        &errorcodep,  &matcheddnp,
-                              &errmsgp, &referrals, &serverctrls, freeit);
+            ldap_parse_result(ld,       msg,        &errorcodep,  &matcheddn,
+                              &errmsg, &referrals, &serverctrls, freeit);
 
         // transfer returned referrals to the perl code
         if( referrals != NULL ) {
@@ -1107,6 +1095,15 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
                 av_push(serverctrls_av, newSViv((IV)serverctrls[i]));
         }
 
+        if (matcheddn) {
+            sv_setpv(matcheddnp, matcheddn);
+            free(matcheddn);
+        }
+        if (errmsg) {
+            sv_setpv(errmsgp, errmsg);
+            free(errmsg);
+        }
+        free(serverctrls);
         free(serverctrls);
         free(referrals);
 
@@ -1123,28 +1120,28 @@ int
 ldap_parse_extended_result(ld, msg, retoidp, retdatap, freeit)
     LDAP        * ld
     LDAPMessage * msg
-    char *        retoidp  = NO_INIT
-    char *        retdatap = NO_INIT
+    SV *          retoidp
+    SV *          retdatap
     int           freeit
     CODE:
     {
-       struct berval *retdata;
+       struct berval *retdata = NULL;
+       char *retoid;
       
-       retdata = ber_memalloc(sizeof(struct berval *));
-   
        RETVAL =
-           ldap_parse_extended_result(ld, msg, &retoidp,
+           ldap_parse_extended_result(ld, msg, &retoid,
                                       &retdata, freeit);
 
-       if (retdata != NULL)
-          retdatap = ldap_strdup(retdata->bv_val);
-
-       ber_memfree(retdata);
+       sv_setpv(retoidp, retoid);
+       if (retdata != NULL) {
+          sv_setpvn(retdatap, retdata->bv_val, retdata->bv_len);
+          ber_bvfree(retdata);
+       }
     }
     OUTPUT:
     RETVAL
     retoidp
-   retdatap
+    retdatap
    
 int
 ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
@@ -1157,7 +1154,7 @@ ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
     CODE:
     {
         int i;
-        struct berval *retdata;
+        struct berval *retdata = NULL;
         char *retoid;
 
         if (SvTYPE(SvRV(serverctrls_ref)) != SVt_PVAV)
@@ -1175,8 +1172,10 @@ ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
                                     &retdata, &serverctrls, freeit);
 
         sv_setpv(retoidp, retoid);
-        if( retdata != NULL )
+        if( retdata != NULL ) {
             sv_setpvn(retdatap, retdata->bv_val, retdata->bv_len);
+            ber_bvfree(retdata);
+        }
 
         // transfer returned controls to the perl code
         if( serverctrls != NULL ) {
@@ -1186,7 +1185,6 @@ ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
 
         free(serverctrls);
         free(retoid);
-        ber_bvfree(retdata);
 
         SvRV( serverctrls_ref ) = (SV *)serverctrls_av;
     }
@@ -1199,20 +1197,18 @@ int
 ldap_parse_whoami(ld, msg, authzid)
     LDAP        * ld
     LDAPMessage * msg
-    char *        authzid = NO_INIT
+    SV *          authzid
     CODE:
     {
-      struct berval *retdata;
+        struct berval *retdata = NULL;
       
-        retdata = ber_memalloc(sizeof(struct berval *));
-   
         RETVAL =
             ldap_parse_whoami(ld, msg, &retdata);
 
-      if (retdata != NULL)
-         authzid = ldap_strdup(retdata->bv_val);
-
-      ber_memfree(retdata);
+        if (retdata != NULL) {
+            sv_setpvn(authzid, retdata->bv_val, retdata->bv_len);
+            ber_bvfree(retdata);
+        }
     }
     OUTPUT:
     RETVAL
