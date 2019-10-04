@@ -1150,14 +1150,15 @@ int
 ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
     LDAP        * ld
     LDAPMessage * msg
-    char *        retoidp  = NO_INIT
-    char *        retdatap = NO_INIT
+    SV *          retoidp
+    SV *          retdatap
     SV *          serverctrls_ref
     int           freeit
     CODE:
     {
         int i;
         struct berval *retdata;
+        char *retoid;
 
         if (SvTYPE(SvRV(serverctrls_ref)) != SVt_PVAV)
         {
@@ -1170,11 +1171,12 @@ ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
         LDAPControl **serverctrls = NULL;
 
         RETVAL =
-            ldap_parse_intermediate(ld,       msg,          &retoidp,
+            ldap_parse_intermediate(ld,       msg,          &retoid,
                                     &retdata, &serverctrls, freeit);
 
+        sv_setpv(retoidp, retoid);
         if( retdata != NULL )
-            retdatap = ldap_strdup(retdata->bv_val);
+            sv_setpvn(retdatap, retdata->bv_val, retdata->bv_len);
 
         // transfer returned controls to the perl code
         if( serverctrls != NULL ) {
@@ -1183,6 +1185,7 @@ ldap_parse_intermediate(ld, msg, retoidp, retdatap, serverctrls_ref, freeit)
         }
 
         free(serverctrls);
+        free(retoid);
         ber_bvfree(retdata);
 
         SvRV( serverctrls_ref ) = (SV *)serverctrls_av;
