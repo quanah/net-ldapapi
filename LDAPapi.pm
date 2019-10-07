@@ -886,6 +886,7 @@ sub next_changed_entries {
                     # save the cookie
 										save_cookie($cookie, $self->{"cookie"});
                 }
+                ldap_control_free($ctrl);
             }
 
         } elsif( $msgtype eq $self->LDAP_RES_INTERMEDIATE ) {
