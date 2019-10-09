@@ -1078,6 +1078,8 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
         AV *serverctrls_av = (AV *)SvRV(serverctrls_ref);
         AV *referrals_av  = (AV *)SvRV(referrals_ref);
         char *matcheddn = NULL, *errmsg = NULL;
+        LDAPControl **serverctrls = NULL;
+        char **referrals = NULL;
 
         RETVAL =
             ldap_parse_result(ld,       msg,        &errorcodep,  &matcheddn,
@@ -1103,7 +1105,6 @@ ldap_parse_result(ld, msg, errorcodep, matcheddnp, errmsgp, referrals_ref, serve
             sv_setpv(errmsgp, errmsg);
             free(errmsg);
         }
-        free(serverctrls);
         free(serverctrls);
         free(referrals);
 
