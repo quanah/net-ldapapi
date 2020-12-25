@@ -2224,7 +2224,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   new "Perl OO" style interface methods.  With version 1.42, I've added
   named arguments.
 
-=head1 THE INTIAL CONNECTION
+=head1 THE INITIAL CONNECTION
 
   All connections to the LDAP server are started by creating a new
   "blessed object" in the Net::LDAPapi class.  This can be done quite
@@ -2266,7 +2266,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
   -cctrls and -sctrls must be reference to array of controls.
 
-  To create control call create_control(...) method. Bellow is an
+  To create control call create_control(...) method. Below is an
   example of creating valsort control.
 
   my $asn = Convert::ASN1->new;
@@ -2333,7 +2333,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
   $status = $ld->bind_s(-type=>LDAP_AUTH_SASL)
 
-  Bellow is an example of GSSAPI K5 bind parameters.
+  Below is an example of GSSAPI K5 bind parameters.
 
   $ld->sasl_parms(-mech=>"GSSAPI", -realm=>"domain.name.com",
                   -authzid=>"",    -secprops=>"",
@@ -2659,7 +2659,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Can also be accessed directly as 'ldap_explode_dn' if no session is
   initialized and you don't want the object oriented form.
 
-  In OpenLDAP this call is depricated.
+  In OpenLDAP this call is deprecated.
 
   Example:
 
@@ -2675,7 +2675,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   Can also be accessed directly as 'ldap_explode_rdn' if no session is
   initialized and you don't want the object oriented form.
 
-  In OpenLDAP this call is depricated.
+  In OpenLDAP this call is deprecated.
 
   Example:
 
@@ -2727,7 +2727,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 
    Return the first message in a chain of result returned by the search
    operation. LDAP search operations return LDAPMessage, which is a head
-   in chain of messages accessable to the user. Not all all of them are
+   in chain of messages accessible to the user. Not all all of them are
    entries though. Type of the message can be obtained by calling
    msgtype(...) function.
 
@@ -2770,7 +2770,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
 =item get_entry_controls MSG
 
   Returns an array of controls returned with the given entry. If not MSG
-  is given as a paramater then current message/entry is used.
+  is given as a parameter then current message/entry is used.
 
   Example:
 
@@ -2816,7 +2816,7 @@ Net::LDAPapi - Perl5 Module Supporting LDAP API
   refreshAndPersist mode. All but one arguments are the same as in search
   function. Argument 'cookie' is the special one here. It must be specified
   and is a file name in which cookie is to be stored. On a subsequent
-  restart of the seach only the newer results will be returned than those
+  restart of the search only the newer results will be returned than those
   indicated by the stored cookie. To refresh all entries, one would have to
   remove that file.
 
