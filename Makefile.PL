@@ -124,7 +124,7 @@ WriteMakefile(
 	'DEFINE'        =>      '-DMOZILLA_LDAP',
 	) : (
 	'LIBS'          =>      ["-L$lib_ldap $ldap_lib"],
-	'DEFINE'        =>      '-DOPENLDAP',
+	'DEFINE'        =>      '-DOPENLDAP -DLDAP_DEPRECATED=1',
 	)),
 	'depend'        =>      { 'LDAPapi.c' => 'constant.h' },
 	'clean'         =>      { 'FILES'     => 'constant.h' },
